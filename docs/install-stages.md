@@ -7,15 +7,15 @@ and every stage must declare its contract row before it ships.
 
 ## The stages
 
-| # | Stage | Job | Writes | Failure means |
-|---|-------|-----|--------|---------------|
-| 0 | Preflight | hardware detect, disk map, network check | nothing (reads only) | abort before any write, report unmet need |
-| 1 | Partition | layout agree, format | partition table, filesystems | abort, disk untouched or re-runnable |
-| 2 | Base | pacstrap profiles (`hornero/profiles`) | mounted root | re-run stage 2 only |
-| 3 | Boot | bootloader, kernel hooks | ESP, boot entries | system unbootable: must be retried, never skipped |
-| 4 | Identity | user, locale, timezone, hostname | `/etc`, home skeleton | re-run stage 4 only |
-| 5 | Desktop | `[hornero]`/AUR sets, `hornero-desktop` | packages, `/usr/share/hornero`, `/etc/xdg` | re-run stage 5 only |
-| 6 | Seal | snapshots, `doctor`, first-boot welcome | snapshot, state files | report only: system is complete, verification pending |
+| # | Stage | Job | Writes | On failure |
+|---|---|---|---|---|
+| 0 | Preflight | detect hw, map disks | nothing (reads) | abort, report need |
+| 1 | Partition | agree layout, format | parttable, fs | abort, re-runnable |
+| 2 | Base | pacstrap profiles | mounted root | re-run stage 2 |
+| 3 | Boot | bootloader, hooks | ESP, entries | retry, never skip |
+| 4 | Identity | user, locale, time | `/etc`, skeleton | re-run stage 4 |
+| 5 | Desktop | package sets | `/usr`, `/etc/xdg` | re-run stage 5 |
+| 6 | Seal | snapshot, doctor | snapshot, state | report only |
 
 ## Per-file rule
 
