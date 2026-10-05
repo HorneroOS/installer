@@ -106,7 +106,16 @@ def main() -> int:
         for path in screenshots.values()
     )
     assert all(item["edition"] not in {"agents", "studio", "server"} for item in compositions["options"])
-    assert config_root.joinpath("branding/hornero/branding.desc").is_file()
+    branding_root = config_root / "branding/hornero"
+    branding = load_yaml(branding_root / "branding.desc")
+    slideshow = branding.get("slideshow")
+    assert isinstance(slideshow, list) and slideshow, (
+        "Calamares branding requires at least one slideshow image or QML file"
+    )
+    assert all(
+        isinstance(path, str) and (branding_root / path).is_file()
+        for path in slideshow
+    ), "every Calamares slideshow entry must resolve inside the branding directory"
     assert lock["arch"]["architecture"] == "x86_64"
     assert re.fullmatch(r"[0-9]{4}/[0-9]{2}/[0-9]{2}", lock["arch"]["snapshot"])
     assert re.fullmatch(r"[0-9a-f]{64}", lock["calamares"]["sha256"])
@@ -201,8 +210,17 @@ def main() -> int:
         "networkmanager",
         "sddm",
         "syslinux",
-        "xfce4",
+        "xfce4-panel",
+        "xfce4-session",
+        "xfce4-settings",
+        "xfce4-terminal",
+        "xfconf",
+        "xfdesktop",
+        "xfwm4",
     } <= live_packages
+    assert not {"xfce4", "xfce4-goodies"} & live_packages, (
+        "live image packages must name XFCE components explicitly to avoid prompts"
+    )
     assert "uefi.systemd-boot" in profile_definition and "bios.syslinux" in profile_definition
     assert profile_definition.index("bios.syslinux") < profile_definition.index("uefi.systemd-boot"), (
         "Archiso requires the BIOS El Torito entry before the UEFI entry"

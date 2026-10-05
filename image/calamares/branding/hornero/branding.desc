@@ -16,6 +16,9 @@ images:
   productLogo: hornero.svg
   productIcon: hornero.svg
   productWelcome: installer-banner.svg
+slideshow:
+  - screenshots/desktop-hyprland.jpg
+  - screenshots/niri-experimental.svg
 style:
   SidebarBackground: "#141b24"
   SidebarText: "#f4f6f8"
