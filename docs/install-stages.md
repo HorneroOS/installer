@@ -1,47 +1,54 @@
-# Staged install contract
+# Installation stages
 
-No installer implementation is chosen yet (archinstall, Calamares,
-or custom — see `README.md`). This page constrains **any** of them:
-whatever installs HorneroOS must decompose into the stages below,
-and every stage must declare its contract row before it ships.
+The provisional installer uses Calamares. This map describes the modules in
+`image/calamares/settings.conf` and the data each stage is expected to own. It
+is not a claim that every recovery and preflight behavior is complete: this
+profile has not yet passed a full ISO and VM installation run.
 
-## The stages
+## Calamares flow
 
-| # | Stage | Job | Writes | On failure |
-|---|---|---|---|---|
-| 0 | Preflight | detect hw, map disks | nothing (reads) | abort, report need |
-| 1 | Partition | agree layout, format | parttable, fs | abort, re-runnable |
-| 2 | Base | install base packages | mounted root | re-run stage 2 |
-| 3 | Boot | bootloader, hooks | ESP, entries | retry, never skip |
-| 4 | Identity | user, locale, time | `/etc`, skeleton | re-run stage 4 |
-| 5 | Edition | install edition packages | `/usr`, `/etc/xdg` | re-run stage 5 |
-| 6 | Seal | snapshot, doctor | snapshot, state | report only |
+| # | Calamares modules | Purpose | Target state written | Failure boundary |
+| --- | --- | --- | --- | --- |
+| 1 | `partition`, `mount` | Review a disk layout, filesystems and encryption; mount the target. No operation is preselected. | Partition table, filesystems and temporary mounts. | Partitioning can erase data once confirmed; the installer cannot roll back a disk operation. |
+| 2 | `unpackfs` | Unpack the small Arch base system. | Target root filesystem. | Stop and retain Calamares logs; the target may be incomplete. |
+| 3 | `machineid`, `locale`, `keyboard`, `localecfg`, `fstab` | Create machine identity and write locale, input and mount configuration. | Target `/etc`, machine-id and fstab. | Stop and report the failed module; do not call the system installed. |
+| 4 | `packages`, `shellprocess@cleanup` | Install the selected resolver composition, then remove the temporary package-repository configuration. | Target packages and restored Arch mirror configuration. | A package failure can leave a partial target; installation acceptance must verify cleanup and recovery behavior. |
+| 5 | `users`, `services-systemd` | Create the named account and enable edition services. | Target home and account databases; systemd enablement links. | Do not claim completion if account or service setup fails. |
+| 6 | `initcpiocfg`, `initcpio`, `initramfs`, `bootloader` | Add filesystem/encryption hooks, build initramfs and install GRUB. | Target initramfs, boot files and EFI variables where applicable. | Keep logs and explain firmware or mount requirements; the target may not boot. |
+| 7 | `umount`, `finished` | Unmount the target and show completion. Reboot remains the user's choice. | No new product configuration. | Report unmount errors accurately; never reboot automatically. |
+
+The Welcome, Locale, Keyboard, Partition, Users, Edition and Summary pages are
+shown before execution. The Welcome page warns about network availability, but
+the profile does not yet have a separate automated hardware, power or storage
+preflight stage.
 
 ## Edition source of truth
 
 Edition identity, package composition, compositor selection and maturity are
 owned by [`HorneroOS/hornero`](https://github.com/HorneroOS/hornero), not by
-this repository. The installer must pin a catalogue revision and consume the
-resolver's machine-readable output. It must not copy package names, inheritance
-rules or maturity labels into installer-specific manifests.
+this repository. `installer.lock.yaml` pins the catalogue revision plus the
+catalogue and resolver hashes; `scripts/render-installer-catalogue.py` derives
+the Calamares options from that resolver. The installer does not copy edition
+inheritance, maturity or package lists into a second hand-maintained catalogue.
 
-The installer may only offer a composition whose maturity permits installation.
-`planned` is not selectable; `experimental` must be clearly marked and require
-an intentional choice; `preview` and `supported` must retain their published
-status. These rules keep product truth and install UX aligned while editions
-are being validated.
+Only compositions whose catalogue maturity permits installation appear.
+Experimental backends are clearly labeled and cannot become the default;
+planned editions remain hidden until their product and install paths have
+passed acceptance.
 
-## Per-file rule
+## State ownership
 
-Every file the installer writes must be traceable to one stage and
-one owner repo (`config`, `hornero`, `shell`, `greeter`). The
-installer keeps a manifest of written paths; `horneroctl doctor`
-reconciles drift afterwards. A file with no owning stage is a bug in
-the installer, not the user's problem.
+Target files and package state should be traceable to a Calamares stage and the
+repository that owns the content (`config`, `hornero`, `shell`, or `greeter`).
+The profile records composition and package-source provenance, but does not yet
+emit a complete written-path manifest. That manifest remains a release gate
+before the official installer claims configuration-drift reconciliation.
 
-## Delivery gate (issue #2)
+## Installation acceptance
 
-An installer build passes only when a clean run in a VM reaches
-stage 6 with `doctor` green and the manifest complete. No partial
-success: stages 0–5 either all complete or the run is a failure
-with the disk left re-runnable.
+A built image is not accepted from a successful render or ISO build alone.
+Acceptance requires clean runs in disposable UEFI and legacy-BIOS VMs, a
+successful boot of the installed system, a package set matching the pinned
+resolver, correct cleanup after success and failure, and a complete written-
+path manifest. Until then, the image profile remains provisional and must not
+be treated as a safe way to install a personal computer or homelab server.

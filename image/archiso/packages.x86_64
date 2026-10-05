@@ -1,0 +1,28 @@
+# Packages for the live installer environment only.
+# Installed-target packages come from HorneroOS/hornero's edition resolver.
+arch-install-scripts
+archiso
+btrfs-progs
+calamares
+cryptsetup
+dosfstools
+e2fsprogs
+efibootmgr
+grub
+lvm2
+networkmanager
+network-manager-applet
+ntfs-3g
+os-prober
+parted
+python-yaml
+sddm
+sudo
+systemd-sysvcompat
+xf86-video-fbdev
+xf86-video-vesa
+xfce4
+xfce4-goodies
+xfce4-terminal
+xorg-server
+zenity

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install HorneroOS
+Comment=Install HorneroOS on this computer
+Exec=/usr/local/bin/hornero-installer-start
+Icon=hornero-installer
+Terminal=false
+X-GNOME-Autostart-enabled=true

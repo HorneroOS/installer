@@ -1,4 +1,4 @@
-# installer
+# HorneroOS installer
 
 Installer and installation workflows for Hornero OS.
 
@@ -8,34 +8,48 @@ This repository owns the **program and workflow that installs Hornero OS**:
 disk partitioning, filesystems, bootloader configuration, user creation,
 locale/timezone, hardware detection and package/profile selection.
 
-It is deliberately separate from bootable image generation (a future `iso`
-repository, not created yet):
+It is deliberately separate from the final image-build service. There is no
+`HorneroOS/iso` repository yet, so a provisional Archiso profile lives here
+until that ownership boundary is established:
 
 - `installer` = the program/workflow that installs Hornero.
-- `iso` = the bootable delivery medium / image generation.
+- `image/archiso` = the provisional bootable delivery medium / image generation.
 
 ## Implementation status
 
-The installer implementation is **not decided yet**. Candidates include
-integrating with archinstall or Calamares, or building a custom installer —
-no choice has been made, and this repository must not be read as locking in
-any of them.
+The first graphical implementation uses **Calamares**. It is explicitly
+provisional until the official HorneroOS installer is ready. Its intended path
+is a booted live image, a human-reviewed disk layout and a Calamares net-install
+into the selected target. No ISO has completed installation acceptance yet.
+Never run preview media against a system that contains data you have not
+backed up.
 
 The canonical edition and package composition model lives in
 [`HorneroOS/hornero`'s `editions/catalogue.yaml`](https://github.com/HorneroOS/hornero/blob/main/editions/catalogue.yaml).
-It describes Desktop, Server, Agents and Studio, with maturity and compositor
-choices. The installer must consume that product model; it must not define
-editions or maintain parallel package lists. Planned editions are not
-installation options, and experimental compositors must remain clearly marked.
+The installer pins that source revision and asks its resolver for package
+composition. It does not maintain an independent edition catalogue. Only
+installable product compositions are shown; experimental backends are labeled
+and planned editions remain hidden.
 
-Edition composition exists independently of the installer. The catalogue
-resolver in `HorneroOS/hornero` produces machine-readable JSON for consumers.
-Future installer work should pin a catalogue revision and consume that output
-rather than reimplement its inheritance or package selection.
+## Development checks
 
-## Status
+```sh
+python3 -m pip install --user PyYAML jsonschema
+python3 scripts/render-installer-catalogue.py \
+  --cache-dir /tmp/hornero-installer-cache \
+  --output /tmp/hornero-installer/packagechooser.conf
+python3 scripts/check-installer.py
+```
 
-Early scaffolding. No installer code lives here yet.
+The render command verifies the pinned catalogue/resolver hashes and writes
+the package chooser plus a provenance record outside the repository.
+`scripts/build-iso.sh` requires a disposable Arch VM with 40 GiB free for work
+and 12 GiB for output (52 GiB if both share a filesystem), and limits
+compilation/compression to two workers. Building
+packages or images never runs against the host installation.
+
+See [the provisional Calamares guide](docs/calamares-provisional.md) for
+installation limits, recovery notes, image composition and acceptance gates.
 
 ## License
 

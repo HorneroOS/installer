@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="220" viewBox="0 0 760 220">
+  <rect width="760" height="220" rx="28" fill="#17212b"/>
+  <path d="M104 36c-14 32-13 61 5 84 13 16 31 25 53 27-14 23-36 38-67 41-35 3-61-12-77-43 25 4 45-3 59-22 14-18 16-43 5-75 9-5 16-9 22-12z" fill="#d9a46c" transform="translate(26 0)"/>
+  <path d="M81 176c18 10 39 13 63 7-11 19-25 31-43 35-20 4-36-2-48-19 12-3 22-11 28-23z" fill="#9ec5ae" transform="translate(26 0)"/>
+  <text x="238" y="104" fill="#f4f6f8" font-family="sans-serif" font-size="42" font-weight="700">HorneroOS</text>
+  <text x="241" y="148" fill="#b8c4ce" font-family="sans-serif" font-size="19">Calamares · Provisional installer</text>
+  <rect x="570" y="78" width="150" height="48" rx="24" fill="#31564a"/>
+  <text x="645" y="109" text-anchor="middle" fill="#f4f6f8" font-family="sans-serif" font-size="16" font-weight="700">PREVIEW</text>
+</svg>
