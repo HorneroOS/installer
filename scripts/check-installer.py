@@ -85,6 +85,7 @@ def main() -> int:
     assert parsed["bootloader"]["efiBootLoader"] == "grub"
     assert parsed["packages"]["backend"] == "pacman"
     assert parsed["packages"]["update_system"] is False
+    assert parsed["shellprocess-cleanup"]["emergency"] is True
 
     chooser = parsed["packagechooser"]
     compositions = json.loads((modules / "compositions.json").read_text(encoding="utf-8"))
@@ -110,12 +111,17 @@ def main() -> int:
     assert re.fullmatch(r"[0-9]{4}/[0-9]{2}/[0-9]{2}", lock["arch"]["snapshot"])
     assert re.fullmatch(r"[0-9a-f]{64}", lock["calamares"]["sha256"])
     calamares_pkgbuild = (ROOT / "packaging/calamares/PKGBUILD").read_text(encoding="utf-8")
+    assert 'shellprocess_descriptor="$pkgdir/usr/lib/calamares/modules/shellprocess/module.desc"' in calamares_pkgbuild
+    assert "emergency: true" in calamares_pkgbuild
     package_builder = (ROOT / "scripts/build-package-repository.sh").read_text(encoding="utf-8")
     assert "makepkg --nodeps --noconfirm --force --cleanbuild --dir" in package_builder
     assert "--packagelist" not in package_builder, "package builder must compile packages before collecting artifacts"
     assert "makepkg produced no packages" in package_builder
     assert 'pacman -Qp --print-format \'%v\' "$artifact"' in package_builder
     iso_builder = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
+    assert iso_builder.index('work="$work_path"') < iso_builder.index('profile="$work/profile"')
+    assert iso_builder.index('output="$output_path"') < iso_builder.index('profile="$work/profile"')
+    assert 's|@ARCH_SNAPSHOT@|$snapshot|g' in iso_builder
     assert 'mksquashfs "$target"' in iso_builder and '-processors "$jobs"' in iso_builder
     assert "54525952" in iso_builder, "shared build/output filesystems must reserve 52 GiB"
     assert 'image_file.read(4 * 1024 * 1024)' in iso_builder, "ISO hashing must stream bounded chunks"
@@ -165,6 +171,12 @@ def main() -> int:
     live_packages = set(live_entries)
     assert {"calamares", "sddm", "networkmanager", "xfce4"} <= live_packages
     assert (archiso / "airootfs/etc/sudoers.d/hornero-live").is_file()
+    sudoers = (archiso / "airootfs/etc/sudoers.d/hornero-live").read_text(encoding="utf-8")
+    assert 'Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"' in sudoers
+    assert 'NOPASSWD: /usr/bin/calamares ""' in sudoers
+    launcher = (archiso / "airootfs/usr/local/bin/hornero-installer-start").read_text(encoding="utf-8")
+    desktop_entry = (CALAMARES / "hornero-installer.desktop").read_text(encoding="utf-8")
+    assert "sudo -E" not in launcher + desktop_entry
     assert (archiso / "airootfs/etc/sysusers.d/hornero-live.conf").is_file()
     assert (archiso / "airootfs/etc/sddm.conf.d/10-hornero-live.conf").is_file()
     target_repo = (ROOT / "image/calamares/hornero-installer-repo.conf").read_text(encoding="utf-8")

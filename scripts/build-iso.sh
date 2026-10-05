@@ -15,12 +15,17 @@ while (($#)); do
   esac
 done
 [[ -n "$work" && -n "$output" ]] || { usage; exit 2; }
+for path in "$work" "$output"; do
+  [[ ! -e "$path" && ! -L "$path" ]] || { echo "Refusing to reuse or overwrite path: $path" >&2; exit 1; }
+done
 work_path=$(realpath -m -- "$work")
 output_path=$(realpath -m -- "$output")
 [[ "$work_path" != "$output_path" && "$work_path" != "$output_path"/* && "$output_path" != "$work_path"/* ]] || {
   echo 'Work and output paths must be separate, non-nested directories.' >&2
   exit 1
 }
+work="$work_path"
+output="$output_path"
 [[ "$(systemd-detect-virt --vm 2>/dev/null || true)" != none ]] || {
   echo 'ISO builds are allowed only inside a disposable VM, never on the host installation.' >&2
   exit 1
@@ -30,9 +35,6 @@ jobs=${VJOBS:-2}
 [[ "$jobs" =~ ^[1-2]$ ]] || { echo 'VJOBS must be 1 or 2.' >&2; exit 1; }
 for tool in pacstrap mkinitcpio mkarchiso mksquashfs repo-add makepkg git python3; do
   command -v "$tool" >/dev/null || { echo "Missing build tool: $tool" >&2; exit 1; }
-done
-for path in "$work" "$output"; do
-  [[ ! -e "$path" && ! -L "$path" ]] || { echo "Refusing to reuse or overwrite path: $path" >&2; exit 1; }
 done
 mkdir -p "$work" "$output"
 available_kib=$(df -Pk "$work" | awk 'NR == 2 { print $4 }')
@@ -93,8 +95,8 @@ PY
 )
 iso_month=$(date -d "$snapshot" +%Y.%m)
 iso_label_suffix=$(date -d "$snapshot" +%y%m)
-sed -i "s/@ARCH_SNAPSHOT@/$snapshot/g" "$profile/pacman.conf"
-sed -i "s/@ARCH_SNAPSHOT@/$snapshot/g" \
+sed -i "s|@ARCH_SNAPSHOT@|$snapshot|g" "$profile/pacman.conf"
+sed -i "s|@ARCH_SNAPSHOT@|$snapshot|g" \
   "$profile/airootfs/etc/pacman.d/hornero-installer-mirrorlist.conf"
 sed -i "s/@ISOYYMM@/$iso_label_suffix/g; s/@ISOVERSION@/$iso_month/g" "$profile/profiledef.sh"
 cat > "$work/pacman.conf" <<EOF

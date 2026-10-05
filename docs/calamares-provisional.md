@@ -41,9 +41,10 @@ screenshot; the media lock records the capture's website commit and hashes.
   Planned. A graphical live installer can eventually install a headless Server
   target without putting the live desktop on that target.
 - The image build assembles a temporary local package repository from
-  commit-pinned AUR recipes. The intended flow bind-mounts that repository into
-  the target only during package installation; a checked cleanup step removes
-  its pacman include and restores ordinary Arch mirrors before unmounting.
+  commit-pinned AUR recipes. The installer bind-mounts that repository into the
+  target only during package installation. An emergency-capable cleanup step
+  removes repository configuration after package installation succeeds or
+  fails; VM acceptance still has to verify both paths.
 
 ## Current limits
 

@@ -2,7 +2,7 @@
 Name=Install HorneroOS (Provisional)
 GenericName=System Installer
 Comment=Install a catalogue-defined HorneroOS edition
-Exec=sudo -E /usr/bin/calamares
+Exec=sudo /usr/bin/calamares
 Icon=hornero-installer
 Terminal=false
 Type=Application

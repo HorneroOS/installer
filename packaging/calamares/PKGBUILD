@@ -51,6 +51,16 @@ build() {
 
 package() {
   DESTDIR="$pkgdir" cmake --install build
+
+  # Calamares normally skips later jobs after a critical package failure.
+  # Mark only Hornero's target repo cleanup job as emergency-capable so the
+  # temporary repository config is removed on both success and failure.
+  local shellprocess_descriptor="$pkgdir/usr/lib/calamares/modules/shellprocess/module.desc"
+  [[ -f "$shellprocess_descriptor" ]]
+  if ! grep -qx 'emergency: true' "$shellprocess_descriptor"; then
+    printf '\nemergency: true\n' >> "$shellprocess_descriptor"
+  fi
+
   install -d "$pkgdir/etc/calamares"
   install -Dm644 "$startdir/../../image/calamares/settings.conf" "$pkgdir/etc/calamares/settings.conf"
   cp -a "$startdir/../../image/calamares/modules" "$pkgdir/etc/calamares/"

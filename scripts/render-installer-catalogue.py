@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
+import stat
 import subprocess
 import tempfile
 import urllib.request
@@ -39,6 +41,20 @@ def verify_product_source(root: Path, lock: dict) -> None:
             )
 
 
+def prepare_private_cache(path: Path) -> Path:
+    """Create or validate a user-owned, private product-source cache."""
+    path.mkdir(parents=True, exist_ok=True, mode=0o700)
+    metadata = path.lstat()
+    if not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.getuid():
+        raise ValueError(f"cache directory must be a user-owned directory: {path}")
+    if stat.S_IMODE(metadata.st_mode) & 0o077:
+        raise ValueError(f"cache directory must not be accessible by other users: {path}")
+    parent = path.parent.stat()
+    if stat.S_IMODE(parent.st_mode) & 0o022 and not stat.S_IMODE(parent.st_mode) & stat.S_ISVTX:
+        raise ValueError(f"cache parent must not be writable by other users: {path.parent}")
+    return path
+
+
 def load_product_root(lock: dict, source: Path | None, cache_dir: Path) -> Path:
     if source:
         root = source.resolve()
@@ -47,6 +63,14 @@ def load_product_root(lock: dict, source: Path | None, cache_dir: Path) -> Path:
     url = lock["product"]["repository"].removesuffix(".git")
     revision = lock["product"]["revision"]
     archive_url = f"{url}/archive/{revision}.tar.gz"
+    private_cache = prepare_private_cache(cache_dir)
+    cache = private_cache / "product" / revision
+    if cache.is_symlink():
+        raise ValueError(f"cached product source must not be a symlink: {cache}")
+    if cache.exists():
+        verify_product_source(cache, lock)
+        return cache
+    cache.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     with tempfile.TemporaryDirectory(prefix="hornero-installer-product-") as temp:
         archive = Path(temp) / "hornero.tar.gz"
         urllib.request.urlretrieve(archive_url, archive)
@@ -54,10 +78,7 @@ def load_product_root(lock: dict, source: Path | None, cache_dir: Path) -> Path:
         unpacked.mkdir()
         subprocess.run(["tar", "-xzf", str(archive), "-C", str(unpacked), "--strip-components=1"], check=True)
         verify_product_source(unpacked, lock)
-        cache = cache_dir / "product" / revision
-        cache.parent.mkdir(parents=True, exist_ok=True)
-        if not cache.exists():
-            shutil.copytree(unpacked, cache)
+        shutil.copytree(unpacked, cache)
         return cache
 
 
@@ -136,7 +157,7 @@ def main() -> int:
     parser.add_argument("--cache-dir", type=Path, default=Path.home() / ".cache" / "hornero-installer")
     args = parser.parse_args()
     lock = yaml.safe_load(LOCK_PATH.read_text(encoding="utf-8"))
-    root = load_product_root(lock, args.product_source, args.cache_dir.expanduser().resolve())
+    root = load_product_root(lock, args.product_source, args.cache_dir.expanduser().absolute())
     options = choices(root)
     defaults = [option["id"] for option in options if option["isDefault"]]
     if len(defaults) != 1:

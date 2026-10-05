@@ -36,7 +36,7 @@ and planned editions remain hidden.
 ```sh
 python3 -m pip install --user PyYAML jsonschema
 python3 scripts/render-installer-catalogue.py \
-  --cache-dir /tmp/hornero-installer-cache \
+  --cache-dir "$HOME/.cache/hornero-installer" \
   --output /tmp/hornero-installer/packagechooser.conf
 python3 scripts/check-installer.py
 ```

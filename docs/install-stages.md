@@ -19,9 +19,10 @@ profile has not yet passed a full ISO and VM installation run.
    A module failure means the system is not installed.
 4. **Packages and repository cleanup** — `packages` installs the selected
    resolver composition, then `shellprocess@cleanup` removes the temporary
-   package repository configuration and restores Arch mirrors. A package
-   failure can leave a partial target; VM acceptance must verify cleanup and
-   recovery behavior on both success and failure.
+   package repository configuration and restores Arch mirrors. Calamares marks
+   this cleanup job as emergency-capable, so it is scheduled after a package
+   failure as well. The partial target remains incomplete; VM acceptance must
+   verify cleanup and recovery behavior on both success and failure.
 5. **User and services** — `users` creates the named account and
    `services-systemd` enables edition services. Do not claim completion if
    either stage fails.

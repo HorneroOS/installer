@@ -1,1 +1,2 @@
-hornero-live ALL=(root) NOPASSWD: /usr/bin/calamares
+Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"
+hornero-live ALL=(root) NOPASSWD: /usr/bin/calamares ""
