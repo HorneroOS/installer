@@ -124,6 +124,13 @@ def main() -> int:
     profile_renderer = (ROOT / "scripts/render-installer-catalogue.py").read_text(encoding="utf-8")
     assert "system-profile.json" in profile_renderer and "/usr/lib/hornero/system-profile.json" in profile_renderer
     iso_builder = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
+    assert 'python3 "$product/scripts/resolve-edition.py"' not in iso_builder, (
+        "the product resolver must only run after the catalogue renderer verifies its locked hash"
+    )
+    assert iso_builder.index('render-installer-catalogue.py') < iso_builder.index('pacstrap -C ')
+    assert "base_packages+=(python)" in iso_builder, (
+        "the target needs Python before package selection for emergency cleanup"
+    )
     assert iso_builder.index('work="$work_path"') < iso_builder.index('profile="$work/profile"')
     assert iso_builder.index('output="$output_path"') < iso_builder.index('profile="$work/profile"')
     assert iso_builder.index('product="$work/product"') < iso_builder.index('export HORNEROS_PRODUCT_SOURCE="$product"')

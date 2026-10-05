@@ -82,7 +82,6 @@ PY
   curl --fail --location --silent --show-error "$url/archive/$revision.tar.gz" -o "$work/product.tar.gz"
   tar -xzf "$work/product.tar.gz" --strip-components=1 -C "$product"
 fi
-python3 "$product/scripts/resolve-edition.py" desktop --json >/dev/null
 python3 "$ROOT/scripts/render-installer-catalogue.py" \
   --product-source "$product" \
   --cache-dir "$work/cache" \
@@ -154,6 +153,9 @@ for package in yaml.safe_load(open(sys.argv[1], encoding="utf-8"))["base"]["pack
     print(package)
 PY
 )
+# Emergency cleanup runs in the installed target even if package selection
+# fails before Calamares can install the full Desktop package set.
+base_packages+=(python)
 pacstrap -C "$work/target-pacman.conf" -c -M "$target" "${base_packages[@]}"
 install -Dm644 "$profile/airootfs/etc/pacman.conf" "$target/etc/pacman.conf"
 install -Dm644 "$profile/airootfs/etc/pacman.d/hornero-installer-mirrorlist.conf" "$target/etc/pacman.d/hornero-installer-mirrorlist.conf"
