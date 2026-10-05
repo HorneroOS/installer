@@ -204,9 +204,18 @@ def main() -> int:
         "xfce4",
     } <= live_packages
     assert "uefi.systemd-boot" in profile_definition and "bios.syslinux" in profile_definition
+    assert profile_definition.index("bios.syslinux") < profile_definition.index("uefi.systemd-boot"), (
+        "Archiso requires the BIOS El Torito entry before the UEFI entry"
+    )
     assert (archiso / "efiboot/loader/loader.conf").is_file()
     assert (archiso / "efiboot/loader/entries/01-horneroos.conf").is_file()
     assert (archiso / "syslinux/syslinux.cfg").is_file()
+    initcpio_config = (
+        archiso / "airootfs/etc/mkinitcpio.conf.d/archiso.conf"
+    ).read_text(encoding="utf-8")
+    assert "archiso_loop_mnt" in initcpio_config and " archiso " in initcpio_config, (
+        "the live initramfs must include the Archiso mount hooks"
+    )
     assert (archiso / "airootfs/etc/sudoers.d/hornero-live").is_file()
     sudoers = (archiso / "airootfs/etc/sudoers.d/hornero-live").read_text(encoding="utf-8")
     assert 'Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"' in sudoers
