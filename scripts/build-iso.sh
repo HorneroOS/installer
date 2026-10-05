@@ -33,7 +33,7 @@ output="$output_path"
 [[ $(id -u) -eq 0 ]] || { echo 'Run mkarchiso from root inside the disposable build VM.' >&2; exit 1; }
 jobs=${VJOBS:-2}
 [[ "$jobs" =~ ^[1-2]$ ]] || { echo 'VJOBS must be 1 or 2.' >&2; exit 1; }
-for tool in pacstrap mkinitcpio mkarchiso mksquashfs repo-add makepkg git python3; do
+for tool in pacstrap mkinitcpio mkarchiso mksquashfs repo-add makepkg git python3 xorriso; do
   command -v "$tool" >/dev/null || { echo "Missing build tool: $tool" >&2; exit 1; }
 done
 mkdir -p "$work" "$output"
@@ -59,6 +59,8 @@ profile="$work/profile"
 product="$work/product"
 package_work="$work/package-work"
 repo="$work/local-repo"
+arch=$(sed -n 's/^arch="\([A-Za-z0-9_]*\)"$/\1/p' "$ROOT/image/archiso/profiledef.sh")
+[[ -n "$arch" ]] || { echo 'Could not determine the ISO architecture from profiledef.sh.' >&2; exit 1; }
 export HORNEROS_PRODUCT_SOURCE="$product"
 mkdir -p "$profile" "$product"
 cp -a "$ROOT/image/archiso/." "$profile/"
@@ -168,7 +170,7 @@ install -Dm644 "$ROOT/image/calamares/hornero-installer-repo.conf" \
   "$target/etc/pacman.d/hornero-installer.conf"
 install -Dm755 "$ROOT/image/calamares/cleanup-package-source.py" "$target/usr/lib/hornero-installer/cleanup-package-source.py"
 install -d "$target/usr/share/hornero-installer/repo"
-mksquashfs "$target" "$profile/airootfs/usr/share/hornero-installer/base.sqfs" \
+mksquashfs "$target" "$work/base.sqfs" \
   -noappend -comp zstd -Xcompression-level 8 -processors "$jobs"
 
 repo_config="$work/hornero-installer.conf"
@@ -184,6 +186,14 @@ sed -i "s|pacman_conf=\"pacman.conf\"|pacman_conf=\"$work/archiso-pacman.conf\"|
 mkarchiso -v -w "$work/archiso-work" -o "$output" "$profile"
 iso=$(find "$output" -maxdepth 1 -type f -name '*.iso' -print -quit)
 [[ -n "$iso" ]] || { echo 'mkarchiso completed without producing an ISO.' >&2; exit 1; }
+# Keep the installer payload on ISO9660 rather than inside the live airootfs.
+# Calamares loop-mounts this SquashFS image; nesting its loop device under the
+# loop-mounted Archiso airootfs is rejected by the Linux loop driver.
+enriched_iso="$output/.horneroos-with-base.iso"
+xorriso -indev "$iso" -outdev "$enriched_iso" \
+  -map "$work/base.sqfs" "/hornero/$arch/base.sqfs" \
+  -boot_image any replay -commit
+mv -- "$enriched_iso" "$iso"
 sha256sum "$iso" > "$iso.sha256"
 python3 - "$ROOT/installer.lock.yaml" "$profile/calamares/modules/compositions.json" "$iso" <<'PY'
 import hashlib

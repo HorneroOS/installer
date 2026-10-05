@@ -45,6 +45,10 @@ screenshot; the media lock records the capture's website commit and hashes.
 - The installer creates a named user with a password and `wheel`-based sudo.
   It does not create a shared default password, enable automatic login, or set
   a root password.
+- Calamares runs with detailed local logging. After its window closes, the live
+  session copies the log to `/var/log/hornero-installer/session.log`, readable
+  by the live account; the live user receives no general root shell or access
+  to other root-owned files.
 - Desktop/Hyprland is the default install choice. Niri is explicitly marked
   Experimental while its product maturity remains experimental.
 - Server, Agents and Studio do not appear while their catalogue entries remain
@@ -58,8 +62,14 @@ screenshot; the media lock records the capture's website commit and hashes.
 
 ## Current limits
 
-The config and build scripts have not yet completed a full image build or
-destructive-disk acceptance in disposable UEFI and legacy-BIOS VMs. The host
+The live session and Calamares flow have been exercised in a disposable UEFI
+VM. The first installation attempt exposed a nested loop-device failure:
+Calamares mounts its SquashFS source with `loop`, and Linux cannot create that
+loop device when the source itself is inside Archiso's loop-mounted live
+SquashFS. The build now places `base.sqfs` as a separate file on the ISO
+filesystem and points `unpackfs` at that path. The corrected image has been
+built and its contents verified; the full install and first-boot acceptance
+remain in progress. Legacy-BIOS acceptance has not run yet. The host
 development machine is deliberately not used for ISO builds or disk tests.
 Do not use this preview as the sole copy of important data or as an unattended
 production deployment. Release signing and artifact publication remain an

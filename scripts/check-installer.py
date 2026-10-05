@@ -226,7 +226,7 @@ def main() -> int:
     } <= live_packages
     unpackfs = load_yaml(config_root / "modules/unpackfs.conf")
     assert unpackfs["unpack"] and unpackfs["unpack"][0]["sourcefs"] == "squashfs"
-    assert "/usr/share/hornero-installer/base.sqfs" == unpackfs["unpack"][0]["source"]
+    assert "/run/archiso/bootmnt/hornero/x86_64/base.sqfs" == unpackfs["unpack"][0]["source"]
     assert not {"xfce4", "xfce4-goodies"} & live_packages, (
         "live image packages must name XFCE components explicitly to avoid prompts"
     )
@@ -247,17 +247,32 @@ def main() -> int:
         hook in initcpio_config
         for hook in ("archiso_pxe_common", "archiso_pxe_nbd", "archiso_pxe_http", "archiso_pxe_nfs")
     ), "PXE hooks require extra clients that are not part of the local installer media"
+    build_script = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
+    assert 'mksquashfs "$target" "$work/base.sqfs"' in build_script
+    assert 'arch=$(sed -n' in build_script and 'profiledef.sh' in build_script
+    assert '"/hornero/$arch/base.sqfs"' in build_script
+    assert "-boot_image any replay" in build_script
     assert (archiso / "airootfs/etc/sudoers.d/hornero-live").is_file()
     sudoers = (archiso / "airootfs/etc/sudoers.d/hornero-live").read_text(encoding="utf-8")
     assert 'Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"' in sudoers
-    assert 'NOPASSWD: /usr/bin/calamares ""' in sudoers
+    assert 'NOPASSWD: /usr/local/bin/hornero-installer-run ""' in sudoers
     launcher = (archiso / "airootfs/usr/local/bin/hornero-installer-start").read_text(encoding="utf-8")
     desktop_entry = (CALAMARES / "hornero-installer.desktop").read_text(encoding="utf-8")
+    runner = (archiso / "airootfs/usr/local/bin/hornero-installer-run").read_text(encoding="utf-8")
     assert "sudo -E" not in launcher + desktop_entry
+    assert "sudo /usr/local/bin/hornero-installer-run" in launcher
+    assert "sudo /usr/local/bin/hornero-installer-run" in desktop_entry
+    assert "/usr/bin/calamares -D6" in runner
+    assert "/root/.cache/calamares/session.log" in runner
+    assert "/var/log/hornero-installer/session.log" in runner
+    assert "install -d -m 0750 -o root -g hornero-live" in runner
+    assert '["/usr/local/bin/hornero-installer-run"]="0:0:755"' in profile_definition
+    assert "exit \"$installer_status\"" in runner
     live_user = (archiso / "airootfs/etc/sysusers.d/hornero-live.conf").read_text(encoding="utf-8")
     assert live_user.startswith("u hornero-live ") and "\nd " not in live_user
     live_home = (archiso / "airootfs/etc/tmpfiles.d/hornero-live.conf").read_text(encoding="utf-8")
     assert "d /home/hornero-live 0750 hornero-live hornero-live -" in live_home
+    assert "d /var/log/hornero-installer 0750 root hornero-live -" in live_home
     assert (archiso / "airootfs/etc/sddm.conf.d/10-hornero-live.conf").is_file()
     target_repo = (ROOT / "image/calamares/hornero-installer-repo.conf").read_text(encoding="utf-8")
     assert "file:///usr/share/hornero-installer/repo" in target_repo

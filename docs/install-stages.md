@@ -2,8 +2,8 @@
 
 The provisional installer uses Calamares. This map describes the modules in
 `image/calamares/settings.conf` and the data each stage is expected to own. It
-is not a claim that every recovery and preflight behavior is complete: this
-profile has not yet passed a full ISO and VM installation run.
+is not a claim that every recovery and preflight behavior is complete: full
+UEFI and legacy-BIOS installation acceptance is still in progress.
 
 ## Calamares flow
 
@@ -11,9 +11,10 @@ profile has not yet passed a full ISO and VM installation run.
    filesystems and encryption, then mount the target. No operation is
    preselected. Confirming a partition operation can erase data; the installer
    cannot roll back a disk operation.
-2. **Base system** — `unpackfs` unpacks the small Arch base into the target
-   root. If it fails, stop and retain Calamares logs; the target may be
-   incomplete.
+2. **Base system** — `unpackfs` mounts the base SquashFS stored at the root of
+   the ISO filesystem and unpacks it into the target root. Keeping this source
+   outside Archiso's live SquashFS avoids an unsupported nested loop mount. If
+   it fails, stop and retain Calamares logs; the target may be incomplete.
 3. **Machine and locale** — `machineid`, `locale`, `keyboard`, `localecfg` and
    `fstab` write the machine identity, locale, input and mount configuration.
    A module failure means the system is not installed.
@@ -37,6 +38,12 @@ The Welcome, Locale, Keyboard, Partition, Users, Edition and Summary pages are
 shown before execution. The Welcome page warns about network availability, but
 the profile does not yet have a separate automated hardware, power or storage
 preflight stage.
+
+Calamares runs through a fixed root-owned launcher with detailed local logging.
+When the installer exits, the launcher copies the session log to
+`/var/log/hornero-installer/session.log`, readable by the live account. This
+makes failed pre-installation stages diagnosable without widening the live
+user's sudo permissions. The log stays local and is not uploaded automatically.
 
 ## Edition source of truth
 
