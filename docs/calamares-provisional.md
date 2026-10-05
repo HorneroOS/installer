@@ -1,10 +1,11 @@
 # Provisional Calamares installer
 
-HorneroOS uses Calamares as its first graphical installer implementation.
-This is a provisional installer: the official installer experience may replace
-it after the editions, storage policies and recovery workflows mature. The
-Calamares framework and its configuration are packaged separately, following
-Calamares deployment guidance.
+HorneroOS uses Calamares as a provisional graphical installer implementation
+for current product testing. Panda Foss is leading a custom HorneroOS installer
+intended to become the official path. This implementation is a bridge and is
+expected to give way to Panda's version when it is ready to publish and passes
+acceptance. The Calamares framework and its configuration are packaged
+separately, following Calamares deployment guidance.
 
 The current image profile is a development preview; no certified ISO is
 available yet. It is configured to boot a small Xfce live session on UEFI or

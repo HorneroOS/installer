@@ -18,11 +18,13 @@ until that ownership boundary is established:
 ## Implementation status
 
 The first graphical implementation uses **Calamares**. It is explicitly
-provisional until the official HorneroOS installer is ready. Its intended path
-is a booted live image, a human-reviewed disk layout and a Calamares net-install
-into the selected target. No ISO has completed installation acceptance yet.
-Never run preview media against a system that contains data you have not
-backed up.
+provisional: Panda Foss is leading a custom HorneroOS installer intended to
+become the official path. This Calamares implementation bridges current
+product testing and is expected to give way to Panda's version when it is ready
+to publish and passes acceptance. Its intended path is a booted live image, a
+human-reviewed disk layout and a Calamares net-install into the selected target.
+No ISO has completed installation acceptance yet. Never run preview media
+against a system that contains data you have not backed up.
 
 The canonical edition and package composition model lives in
 [`HorneroOS/hornero`'s `editions/catalogue.yaml`](https://github.com/HorneroOS/hornero/blob/main/editions/catalogue.yaml).
