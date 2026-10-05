@@ -216,6 +216,10 @@ def main() -> int:
     assert "archiso_loop_mnt" in initcpio_config and " archiso " in initcpio_config, (
         "the live initramfs must include the Archiso mount hooks"
     )
+    assert not any(
+        hook in initcpio_config
+        for hook in ("archiso_pxe_common", "archiso_pxe_nbd", "archiso_pxe_http", "archiso_pxe_nfs")
+    ), "PXE hooks require extra clients that are not part of the local installer media"
     assert (archiso / "airootfs/etc/sudoers.d/hornero-live").is_file()
     sudoers = (archiso / "airootfs/etc/sudoers.d/hornero-live").read_text(encoding="utf-8")
     assert 'Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"' in sudoers
