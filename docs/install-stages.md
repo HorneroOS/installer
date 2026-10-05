@@ -7,15 +7,30 @@ profile has not yet passed a full ISO and VM installation run.
 
 ## Calamares flow
 
-| # | Calamares modules | Purpose | Target state written | Failure boundary |
-| --- | --- | --- | --- | --- |
-| 1 | `partition`, `mount` | Review a disk layout, filesystems and encryption; mount the target. No operation is preselected. | Partition table, filesystems and temporary mounts. | Partitioning can erase data once confirmed; the installer cannot roll back a disk operation. |
-| 2 | `unpackfs` | Unpack the small Arch base system. | Target root filesystem. | Stop and retain Calamares logs; the target may be incomplete. |
-| 3 | `machineid`, `locale`, `keyboard`, `localecfg`, `fstab` | Create machine identity and write locale, input and mount configuration. | Target `/etc`, machine-id and fstab. | Stop and report the failed module; do not call the system installed. |
-| 4 | `packages`, `shellprocess@cleanup` | Install the selected resolver composition, then remove the temporary package-repository configuration. | Target packages and restored Arch mirror configuration. | A package failure can leave a partial target; installation acceptance must verify cleanup and recovery behavior. |
-| 5 | `users`, `services-systemd` | Create the named account and enable edition services. | Target home and account databases; systemd enablement links. | Do not claim completion if account or service setup fails. |
-| 6 | `initcpiocfg`, `initcpio`, `initramfs`, `bootloader` | Add filesystem/encryption hooks, build initramfs and install GRUB. | Target initramfs, boot files and EFI variables where applicable. | Keep logs and explain firmware or mount requirements; the target may not boot. |
-| 7 | `umount`, `finished` | Unmount the target and show completion. Reboot remains the user's choice. | No new product configuration. | Report unmount errors accurately; never reboot automatically. |
+1. **Disk and filesystems** — `partition`, `mount` review the disk layout,
+   filesystems and encryption, then mount the target. No operation is
+   preselected. Confirming a partition operation can erase data; the installer
+   cannot roll back a disk operation.
+2. **Base system** — `unpackfs` unpacks the small Arch base into the target
+   root. If it fails, stop and retain Calamares logs; the target may be
+   incomplete.
+3. **Machine and locale** — `machineid`, `locale`, `keyboard`, `localecfg` and
+   `fstab` write the machine identity, locale, input and mount configuration.
+   A module failure means the system is not installed.
+4. **Packages and repository cleanup** — `packages` installs the selected
+   resolver composition, then `shellprocess@cleanup` removes the temporary
+   package repository configuration and restores Arch mirrors. A package
+   failure can leave a partial target; VM acceptance must verify cleanup and
+   recovery behavior on both success and failure.
+5. **User and services** — `users` creates the named account and
+   `services-systemd` enables edition services. Do not claim completion if
+   either stage fails.
+6. **Boot files** — `initcpiocfg`, `initcpio`, `initramfs` and `bootloader`
+   configure filesystem/encryption hooks, build initramfs and install GRUB.
+   Firmware or mount failures can leave a target that does not boot.
+7. **Unmount and finish** — `umount`, `finished` unmount the target and show
+   completion. Report unmount errors accurately; reboot remains the user's
+   choice and is never automatic.
 
 The Welcome, Locale, Keyboard, Partition, Users, Edition and Summary pages are
 shown before execution. The Welcome page warns about network availability, but
