@@ -192,7 +192,17 @@ def main() -> int:
     ]
     assert len(live_entries) == len(set(live_entries)), "duplicate Archiso live packages"
     live_packages = set(live_entries)
-    assert {"calamares", "sddm", "networkmanager", "syslinux", "xfce4"} <= live_packages
+    assert {
+        "calamares",
+        "linux",
+        "linux-firmware",
+        "mkinitcpio",
+        "mkinitcpio-archiso",
+        "networkmanager",
+        "sddm",
+        "syslinux",
+        "xfce4",
+    } <= live_packages
     assert "uefi.systemd-boot" in profile_definition and "bios.syslinux" in profile_definition
     assert (archiso / "efiboot/loader/loader.conf").is_file()
     assert (archiso / "efiboot/loader/entries/01-horneroos.conf").is_file()

@@ -10,6 +10,10 @@ e2fsprogs
 efibootmgr
 grub
 lvm2
+linux
+linux-firmware
+mkinitcpio
+mkinitcpio-archiso
 networkmanager
 network-manager-applet
 ntfs-3g
