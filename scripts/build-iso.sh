@@ -59,6 +59,7 @@ profile="$work/profile"
 product="$work/product"
 package_work="$work/package-work"
 repo="$work/local-repo"
+export HORNEROS_PRODUCT_SOURCE="$product"
 mkdir -p "$profile" "$product"
 cp -a "$ROOT/image/archiso/." "$profile/"
 install -Dm644 "$ROOT/image/calamares/hornero-installer-repo.conf" \

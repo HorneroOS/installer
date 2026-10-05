@@ -117,10 +117,16 @@ def main() -> int:
     assert "makepkg --nodeps --noconfirm --force --cleanbuild --dir" in package_builder
     assert "--packagelist" not in package_builder, "package builder must compile packages before collecting artifacts"
     assert "makepkg produced no packages" in package_builder
-    assert 'pacman -Qp --print-format \'%v\' "$artifact"' in package_builder
+    assert 'artifact_info=$(pacman -Qp "$artifact")' in package_builder
+    assert "HORNEROS_PRODUCT_SOURCE" in package_builder
+    assert "profile-packages" in package_builder
+    assert "--profile-packages-dir" in package_builder
+    profile_renderer = (ROOT / "scripts/render-installer-catalogue.py").read_text(encoding="utf-8")
+    assert "system-profile.json" in profile_renderer and "/usr/lib/hornero/system-profile.json" in profile_renderer
     iso_builder = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
     assert iso_builder.index('work="$work_path"') < iso_builder.index('profile="$work/profile"')
     assert iso_builder.index('output="$output_path"') < iso_builder.index('profile="$work/profile"')
+    assert iso_builder.index('product="$work/product"') < iso_builder.index('export HORNEROS_PRODUCT_SOURCE="$product"')
     assert 's|@ARCH_SNAPSHOT@|$snapshot|g' in iso_builder
     assert 'mksquashfs "$target"' in iso_builder and '-processors "$jobs"' in iso_builder
     assert "54525952" in iso_builder, "shared build/output filesystems must reserve 52 GiB"
@@ -151,6 +157,11 @@ def main() -> int:
     }
     assert required_hornero <= set(aur)
     assert all(item.get("packages") for item in compositions["options"])
+    assert all(
+        item["profilePackage"] in item["packages"]
+        and item["profilePackage"].startswith("hornero-profile-")
+        for item in compositions["options"]
+    ), "each installer choice must install its generated profile identity package"
     aur_names = set(aur)
     selected_names = {name for option in compositions["options"] for name in option["packages"]}
     assert selected_names & required_hornero >= {

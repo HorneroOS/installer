@@ -16,6 +16,11 @@ while (($#)); do
   esac
 done
 [[ -n "$work" && -n "$repository" ]] || { usage; exit 2; }
+product_source=${HORNEROS_PRODUCT_SOURCE:-}
+[[ -n "$product_source" && -d "$product_source" ]] || {
+  echo 'Set HORNEROS_PRODUCT_SOURCE to the locked HorneroOS product checkout.' >&2
+  exit 1
+}
 [[ "${HORNEROS_INSTALLER_DISPOSABLE:-}" == 1 ]] || { echo 'Set HORNEROS_INSTALLER_DISPOSABLE=1 only inside a disposable Arch VM or builder.' >&2; exit 1; }
 [[ $(systemd-detect-virt --vm 2>/dev/null) != none ]] || { echo 'Refusing to build AUR recipes on bare metal.' >&2; exit 1; }
 [[ $(id -u) -eq 0 ]] || { echo 'Run the isolated package builder as root inside the disposable VM.' >&2; exit 1; }
@@ -59,7 +64,11 @@ while IFS=$'\t' read -r pkgname revision expected_version; do
   for artifact in "${artifacts[@]}"; do
     [[ -f "$artifact" ]] || { echo "Expected package artifact is missing: $artifact" >&2; exit 1; }
     [[ "$(basename "$artifact")" == *-debug-* ]] && continue
-    artifact_version=$(pacman -Qp --print-format '%v' "$artifact")
+    artifact_info=$(pacman -Qp "$artifact")
+    read -r artifact_package artifact_version <<< "$artifact_info"
+    [[ -n "$artifact_package" && -n "$artifact_version" ]] || {
+      echo "Could not read package metadata from $artifact." >&2; exit 1;
+    }
     [[ "$artifact_version" == "$expected_version" ]] || {
       printf 'Built AUR artifact %s has version %s, expected locked version %s.\n' \
         "$(basename "$artifact")" "$artifact_version" "$expected_version" >&2
@@ -78,6 +87,38 @@ for name, package in lock["aur"]["packages"].items():
     print(f'{name}\t{package["revision"]}\t{package["version"]}')
 PY
 )
+
+# The installer needs the selected edition and compositor to remain
+# introspectable after installation. These metadata packages are generated
+# from the same catalogue/resolver as the package chooser; they do not carry
+# their own package lists.
+profile_packages="$work/profile-packages"
+python3 "$ROOT/scripts/render-installer-catalogue.py" \
+  --product-source "$product_source" \
+  --cache-dir "$work/profile-cache" \
+  --output "$work/profile-package-chooser.conf" \
+  --profile-packages-dir "$profile_packages"
+for recipe in "$profile_packages"/*/PKGBUILD; do
+  [[ -f "$recipe" ]] || { echo 'No installed-profile metadata packages were generated.' >&2; exit 1; }
+  source_dir=${recipe%/PKGBUILD}
+  chown -R builder:builder "$source_dir"
+  runuser -u builder -- env VJOBS="$jobs" MAKEFLAGS="-j$jobs" makepkg --nodeps --noconfirm --force --cleanbuild --dir "$source_dir"
+  mapfile -t artifacts < <(find "$source_dir" -maxdepth 1 -type f -name '*.pkg.tar.*' -print | sort)
+  ((${#artifacts[@]} == 1)) || { echo "Expected one profile artifact from $source_dir." >&2; exit 1; }
+  artifact=${artifacts[0]}
+  expected_package=$(sed -n 's/^pkgname=//p' "$recipe")
+  expected_version=$(sed -n 's/^pkgver=//p' "$recipe")-$(sed -n 's/^pkgrel=//p' "$recipe")
+  artifact_info=$(pacman -Qp "$artifact")
+  read -r artifact_package artifact_version <<< "$artifact_info"
+  [[ "$artifact_package" == "$expected_package" ]] || {
+    echo "Generated profile artifact has an unexpected package name: $artifact" >&2; exit 1;
+  }
+  [[ "$artifact_version" == "$expected_version" ]] || {
+    echo "Generated profile artifact has an unexpected version: $artifact" >&2; exit 1;
+  }
+  install -m644 "$artifact" "$repository/"
+  repo-add --new "$repo_db" "$artifact"
+done
 
 calamares_source="${CALAMARES_SOURCE:-$ROOT}"
 calamares_tree="$work/installer-source"

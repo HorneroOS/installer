@@ -34,7 +34,7 @@ jobs:
         run: python -m pytest tests/test_installer_source_cache.py -q
       - name: Confirm the chooser matches the pinned product resolver
         run: |
-          python scripts/render-installer-catalogue.py --cache-dir "$RUNNER_TEMP/product-cache" --output "$RUNNER_TEMP/generated/packagechooser.conf"
+          python scripts/render-installer-catalogue.py --cache-dir "$RUNNER_TEMP/product-cache" --output "$RUNNER_TEMP/generated/packagechooser.conf" --profile-packages-dir "$RUNNER_TEMP/generated/profile-packages"
           cmp image/calamares/modules/packagechooser.conf "$RUNNER_TEMP/generated/packagechooser.conf"
           cmp image/calamares/modules/compositions.json "$RUNNER_TEMP/generated/compositions.json"
       - name: Check build-script syntax

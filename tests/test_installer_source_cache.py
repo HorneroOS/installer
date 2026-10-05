@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import os
 import stat
 import tarfile
@@ -97,3 +98,64 @@ def test_cache_refuses_shared_directory_without_changing_its_permissions(
         raise AssertionError("shared cache directory was accepted")
 
     assert stat.S_IMODE(shared.stat().st_mode) == original_mode
+
+
+def test_profile_package_records_resolved_product_without_duplicating_packages(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "profiles"
+    choice = {
+        "id": "desktop-niri",
+        "profilePackage": "hornero-profile-desktop-niri",
+        "profile": {
+            "edition": "desktop",
+            "title": "HorneroOS Desktop",
+            "maturity": "preview",
+            "role": "desktop",
+            "compositor": "niri",
+            "compositorMaturity": "experimental",
+            "packageSets": ["base", "desktop", "compositor:niri"],
+            "packages": ["base", "hornero-shell", "niri"],
+        },
+    }
+
+    revision = "0123456789abcdef0123456789abcdef01234567"
+    renderer.render_profile_package(output, choice, revision)
+
+    package = output / "hornero-profile-desktop-niri"
+    metadata = json.loads((package / "system-profile.json").read_text())
+    assert metadata["apiVersion"] == "hornero.os/v1"
+    assert metadata["kind"] == "InstalledProfile"
+    assert metadata["sourceRevision"] == revision
+    assert metadata["edition"]["compositor"] == "niri"
+    assert metadata["edition"]["packages"] == ["base", "hornero-shell", "niri"]
+
+    build_recipe = (package / "PKGBUILD").read_text()
+    assert "pkgname=hornero-profile-desktop-niri" in build_recipe
+    assert '"$pkgdir/usr/lib/hornero/system-profile.json"' in build_recipe
+
+
+def test_profile_package_rejects_symlink_output_and_non_sha_revision(
+    tmp_path: Path,
+) -> None:
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    output = tmp_path / "profiles-link"
+    output.symlink_to(outside, target_is_directory=True)
+    choice = {
+        "id": "desktop-niri",
+        "profilePackage": "hornero-profile-desktop-niri",
+        "profile": {"edition": "desktop"},
+    }
+    try:
+        renderer.render_profile_package(output, choice, "0" * 40)
+    except ValueError as error:
+        assert "cannot be a symlink" in str(error)
+    else:
+        raise AssertionError("profile package output symlink was accepted")
+    try:
+        renderer.render_profile_package(tmp_path / "profiles", choice, "bad-revision")
+    except ValueError as error:
+        assert "full lowercase Git SHA" in str(error)
+    else:
+        raise AssertionError("non-SHA profile revision was accepted")

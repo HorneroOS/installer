@@ -56,9 +56,13 @@ passed acceptance.
 
 Target files and package state should be traceable to a Calamares stage and the
 repository that owns the content (`config`, `hornero`, `shell`, or `greeter`).
-The profile records composition and package-source provenance, but does not yet
-emit a complete written-path manifest. That manifest remains a release gate
-before the official installer claims configuration-drift reconciliation.
+The image artifact records composition and package-source provenance. The
+selected edition also installs its generated `hornero-profile-*` package, which
+owns `/usr/lib/hornero/system-profile.json`; `horneroctl system info` reads that
+immutable composition record and reports the active session compositor
+separately. The installer does not yet emit a complete written-path manifest.
+That manifest remains a release gate before the official installer claims
+configuration-drift reconciliation.
 
 ## Installation acceptance
 

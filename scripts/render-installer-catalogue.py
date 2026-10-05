@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -113,11 +114,14 @@ def choices(root: Path) -> list[dict]:
                 label = f"{edition['title']} — {backend.title()}"
             else:
                 label = edition["title"]
+            profile_package = f"hornero-profile-{edition_id}-{backend}" if backend else f"hornero-profile-{edition_id}"
             result.append({
                 "id": f"{edition_id}-{backend}" if backend else edition_id,
                 "name": label,
                 "description": description(edition_id, backend, maturity, backend_maturity),
-                "packages": resolved["packages"],
+                "packages": [*resolved["packages"], profile_package],
+                "profilePackage": profile_package,
+                "profile": resolved,
                 "edition": edition_id,
                 "compositor": backend,
                 "maturity": maturity,
@@ -127,6 +131,53 @@ def choices(root: Path) -> list[dict]:
     if not result:
         raise ValueError("the pinned product catalogue exposes no installable compositions")
     return result
+
+
+def render_profile_package(output: Path, choice: dict, revision: str) -> None:
+    """Create a small local package that records the selected installation profile."""
+    if output.is_symlink():
+        raise ValueError(f"profile package output cannot be a symlink: {output}")
+    if output.exists() and not output.is_dir():
+        raise ValueError(f"profile package output must be a directory: {output}")
+    package_name = choice["profilePackage"]
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", package_name):
+        raise ValueError(f"invalid generated profile package name: {package_name!r}")
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise ValueError("profile source revision must be a full lowercase Git SHA")
+    package_version = f"0.0.0.{revision}"
+    directory = output / package_name
+    directory.mkdir(parents=True, exist_ok=True)
+    profile = {
+        "apiVersion": "hornero.os/v1",
+        "kind": "InstalledProfile",
+        "sourceRevision": revision,
+        "profilePackage": package_name,
+        "edition": choice["profile"],
+    }
+    (directory / "system-profile.json").write_text(
+        json.dumps(profile, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    (directory / "PKGBUILD").write_text(
+        "\n".join(
+            [
+                "# Generated from HorneroOS/hornero editions/catalogue.yaml; do not edit.",
+                f"pkgname={package_name}",
+                f"pkgver={package_version}",
+                "pkgrel=1",
+                f"pkgdesc='Installed HorneroOS profile metadata for {package_name}'",
+                "arch=('any')",
+                "license=('CC0-1.0')",
+                "source=('system-profile.json')",
+                "sha256sums=('SKIP')",
+                "package() {",
+                "  install -Dm644 \"$srcdir/system-profile.json\" \\",
+                "    \"$pkgdir/usr/lib/hornero/system-profile.json\"",
+                "}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
 
 
 def description(edition: str, compositor: str | None, maturity: str, backend_maturity: str | None) -> str:
@@ -155,10 +206,22 @@ def main() -> int:
     parser.add_argument("--product-source", type=Path, help="use a local Hornero checkout instead of the pinned source")
     parser.add_argument("--output", type=Path, default=OUTPUT)
     parser.add_argument("--cache-dir", type=Path, default=Path.home() / ".cache" / "hornero-installer")
+    parser.add_argument("--profile-packages-dir", type=Path, help="also render one profile metadata package per install choice")
     args = parser.parse_args()
     lock = yaml.safe_load(LOCK_PATH.read_text(encoding="utf-8"))
     root = load_product_root(lock, args.product_source, args.cache_dir.expanduser().absolute())
     options = choices(root)
+    if args.profile_packages_dir:
+        output_dir = args.profile_packages_dir.expanduser().absolute()
+        if output_dir.is_symlink():
+            raise ValueError(f"profile package output cannot be a symlink: {output_dir}")
+        if output_dir.exists() and not output_dir.is_dir():
+            raise ValueError(f"profile package output must be a directory: {output_dir}")
+        if output_dir.exists() and any(output_dir.iterdir()):
+            raise ValueError(f"profile package output must be empty: {output_dir}")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        for option in options:
+            render_profile_package(output_dir, option, lock["product"]["revision"])
     defaults = [option["id"] for option in options if option["isDefault"]]
     if len(defaults) != 1:
         raise ValueError(f"the catalogue must resolve to one default compositor choice; found {defaults}")

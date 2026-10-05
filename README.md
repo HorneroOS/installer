@@ -37,12 +37,15 @@ and planned editions remain hidden.
 python3 -m pip install --user PyYAML jsonschema
 python3 scripts/render-installer-catalogue.py \
   --cache-dir "$HOME/.cache/hornero-installer" \
-  --output /tmp/hornero-installer/packagechooser.conf
+  --output /tmp/hornero-installer/packagechooser.conf \
+  --profile-packages-dir /tmp/hornero-installer/profile-packages
 python3 scripts/check-installer.py
 ```
 
 The render command verifies the pinned catalogue/resolver hashes and writes
-the package chooser plus a provenance record outside the repository.
+the package chooser, a provenance record, and one metadata-package recipe per
+installable composition outside the repository. Those recipes are built into
+the local install repository by the disposable image builder.
 `scripts/build-iso.sh` requires a disposable Arch VM with 40 GiB free for work
 and 12 GiB for output (52 GiB if both share a filesystem), and limits
 compilation/compression to two workers. Building

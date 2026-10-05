@@ -12,7 +12,16 @@ legacy BIOS, offer a graphical network tray and launch Calamares. Its edition
 choices come from the pinned
 [`HorneroOS/hornero` edition catalogue](https://github.com/HorneroOS/hornero/blob/main/editions/catalogue.yaml)
 and are rendered by `scripts/render-installer-catalogue.py`. The installer does
-not maintain its own package lists. Only compositions whose product maturity
+not maintain its own package lists. Each choice also installs a generated
+`hornero-profile-*` metadata package containing the resolved edition,
+compositor, maturity, package-set identifiers and pinned Hornero source
+revision at `/usr/lib/hornero/system-profile.json`. The metadata package is
+rendered from the same resolver result as the package chooser; it carries no
+independent package list. `horneroctl system info` reads this record and
+separates the installed compositor choice from the compositor active in the
+current session. Installations made outside this installer can report their
+active compositor without claiming an edition that was never recorded.
+Only compositions whose product maturity
 allows installation appear in the choice page; experimental compositor choices
 are labelled as such. Planned editions stay hidden until their system and
 installer path have been validated.
