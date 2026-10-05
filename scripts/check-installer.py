@@ -163,6 +163,7 @@ def main() -> int:
         "ttf-rubik-vf",
     }
     assert required_hornero <= set(aur)
+    assert "libcava" in aur, "the locked shell package requires the pinned libcava AUR runtime"
     assert all(item.get("packages") for item in compositions["options"])
     assert all(
         item["profilePackage"] in item["packages"]

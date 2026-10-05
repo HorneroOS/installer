@@ -36,6 +36,9 @@ aur:
     horneroctl-bin:
       version: 0.2.0_preview14.2-2
       revision: 40264b8d5f4b32535ff1f6b3bc05ec99ee18020b
+    libcava:
+      version: 1.0.0-1
+      revision: 39403443c8208f5d9adaaed7c8347c439efe52cf
     hornero-shell:
       version: 1.2.2-1
       revision: 6512f37219bd19a902621b6e9a1281cff5e36176

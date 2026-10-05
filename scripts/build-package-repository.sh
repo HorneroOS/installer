@@ -35,6 +35,8 @@ mkdir -p "$repository"
 getent passwd builder >/dev/null || useradd --create-home --shell /bin/bash builder
 chown builder:builder "$work"
 repo_db="$repository/hornero-installer.db.tar.gz"
+base_pacman_conf="$pacman_conf"
+dependency_pacman_conf="$pacman_conf"
 aur_repository=$(python3 - "$ROOT/installer.lock.yaml" <<'PY'
 import sys
 import yaml
@@ -57,7 +59,12 @@ while IFS=$'\t' read -r pkgname revision expected_version; do
     exit 1
   }
   mapfile -t build_dependencies < <(printf '%s\n' "$srcinfo" | awk '$1 == "depends" || $1 == "makedepends" || $1 == "checkdepends" || $1 == "depends_x86_64" || $1 == "makedepends_x86_64" || $1 == "checkdepends_x86_64" { dependency = $3; sub(/[<>=].*/, "", dependency); print dependency }' | sort -u)
-  if ((${#build_dependencies[@]})); then pacman --config "$pacman_conf" -S --needed --noconfirm "${build_dependencies[@]}"; fi
+  if ((${#build_dependencies[@]})); then
+    # Refresh the generated package index before resolving a later pinned
+    # recipe against dependencies produced by earlier recipes in the lock.
+    if [[ -f "$repo_db" ]]; then pacman --config "$pacman_conf" -Sy --noconfirm; fi
+    pacman --config "$pacman_conf" -S --needed --noconfirm "${build_dependencies[@]}"
+  fi
   runuser -u builder -- env VJOBS="$jobs" MAKEFLAGS="-j$jobs" makepkg --nodeps --noconfirm --force --cleanbuild --dir "$source_dir"
   mapfile -t artifacts < <(find "$source_dir" -maxdepth 1 -type f -name '*.pkg.tar.*' -print | sort)
   ((${#artifacts[@]})) || { echo "makepkg produced no packages: $pkgname" >&2; exit 1; }
@@ -77,6 +84,20 @@ while IFS=$'\t' read -r pkgname revision expected_version; do
     install -m644 "$artifact" "$repository/"
     pacman --config "$pacman_conf" -U --noconfirm "$artifact"
     repo-add --new "$repo_db" "$artifact"
+    # Subsequent Hornero package builds may depend on an AUR package built
+    # earlier in this same locked sequence. Make that repository visible to
+    # dependency resolution after its first package has created a valid DB.
+    if [[ "$dependency_pacman_conf" == "$base_pacman_conf" && -f "$repo_db" ]]; then
+      dependency_pacman_conf="$work/pacman-with-built-aur.conf"
+      cp "$pacman_conf" "$dependency_pacman_conf"
+      cat >> "$dependency_pacman_conf" <<EOF
+
+[hornero-installer]
+SigLevel = Optional TrustAll
+Server = file://$repository
+EOF
+    fi
+    pacman_conf="$dependency_pacman_conf"
   done
 done < <(python3 - "$ROOT/installer.lock.yaml" <<'PY'
 import sys
