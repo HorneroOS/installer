@@ -20,6 +20,7 @@ ntfs-3g
 os-prober
 parted
 python-yaml
+rsync
 sddm
 syslinux
 sudo

@@ -74,6 +74,8 @@ def main() -> int:
             jsonschema.Draft7Validator(load_yaml(schema_path)).validate(configuration)
     assert parsed["welcome"]["geoip"]["style"] == "none"
     assert parsed["locale"]["geoip"]["style"] == "none"
+    assert parsed["locale"]["region"] == "America"
+    assert parsed["locale"]["zone"] == "Argentina/Buenos_Aires"
     assert "url" not in parsed["welcome"] or not str(parsed["welcome"].get("url", "")).startswith("http://")
     assert parsed["users"]["setRootPassword"] is False
     assert parsed["users"]["displayAutologin"] is False
@@ -120,6 +122,9 @@ def main() -> int:
     assert re.fullmatch(r"[0-9]{4}/[0-9]{2}/[0-9]{2}", lock["arch"]["snapshot"])
     assert re.fullmatch(r"[0-9a-f]{64}", lock["calamares"]["sha256"])
     calamares_pkgbuild = (ROOT / "packaging/calamares/PKGBUILD").read_text(encoding="utf-8")
+    assert re.search(r"^depends=\([^\n]*'rsync'", calamares_pkgbuild, re.MULTILINE), (
+        "the unpackfs module copies the base image through rsync, so Calamares must declare it"
+    )
     assert 'shellprocess_descriptor="$pkgdir/usr/lib/calamares/modules/shellprocess/module.desc"' in calamares_pkgbuild
     assert "emergency: true" in calamares_pkgbuild
     package_builder = (ROOT / "scripts/build-package-repository.sh").read_text(encoding="utf-8")
@@ -208,6 +213,7 @@ def main() -> int:
         "mkinitcpio",
         "mkinitcpio-archiso",
         "networkmanager",
+        "rsync",
         "sddm",
         "syslinux",
         "xfce4-panel",
@@ -218,6 +224,9 @@ def main() -> int:
         "xfdesktop",
         "xfwm4",
     } <= live_packages
+    unpackfs = load_yaml(config_root / "modules/unpackfs.conf")
+    assert unpackfs["unpack"] and unpackfs["unpack"][0]["sourcefs"] == "squashfs"
+    assert "/usr/share/hornero-installer/base.sqfs" == unpackfs["unpack"][0]["source"]
     assert not {"xfce4", "xfce4-goodies"} & live_packages, (
         "live image packages must name XFCE components explicitly to avoid prompts"
     )
