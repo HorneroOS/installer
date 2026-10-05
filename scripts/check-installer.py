@@ -192,7 +192,11 @@ def main() -> int:
     ]
     assert len(live_entries) == len(set(live_entries)), "duplicate Archiso live packages"
     live_packages = set(live_entries)
-    assert {"calamares", "sddm", "networkmanager", "xfce4"} <= live_packages
+    assert {"calamares", "sddm", "networkmanager", "syslinux", "xfce4"} <= live_packages
+    assert "uefi.systemd-boot" in profile_definition and "bios.syslinux" in profile_definition
+    assert (archiso / "efiboot/loader/loader.conf").is_file()
+    assert (archiso / "efiboot/loader/entries/01-horneroos.conf").is_file()
+    assert (archiso / "syslinux/syslinux.cfg").is_file()
     assert (archiso / "airootfs/etc/sudoers.d/hornero-live").is_file()
     sudoers = (archiso / "airootfs/etc/sudoers.d/hornero-live").read_text(encoding="utf-8")
     assert 'Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"' in sudoers

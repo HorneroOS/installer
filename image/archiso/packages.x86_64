@@ -17,6 +17,7 @@ os-prober
 parted
 python-yaml
 sddm
+syslinux
 sudo
 systemd-sysvcompat
 xf86-video-fbdev
