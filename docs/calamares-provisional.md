@@ -1,9 +1,10 @@
 # Provisional Calamares installer
 
-HorneroOS uses Calamares as a provisional graphical installer implementation
-for current product testing. Panda Foss is leading a custom HorneroOS installer
-intended to become the official path. This implementation is a bridge and is
-expected to give way to Panda's version when it is ready to publish and passes
+This repository uses Calamares as a provisional graphical installer
+implementation for current product testing. [Panda Foss](https://github.com/PandaFoss)
+is developing and will own the custom HorneroOS installer intended to become
+the official path. This separate Calamares implementation is a bridge; it
+remains provisional until Panda's version is ready to publish and passes
 acceptance. The Calamares framework and its configuration are packaged
 separately, following Calamares deployment guidance.
 
