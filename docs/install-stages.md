@@ -11,11 +11,25 @@ and every stage must declare its contract row before it ships.
 |---|---|---|---|---|
 | 0 | Preflight | detect hw, map disks | nothing (reads) | abort, report need |
 | 1 | Partition | agree layout, format | parttable, fs | abort, re-runnable |
-| 2 | Base | pacstrap profiles | mounted root | re-run stage 2 |
+| 2 | Base | install base packages | mounted root | re-run stage 2 |
 | 3 | Boot | bootloader, hooks | ESP, entries | retry, never skip |
 | 4 | Identity | user, locale, time | `/etc`, skeleton | re-run stage 4 |
-| 5 | Desktop | package sets | `/usr`, `/etc/xdg` | re-run stage 5 |
+| 5 | Edition | install edition packages | `/usr`, `/etc/xdg` | re-run stage 5 |
 | 6 | Seal | snapshot, doctor | snapshot, state | report only |
+
+## Edition source of truth
+
+Edition identity, package composition, compositor selection and maturity are
+owned by [`HorneroOS/hornero`](https://github.com/HorneroOS/hornero), not by
+this repository. The installer must pin a catalogue revision and consume the
+resolver's machine-readable output. It must not copy package names, inheritance
+rules or maturity labels into installer-specific manifests.
+
+The installer may only offer a composition whose maturity permits installation.
+`planned` is not selectable; `experimental` must be clearly marked and require
+an intentional choice; `preview` and `supported` must retain their published
+status. These rules keep product truth and install UX aligned while editions
+are being validated.
 
 ## Per-file rule
 
