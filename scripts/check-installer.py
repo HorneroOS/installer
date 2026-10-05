@@ -204,7 +204,10 @@ def main() -> int:
     launcher = (archiso / "airootfs/usr/local/bin/hornero-installer-start").read_text(encoding="utf-8")
     desktop_entry = (CALAMARES / "hornero-installer.desktop").read_text(encoding="utf-8")
     assert "sudo -E" not in launcher + desktop_entry
-    assert (archiso / "airootfs/etc/sysusers.d/hornero-live.conf").is_file()
+    live_user = (archiso / "airootfs/etc/sysusers.d/hornero-live.conf").read_text(encoding="utf-8")
+    assert live_user.startswith("u hornero-live ") and "\nd " not in live_user
+    live_home = (archiso / "airootfs/etc/tmpfiles.d/hornero-live.conf").read_text(encoding="utf-8")
+    assert "d /home/hornero-live 0750 hornero-live hornero-live -" in live_home
     assert (archiso / "airootfs/etc/sddm.conf.d/10-hornero-live.conf").is_file()
     target_repo = (ROOT / "image/calamares/hornero-installer-repo.conf").read_text(encoding="utf-8")
     assert "file:///usr/share/hornero-installer/repo" in target_repo
