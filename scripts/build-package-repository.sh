@@ -146,6 +146,17 @@ calamares_tree="$work/installer-source"
 mkdir -p "$calamares_tree/packaging" "$calamares_tree/image"
 cp -a "$calamares_source/packaging/." "$calamares_tree/packaging/"
 cp -a "$calamares_source/image/." "$calamares_tree/image/"
+if [[ -n "${HORNEROS_CALAMARES_CONFIG:-}" ]]; then
+  config_source=$(realpath -- "$HORNEROS_CALAMARES_CONFIG")
+  [[ -f "$config_source/settings.conf" && -d "$config_source/modules" && -d "$config_source/branding" ]] || {
+    echo 'HORNEROS_CALAMARES_CONFIG must contain settings.conf, modules/, and branding/.' >&2
+    exit 1
+  }
+  install -Dm644 "$config_source/settings.conf" "$calamares_tree/image/calamares/settings.conf"
+  rm -rf "$calamares_tree/image/calamares/modules" "$calamares_tree/image/calamares/branding"
+  cp -a "$config_source/modules" "$calamares_tree/image/calamares/modules"
+  cp -a "$config_source/branding" "$calamares_tree/image/calamares/branding"
+fi
 calamares_dir="$calamares_tree/packaging/calamares"
 chown -R builder:builder "$calamares_tree"
 mapfile -t calamares_deps < <(runuser -u builder -- makepkg --printsrcinfo --dir "$calamares_dir" | awk '$1 == "depends" || $1 == "makedepends" || $1 == "checkdepends" { dependency = $3; sub(/[<>=].*/, "", dependency); print dependency }' | sort -u)

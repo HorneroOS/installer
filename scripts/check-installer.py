@@ -119,6 +119,8 @@ def main() -> int:
     assert "makepkg produced no packages" in package_builder
     assert 'artifact_info=$(pacman -Qp "$artifact")' in package_builder
     assert "HORNEROS_PRODUCT_SOURCE" in package_builder
+    assert "HORNEROS_CALAMARES_CONFIG" in package_builder
+    assert '"$config_source/modules" "$calamares_tree/image/calamares/modules"' in package_builder
     assert "profile-packages" in package_builder
     assert "--profile-packages-dir" in package_builder
     profile_renderer = (ROOT / "scripts/render-installer-catalogue.py").read_text(encoding="utf-8")
@@ -127,6 +129,8 @@ def main() -> int:
     assert 'python3 "$product/scripts/resolve-edition.py"' not in iso_builder, (
         "the product resolver must only run after the catalogue renderer verifies its locked hash"
     )
+    assert '"$ROOT/image/calamares/settings.conf" "$profile/calamares/settings.conf"' in iso_builder
+    assert 'export HORNEROS_CALAMARES_CONFIG="$profile/calamares"' in iso_builder
     assert iso_builder.index('render-installer-catalogue.py') < iso_builder.index('pacstrap -C ')
     assert "base_packages+=(python)" in iso_builder, (
         "the target needs Python before package selection for emergency cleanup"

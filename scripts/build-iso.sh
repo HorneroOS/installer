@@ -62,6 +62,10 @@ repo="$work/local-repo"
 export HORNEROS_PRODUCT_SOURCE="$product"
 mkdir -p "$profile" "$product"
 cp -a "$ROOT/image/archiso/." "$profile/"
+install -d "$profile/calamares/modules" "$profile/calamares/branding"
+install -Dm644 "$ROOT/image/calamares/settings.conf" "$profile/calamares/settings.conf"
+cp -a "$ROOT/image/calamares/modules/." "$profile/calamares/modules/"
+cp -a "$ROOT/image/calamares/branding/." "$profile/calamares/branding/"
 install -Dm644 "$ROOT/image/calamares/hornero-installer-repo.conf" \
   "$profile/airootfs/etc/pacman.d/hornero-installer.conf"
 if [[ -n "$product_source" ]]; then
@@ -116,6 +120,7 @@ Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch
 Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch
 EOF
 export PACMAN_CONF="$work/pacman.conf"
+export HORNEROS_CALAMARES_CONFIG="$profile/calamares"
 bash "$ROOT/scripts/build-package-repository.sh" --work "$package_work" --repository "$repo"
 python3 "$ROOT/scripts/check-installer.py" \
   --config-root "$profile/calamares" \
