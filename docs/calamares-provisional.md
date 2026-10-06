@@ -69,19 +69,16 @@ screenshot; the media lock records the capture's website commit and hashes.
 ## Current limits
 
 The live session and Calamares flow have been booted in disposable UEFI and
-legacy-BIOS VMs. Both runs detected their firmware mode and the expected blank
-32 GiB virtual target. The UEFI VM proceeded through user and edition setup,
-created the planned partition layout on its disposable target, and started
-package installation. That run failed before completing installation. A later
-reproduction confirmed that QEMU user networking can reach the Arch server by
-IPv4 but its guest DNS lookup does not return in this host environment; the
-host itself resolves the server. Switching only this disposable VM to QEMU's
-unprivileged `passt` backend allowed the guest to resolve
-`archive.archlinux.org`. Package downloads and a complete installation have
-not yet been verified. The installed system therefore has not booted, and
-package-set parity or successful cleanup after completion remain unverified.
-BIOS validation reached the partition page only. Captures, build
-provenance, and the exact validation boundary are recorded in
+legacy-BIOS VMs. Both detected their firmware mode and a blank virtual target.
+The latest UEFI run used 4 GiB RAM, 2 vCPUs, and a disposable 40 GiB overlay;
+it completed package installation on an encrypted Btrfs root, then failed at
+GRUB installation. The logged cause is that GRUB cryptodisk was not enabled in
+the target's `/etc/default/grub`. The installer source now adds an explicit
+step before GRUB to enable it, but that correction has not yet been tested in a
+rebuilt ISO. The target therefore has not booted, and successful installation,
+package-set parity, and cleanup acceptance remain outstanding. BIOS validation
+reached the partition page only. Captures, build provenance, and the exact
+validation boundary are recorded in
 [provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
 
 The initial installation attempt exposed a nested loop-device failure:
