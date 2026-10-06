@@ -44,6 +44,7 @@ def load_yaml(path: Path) -> dict:
 
 
 def main() -> int:
+    """Validate installer module ordering, config schemas, and safe target edits."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config-root", type=Path, default=CALAMARES, help="Calamares config directory")
     parser.add_argument("--schema-root", type=Path, help="Calamares source src/modules directory")
