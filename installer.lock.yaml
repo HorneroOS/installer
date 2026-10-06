@@ -1,7 +1,7 @@
 apiVersion: hornero.os/installer-lock/v1
 product:
   repository: https://github.com/HorneroOS/hornero.git
-  revision: 6ae758f4a7bcedcb8af45767bcda681e1b0b8a09
+  revision: 7471351cbe26e2a8754fd1bd9c5f4a2b984115ad
   catalogueSha256: 0306aeb011d7e1c0a41548a51699c7e98bea3b63bed38655887d6655054e2815
   resolverSha256: d3cdc8ab238f733fc2713bd488af868eee48c1f02e0ecc65669b12d623fa8adf
 arch:
@@ -15,7 +15,7 @@ calamares:
   sha256: 78784e6018097e4fe74cbd8f1530929626dcecfe303e14383bc8c074feb34eec
 profileMedia:
   repository: https://github.com/HorneroOS/website
-  revision: 391c73211849feebfb1b07d2797da201b19f8441
+  revision: 839578f2360d9f420238c1efe8d2910716db2b66
   desktopPreview:
     source: assets/screenshots/certified/hornero-left.png
     sourceSha256: 7399bf19302ec337a3b43610cbd60a6418dc2c268f76aeb91d2424c3b88d07c4
@@ -31,8 +31,8 @@ aur:
       version: 2.3.0-3
       revision: df5b264003f0d39ba75f42970074ff2465ed527c
     hornero-config:
-      version: 0.3.1-1
-      revision: c9bd94df90e4829b953040f9426be8ded1a0c9b2
+      version: 0.3.2-1
+      revision: e7b14e7f11a51a0988bf5526967f0809a95ad4e0
     horneroctl-bin:
       version: 0.2.0_preview14.2-2
       revision: 40264b8d5f4b32535ff1f6b3bc05ec99ee18020b
@@ -40,8 +40,8 @@ aur:
       version: 1.0.0-1
       revision: 39403443c8208f5d9adaaed7c8347c439efe52cf
     hornero-shell:
-      version: 1.2.2-1
-      revision: 6512f37219bd19a902621b6e9a1281cff5e36176
+      version: 1.2.4-1
+      revision: e894c8e6231e7a6e7e72d56840a52d7c74c1a99c
     hornero-greeter-media-base:
       version: 1.0.0-2
       revision: c0a14c163d1e7ba6ded53fa6a3cf0d05903c3c27
