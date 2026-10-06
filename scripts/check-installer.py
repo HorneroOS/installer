@@ -261,7 +261,11 @@ def main() -> int:
     runner = (archiso / "airootfs/usr/local/bin/hornero-installer-run").read_text(encoding="utf-8")
     assert "sudo -E" not in launcher + desktop_entry
     assert "sudo /usr/local/bin/hornero-installer-run" in launcher
-    assert "sudo /usr/local/bin/hornero-installer-run" in desktop_entry
+    assert "/usr/bin/nm-online --quiet --timeout=45" in launcher
+    assert "/usr/bin/timeout 10 /usr/bin/getent ahostsv4 archive.archlinux.org" in launcher
+    assert launcher.index("nm-online") < launcher.index("getent") < launcher.index("sudo")
+    assert "Exec=/usr/local/bin/hornero-installer-start" in desktop_entry
+    assert "sudo /usr/local/bin/hornero-installer-run" not in desktop_entry
     assert "/usr/bin/calamares -D6" in runner
     assert "/root/.cache/calamares/session.log" in runner
     assert "/var/log/hornero-installer/session.log" in runner
