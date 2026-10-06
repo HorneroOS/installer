@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+set -u
+
+# Calamares runs as root and writes its session log below root's home. Keep a
+# readable local copy for the live user after the window closes. This wrapper
+# accepts no arguments; the live user's sudo rule permits only this fixed job.
+/usr/bin/calamares -D6
+installer_status=$?
+
+log_source=/root/.cache/calamares/session.log
+log_destination=/var/log/hornero-installer/session.log
+if [[ -r "$log_source" ]]; then
+  /usr/bin/install -d -m 0750 -o root -g hornero-live /var/log/hornero-installer || true
+  /usr/bin/install -D -m 0640 -o root -g hornero-live "$log_source" "$log_destination" || true
+fi
+
+exit "$installer_status"

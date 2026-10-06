@@ -1,0 +1,26 @@
+---
+componentName: hornero
+strings:
+  productName: HorneroOS
+  shortProductName: HorneroOS
+  version: Provisional installer
+  shortVersion: Preview
+  bootloaderEntryName: HorneroOS
+  productUrl: https://horneroos.com
+  supportUrl: https://horneroos.com/docs
+  knownIssuesUrl: https://github.com/HorneroOS/installer/issues
+  releaseNotesUrl: https://github.com/HorneroOS/installer/releases
+  donateUrl: ""
+images:
+  productBanner: installer-banner.svg
+  productLogo: hornero.svg
+  productIcon: hornero.svg
+  productWelcome: installer-banner.svg
+slideshow:
+  - screenshots/desktop-hyprland.jpg
+  - screenshots/niri-experimental.svg
+style:
+  SidebarBackground: "#141b24"
+  SidebarText: "#f4f6f8"
+  SidebarTextCurrent: "#141b24"
+  SidebarBackgroundCurrent: "#9ec5ae"

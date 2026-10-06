@@ -1,0 +1,50 @@
+apiVersion: hornero.os/installer-lock/v1
+product:
+  repository: https://github.com/HorneroOS/hornero.git
+  revision: 7471351cbe26e2a8754fd1bd9c5f4a2b984115ad
+  catalogueSha256: 0306aeb011d7e1c0a41548a51699c7e98bea3b63bed38655887d6655054e2815
+  resolverSha256: d3cdc8ab238f733fc2713bd488af868eee48c1f02e0ecc65669b12d623fa8adf
+arch:
+  snapshot: 2026/10/05
+  architecture: x86_64
+calamares:
+  version: 3.4.3
+  repository: https://codeberg.org/Calamares/calamares.git
+  revision: af2eaf829b7c60ae5b69b9fe68f9158dc98d3331
+  archive: https://codeberg.org/Calamares/calamares/archive/v3.4.3.tar.gz
+  sha256: 78784e6018097e4fe74cbd8f1530929626dcecfe303e14383bc8c074feb34eec
+profileMedia:
+  repository: https://github.com/HorneroOS/website
+  revision: 839578f2360d9f420238c1efe8d2910716db2b66
+  desktopPreview:
+    source: assets/screenshots/certified/hornero-left.png
+    sourceSha256: 7399bf19302ec337a3b43610cbd60a6418dc2c268f76aeb91d2424c3b88d07c4
+    packaged: image/calamares/branding/hornero/screenshots/desktop-hyprland.jpg
+    sha256: bb09951ea7573cf6468e4f7e4eb593d7cab6dfda5976cef63eb10856442b6da0
+aur:
+  repository: https://aur.archlinux.org
+  packages:
+    python-materialyoucolor:
+      version: 3.0.2-1
+      revision: 7a148d4abba3db45fc042faa0dfb37d329f6d615
+    ttf-rubik-vf:
+      version: 2.3.0-3
+      revision: df5b264003f0d39ba75f42970074ff2465ed527c
+    hornero-config:
+      version: 0.3.2-1
+      revision: e7b14e7f11a51a0988bf5526967f0809a95ad4e0
+    horneroctl-bin:
+      version: 0.2.0_preview14.2-2
+      revision: 40264b8d5f4b32535ff1f6b3bc05ec99ee18020b
+    libcava:
+      version: 1.0.0-1
+      revision: 39403443c8208f5d9adaaed7c8347c439efe52cf
+    hornero-shell:
+      version: 1.2.4-1
+      revision: e894c8e6231e7a6e7e72d56840a52d7c74c1a99c
+    hornero-greeter-media-base:
+      version: 1.0.0-2
+      revision: c0a14c163d1e7ba6ded53fa6a3cf0d05903c3c27
+    hornero-greeter:
+      version: 1.0.3-5
+      revision: 1b707d9f9d06808e5f9a83423ad8ea07dd103f7f

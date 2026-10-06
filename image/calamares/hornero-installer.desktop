@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Install HorneroOS (Provisional)
+GenericName=System Installer
+Comment=Install a catalogue-defined HorneroOS edition
+Exec=sudo /usr/local/bin/hornero-installer-run
+Icon=hornero-installer
+Terminal=false
+Type=Application
+Categories=System;Settings;
+StartupNotify=true

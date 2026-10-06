@@ -1,0 +1,2 @@
+Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"
+hornero-live ALL=(root) NOPASSWD: /usr/local/bin/hornero-installer-run ""

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! /usr/bin/nm-online --quiet --timeout=45; then
+  /usr/bin/zenity --warning --title='HorneroOS installer' \
+    --text='Connect to the internet before installing. No disk changes have been made.' || true
+  exit 0
+fi
+
+exec /usr/bin/sudo /usr/local/bin/hornero-installer-run
