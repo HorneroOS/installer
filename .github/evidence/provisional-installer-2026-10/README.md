@@ -27,3 +27,15 @@ successful installation, first boot, installed-package parity, cleanup after
 the failed transaction, or suitability for personal hardware. The target was a
 disposable virtual disk. The image remains unsigned and provisional; do not use
 it as the sole installation path for a personal computer or homelab server.
+
+## Follow-up network diagnosis
+
+On 2026-10-06, the same live ISO was booted again in a disposable UEFI VM. The
+guest received an IPv4 address and default route. DNS lookups timed out with
+QEMU user networking (including an explicit guest resolver), while the host
+resolved the same Arch mirror. Switching only this disposable VM to QEMU's
+unprivileged `passt` network backend allowed the guest to resolve
+`archive.archlinux.org` to `49.12.124.107`. This confirms a workaround for the
+VM's DNS path; a successful repository package transaction and installed-system
+boot are still not established. The installer source now checks DNS before
+either launcher path opens Calamares, but the existing ISO predates that guard.

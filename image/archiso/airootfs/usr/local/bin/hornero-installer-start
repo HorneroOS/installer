@@ -7,4 +7,10 @@ if ! /usr/bin/nm-online --quiet --timeout=45; then
   exit 0
 fi
 
+if ! /usr/bin/timeout 10 /usr/bin/getent ahostsv4 archive.archlinux.org >/dev/null; then
+  /usr/bin/zenity --warning --title='HorneroOS installer' \
+    --text='The network is connected, but the Arch package server cannot be resolved. Check your DNS or reconnect to the network, then start the installer again. No disk changes have been made.' || true
+  exit 0
+fi
+
 exec /usr/bin/sudo /usr/local/bin/hornero-installer-run
