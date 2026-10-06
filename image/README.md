@@ -50,8 +50,10 @@ with blank virtual disks. See [the installation test matrix](../docs/calamares-p
 
 The profile configures Xfce for a familiar, low-complexity network setup
 surface and launches Calamares automatically after login. SDDM autologin is
-limited to the intended live session. Its sudo rule permits only
-`/usr/bin/calamares`; it does not grant the live user a general root shell. The
+limited to the intended live session. Its sudo rule permits only the fixed
+`/usr/local/bin/hornero-installer-run` wrapper, which launches
+`/usr/bin/calamares` and copies the installer log; it does not grant the live
+user a general root shell. The
 installed target gets its own SDDM login and Hornero greeter from the Desktop
 composition. Live boot and wizard navigation are evidenced; installation and
 first-boot behavior still need acceptance.

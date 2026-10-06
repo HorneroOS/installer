@@ -63,12 +63,16 @@ screenshot; the media lock records the capture's website commit and hashes.
 
 ## Current limits
 
-The live session and Calamares flow have been booted and navigated through the
-partitioning page in disposable UEFI and legacy-BIOS VMs. Both runs detected
-their firmware mode and the expected blank 32 GiB virtual target. No partition
-operation or installation was started; installed-system boot, package-set
-verification and cleanup after success/failure remain unverified. Captures
-and build provenance are recorded in
+The live session and Calamares flow have been booted in disposable UEFI and
+legacy-BIOS VMs. Both runs detected their firmware mode and the expected blank
+32 GiB virtual target. The UEFI VM proceeded through user and edition setup,
+created the planned partition layout on its disposable target, and started
+package installation. That run failed when the guest could not resolve
+`archive.archlinux.org`; Calamares returned a package-manager error before
+completing installation. The installed system therefore has not booted, and
+package-set parity or successful cleanup after completion remain unverified.
+BIOS validation reached the partition page only. Captures, build provenance,
+and the exact validation boundary are recorded in
 [provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
 
 The initial installation attempt exposed a nested loop-device failure:
@@ -77,8 +81,11 @@ loop device when the source itself is inside Archiso's loop-mounted live
 SquashFS. The build now places `base.sqfs` as a separate file on the ISO
 filesystem and points `unpackfs` at that path. The corrected image has been
 built, its checksum matches the generated manifest, and its contents were
-verified. Full-install acceptance is still in progress. The host development
-machine is deliberately not used for ISO builds or disk tests.
+verified. Full-install acceptance is still in progress. The observed package
+download failure is under investigation as a possible QEMU user-network DNS
+limitation; it is not evidence that an installed system boots successfully.
+The host development machine is deliberately not used for ISO builds or disk
+tests.
 Do not use this preview as the sole copy of important data or as an unattended
 production deployment. Release signing and artifact publication remain an
 explicit release gate. The live-image profile is owned here until a dedicated

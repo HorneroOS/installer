@@ -13,14 +13,17 @@ The same ISO was booted in separate disposable BIOS and UEFI QEMU VMs with
 blank 32 GiB QCOW2 target disks. Calamares launched in both sessions and was
 navigated through Welcome, Location, Keyboard and Partitioning. The partition
 page reported BIOS or EFI respectively and showed the expected empty `/dev/vda`
-target. No partition operation was selected and no installation was started.
+target. The BIOS run stopped there. A later UEFI run selected the disposable
+target, created the planned layout, and reached package installation, which
+failed because the guest could not resolve `archive.archlinux.org`.
 
 - `uefi-live.png`: Calamares Welcome page in the UEFI live session.
 - `uefi-partition.png`: UEFI partition page, firmware label and blank target.
 - `bios-partition.png`: BIOS partition page, firmware label and blank target.
 
 These captures establish live-media boot and early wizard behavior only. They
-do not establish successful partitioning, installation, first boot, installed
-package parity, post-failure repository cleanup or suitability for personal
-hardware. The image remains unsigned and provisional; do not use it as the sole
-installation path for a personal computer or homelab server.
+do not show the later UEFI package-manager failure and do not establish a
+successful installation, first boot, installed-package parity, cleanup after
+the failed transaction, or suitability for personal hardware. The target was a
+disposable virtual disk. The image remains unsigned and provisional; do not use
+it as the sole installation path for a personal computer or homelab server.
