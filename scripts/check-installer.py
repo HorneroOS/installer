@@ -87,6 +87,8 @@ def main() -> int:
     assert parsed["bootloader"]["efiBootLoader"] == "grub"
     assert parsed["packages"]["backend"] == "pacman"
     assert parsed["packages"]["update_system"] is False
+    assert parsed["packages"]["pacman"]["num_retries"] >= 8
+    assert parsed["packages"]["pacman"]["disable_download_timeout"] is True
     assert parsed["shellprocess-cleanup"]["emergency"] is True
 
     chooser = parsed["packagechooser"]
