@@ -33,8 +33,10 @@ installed-system acceptance remain in progress; see the
    `services-systemd` enables edition services. Do not claim completion if
    either stage fails.
 6. **Boot files** — `initcpiocfg` and `initcpio` configure filesystem/encryption
-   hooks and build Arch initramfs images with `mkinitcpio`; `bootloader` installs
-   GRUB. The Debian-only `initramfs` module is deliberately excluded.
+   hooks and build Arch initramfs images with `mkinitcpio`.
+   `shellprocess@grub-cryptodisk` sets `GRUB_ENABLE_CRYPTODISK=y` in the
+   target's GRUB defaults before `bootloader` installs GRUB, so GRUB can read a
+   LUKS root. The Debian-only `initramfs` module is deliberately excluded.
    Firmware or mount failures can leave a target that does not boot.
 7. **Unmount and finish** — `umount`, `finished` unmount the target and show
    completion. Report unmount errors accurately; reboot remains the user's
@@ -83,6 +85,8 @@ A built image is not accepted from a successful render or ISO build alone.
 Acceptance requires completed installations in disposable UEFI and legacy-BIOS
 VMs, successful boots of both installed systems, a package set matching the
 pinned resolver, correct cleanup after success and failure, and a complete
-written-path manifest. The current VM run validates live boot and wizard navigation
-only. Until the full gates pass, the image profile remains provisional and must
-not be treated as a safe way to install a personal computer or homelab server.
+written-path manifest. The current UEFI run reaches package installation but
+fails at GRUB because the tested ISO predates the cryptodisk fix; BIOS
+validation covers live boot and wizard navigation only. Until the full gates
+pass, the image profile remains provisional and must not be treated as a safe
+way to install a personal computer or homelab server.

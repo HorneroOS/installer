@@ -34,8 +34,8 @@ aur:
       version: 0.3.2-1
       revision: e7b14e7f11a51a0988bf5526967f0809a95ad4e0
     horneroctl-bin:
-      version: 0.2.0_preview14.2-2
-      revision: 40264b8d5f4b32535ff1f6b3bc05ec99ee18020b
+      version: 0.2.0_preview15-1
+      revision: 7ec0c2589ca7d40e626b707b36e1dc0bd0722676
     libcava:
       version: 1.0.0-1
       revision: 39403443c8208f5d9adaaed7c8347c439efe52cf

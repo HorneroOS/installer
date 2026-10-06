@@ -35,7 +35,18 @@ guest received an IPv4 address and default route. DNS lookups timed out with
 QEMU user networking (including an explicit guest resolver), while the host
 resolved the same Arch mirror. Switching only this disposable VM to QEMU's
 unprivileged `passt` network backend allowed the guest to resolve
-`archive.archlinux.org` to `49.12.124.107`. This confirms a workaround for the
-VM's DNS path; a successful repository package transaction and installed-system
-boot are still not established. The installer source now checks DNS before
-either launcher path opens Calamares, but the existing ISO predates that guard.
+`archive.archlinux.org` to `49.12.124.107`. A subsequent UEFI install with
+4 GiB RAM and 2 vCPUs completed package installation on a disposable 40 GiB
+encrypted target, then failed in the GRUB stage. The recorded error says GRUB
+refuses to install to the encrypted root without
+`GRUB_ENABLE_CRYPTODISK=y` in `/etc/default/grub`. The exact failure is captured
+in
+[`grub-cryptodisk-20261006/uefi-grub-cryptodisk-failure.png`](grub-cryptodisk-20261006/uefi-grub-cryptodisk-failure.png).
+
+The installer source now adds an idempotent Calamares step before the
+bootloader to enable GRUB cryptodisk in the target configuration. That change
+and the `horneroctl-bin` preview15 source pin are not present in the tested
+ISO. A rebuilt ISO, successful UEFI first boot, a legacy-BIOS install, package
+parity, and cleanup checks remain acceptance gates. The installer source also
+checks DNS before either launcher path opens Calamares, but the existing ISO
+predates that guard.
