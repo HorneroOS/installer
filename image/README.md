@@ -1,11 +1,12 @@
 # Provisional installation image
 
 This directory defines HorneroOS's provisional Calamares installation medium.
-It is a development build profile, not the future official installer, and no
-ISO from this profile has passed graphical installation acceptance yet. The
-profile offers only compositions that the HorneroOS edition catalogue marks
-installable. It targets x86_64 Desktop with Hyprland (default) and Niri
-(Experimental).
+It is a development build profile, not the future official installer. Its
+current ISO boots into Calamares in disposable UEFI and legacy-BIOS VMs and
+reaches the partitioning page. A complete installation has not passed
+acceptance. The profile offers only compositions that the HorneroOS edition
+catalogue marks installable. It targets x86_64 Desktop with Hyprland (default)
+and Niri (Experimental).
 
 ## Source of truth
 
@@ -42,8 +43,8 @@ recipe and composition provenance next to the ISO. The artifact is unsigned;
 release signing is a separate gate.
 
 Do not test erase, replacement, encryption or bootloader flows on a personal
-disk. The first graphical acceptance must use disposable UEFI and legacy-BIOS
-VMs with blank virtual disks. See [the installation test matrix](../docs/calamares-provisional.md).
+disk. All graphical acceptance must use disposable UEFI and legacy-BIOS VMs
+with blank virtual disks. See [the installation test matrix](../docs/calamares-provisional.md).
 
 ## Intended live environment
 
@@ -52,4 +53,5 @@ surface and launches Calamares automatically after login. SDDM autologin is
 limited to the intended live session. Its sudo rule permits only
 `/usr/bin/calamares`; it does not grant the live user a general root shell. The
 installed target gets its own SDDM login and Hornero greeter from the Desktop
-composition. These behaviors still need a booted-ISO acceptance run.
+composition. Live boot and wizard navigation are evidenced; installation and
+first-boot behavior still need acceptance.

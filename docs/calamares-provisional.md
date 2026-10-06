@@ -63,15 +63,22 @@ screenshot; the media lock records the capture's website commit and hashes.
 
 ## Current limits
 
-The live session and Calamares flow have been exercised in a disposable UEFI
-VM. The first installation attempt exposed a nested loop-device failure:
+The live session and Calamares flow have been booted and navigated through the
+partitioning page in disposable UEFI and legacy-BIOS VMs. Both runs detected
+their firmware mode and the expected blank 32 GiB virtual target. No partition
+operation or installation was started; installed-system boot, package-set
+verification and cleanup after success/failure remain unverified. Captures
+and build provenance are recorded in
+[provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
+
+The initial installation attempt exposed a nested loop-device failure:
 Calamares mounts its SquashFS source with `loop`, and Linux cannot create that
 loop device when the source itself is inside Archiso's loop-mounted live
 SquashFS. The build now places `base.sqfs` as a separate file on the ISO
 filesystem and points `unpackfs` at that path. The corrected image has been
-built and its contents verified; the full install and first-boot acceptance
-remain in progress. Legacy-BIOS acceptance has not run yet. The host
-development machine is deliberately not used for ISO builds or disk tests.
+built, its checksum matches the generated manifest, and its contents were
+verified. Full-install acceptance is still in progress. The host development
+machine is deliberately not used for ISO builds or disk tests.
 Do not use this preview as the sole copy of important data or as an unattended
 production deployment. Release signing and artifact publication remain an
 explicit release gate. The live-image profile is owned here until a dedicated

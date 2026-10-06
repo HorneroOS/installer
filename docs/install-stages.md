@@ -2,8 +2,11 @@
 
 The provisional installer uses Calamares. This map describes the modules in
 `image/calamares/settings.conf` and the data each stage is expected to own. It
-is not a claim that every recovery and preflight behavior is complete: full
-UEFI and legacy-BIOS installation acceptance is still in progress.
+is not a claim that every recovery and preflight behavior is complete. The
+live ISO has booted in disposable UEFI and legacy-BIOS VMs and Calamares
+has been navigated through its partitioning page. Full installation and
+installed-system acceptance remain in progress; see the
+[VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
 
 ## Calamares flow
 
@@ -74,8 +77,9 @@ configuration-drift reconciliation.
 ## Installation acceptance
 
 A built image is not accepted from a successful render or ISO build alone.
-Acceptance requires clean runs in disposable UEFI and legacy-BIOS VMs, a
-successful boot of the installed system, a package set matching the pinned
-resolver, correct cleanup after success and failure, and a complete written-
-path manifest. Until then, the image profile remains provisional and must not
-be treated as a safe way to install a personal computer or homelab server.
+Acceptance requires completed installations in disposable UEFI and legacy-BIOS
+VMs, successful boots of both installed systems, a package set matching the
+pinned resolver, correct cleanup after success and failure, and a complete
+written-path manifest. The current VM run validates live boot and wizard navigation
+only. Until the full gates pass, the image profile remains provisional and must
+not be treated as a safe way to install a personal computer or homelab server.
