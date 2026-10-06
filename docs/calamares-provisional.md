@@ -40,7 +40,9 @@ screenshot; the media lock records the capture's website commit and hashes.
   server before opening Calamares. If either check fails, it explains what to
   repair and confirms that no disk changes have been made. The provisional
   image installs the pinned composition from Arch repositories and the local
-  installer package repository.
+  installer package repository. During package installation only, Calamares
+  bind-mounts the live resolver file into the target chroot, then removes that
+  mount even when pacman fails.
 - The partition screen starts without a selected operation. Review the disk,
   partition map, encryption setting and final summary before confirming.
 - Automated encryption uses the Calamares LUKS support and mkinitcpio's

@@ -51,7 +51,11 @@ def main() -> int:
     phases = settings.get("sequence", [])
     assert [next(iter(phase)) for phase in phases] == ["show", "exec", "show"]
     assert phases[0]["show"][-2:] == ["packagechooser", "summary"]
-    assert phases[1]["exec"].index("shellprocess@cleanup") == phases[1]["exec"].index("packages") + 1
+    exec_modules = phases[1]["exec"]
+    assert exec_modules.index("unpackfs") < exec_modules.index("shellprocess@resolver")
+    assert exec_modules.index("shellprocess@resolver") < exec_modules.index("packages")
+    assert exec_modules.index("packages") < exec_modules.index("shellprocess@resolver-cleanup")
+    assert exec_modules.index("shellprocess@resolver-cleanup") < exec_modules.index("shellprocess@cleanup")
     assert phases[1]["exec"][-1] == "umount"
     assert settings["prompt-install"] is True
     assert settings["dont-chroot"] is False
@@ -60,6 +64,15 @@ def main() -> int:
     configs = sorted(modules.glob("*.conf"))
     assert len(configs) >= 10, "expected the core target-system modules to be configured"
     parsed = {path.stem: load_yaml(path) for path in configs}
+    assert parsed["shellprocess-resolver"]["dontChroot"] is True
+    assert "/usr/bin/mount --bind /etc/resolv.conf ${ROOT}/etc/resolv.conf" in parsed[
+        "shellprocess-resolver"
+    ]["script"]
+    assert parsed["shellprocess-resolver-cleanup"]["dontChroot"] is True
+    assert parsed["shellprocess-resolver-cleanup"]["emergency"] is True
+    assert "/usr/bin/umount ${ROOT}/etc/resolv.conf" in parsed[
+        "shellprocess-resolver-cleanup"
+    ]["script"]
     if args.schema_root:
         import jsonschema
 

@@ -21,12 +21,14 @@ installed-system acceptance remain in progress; see the
 3. **Machine and locale** — `machineid`, `locale`, `keyboard`, `localecfg` and
    `fstab` write the machine identity, locale, input and mount configuration.
    A module failure means the system is not installed.
-4. **Packages and repository cleanup** — `packages` installs the selected
-   resolver composition, then `shellprocess@cleanup` removes the temporary
-   package repository configuration and restores Arch mirrors. Calamares marks
-   this cleanup job as emergency-capable, so it is scheduled after a package
-   failure as well. The partial target remains incomplete; VM acceptance must
-   verify cleanup and recovery behavior on both success and failure.
+4. **Network and packages** — `shellprocess@resolver` binds the live session's
+   working `/etc/resolv.conf` into the unpacked target immediately before
+   `packages`, which runs pacman inside that target's chroot. The resolver file
+   is not copied into the installed system. After the package attempt,
+   emergency-capable `shellprocess@resolver-cleanup` unmounts the bind, then
+   `shellprocess@cleanup` removes the temporary package repository configuration
+   and restores Arch mirrors. Both cleanup jobs also run after package failure;
+   VM acceptance verifies their behavior on success and failure.
 5. **User and services** — `users` creates the named account and
    `services-systemd` enables edition services. Do not claim completion if
    either stage fails.
