@@ -56,6 +56,10 @@ def main() -> int:
     assert exec_modules.index("shellprocess@resolver") < exec_modules.index("packages")
     assert exec_modules.index("packages") < exec_modules.index("shellprocess@resolver-cleanup")
     assert exec_modules.index("shellprocess@resolver-cleanup") < exec_modules.index("shellprocess@cleanup")
+    assert "initcpio" in exec_modules
+    assert "initramfs" not in exec_modules, (
+        "initramfs is Debian-specific; Arch targets regenerate images with initcpio"
+    )
     assert phases[1]["exec"][-1] == "umount"
     assert settings["prompt-install"] is True
     assert settings["dont-chroot"] is False

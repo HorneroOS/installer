@@ -32,8 +32,9 @@ installed-system acceptance remain in progress; see the
 5. **User and services** — `users` creates the named account and
    `services-systemd` enables edition services. Do not claim completion if
    either stage fails.
-6. **Boot files** — `initcpiocfg`, `initcpio`, `initramfs` and `bootloader`
-   configure filesystem/encryption hooks, build initramfs and install GRUB.
+6. **Boot files** — `initcpiocfg` and `initcpio` configure filesystem/encryption
+   hooks and build Arch initramfs images with `mkinitcpio`; `bootloader` installs
+   GRUB. The Debian-only `initramfs` module is deliberately excluded.
    Firmware or mount failures can leave a target that does not boot.
 7. **Unmount and finish** — `umount`, `finished` unmount the target and show
    completion. Report unmount errors accurately; reboot remains the user's
