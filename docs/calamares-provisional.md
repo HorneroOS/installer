@@ -38,11 +38,12 @@ screenshot; the media lock records the capture's website commit and hashes.
 - Connect to the Internet before starting installation. The launcher checks
   both NetworkManager connectivity and DNS resolution of the Arch package
   server before opening Calamares. If either check fails, it explains what to
-  repair and confirms that no disk changes have been made. The provisional
-  image installs the pinned composition from Arch repositories and the local
-  installer package repository. During package installation only, Calamares
-  bind-mounts the live resolver file into the target chroot, then removes that
-  mount even when pacman fails.
+  repair and confirms that no disk changes have been made. Package installation
+  runs inside the target chroot, so a pre-install step bind-mounts the live
+  `/etc/resolv.conf` and `/etc/hosts` there. A cleanup step removes both mounts
+  immediately after package installation and before user configuration,
+  including after a failed package transaction. The pinned composition comes
+  from Arch repositories and the temporary local installer package repository.
 - The partition screen starts without a selected operation. Review the disk,
   partition map, encryption setting and final summary before confirming.
 - Automated encryption uses the Calamares LUKS support and mkinitcpio's
@@ -69,32 +70,37 @@ screenshot; the media lock records the capture's website commit and hashes.
 ## Current limits
 
 The live session and Calamares flow have been booted in disposable UEFI and
-legacy-BIOS VMs. Both detected their firmware mode and a blank virtual target.
-The latest UEFI run used 4 GiB RAM, 2 vCPUs, and a disposable 40 GiB QCOW2. It
-completed an encrypted Btrfs installation and installed GRUB; first boot then
-fell to the initramfs emergency shell because the image lacked the `encrypt`
-hook and GRUB's kernel command line lacked `cryptdevice`. The Btrfs UUID itself
-was present inside LUKS and matched `root=UUID`, confirming that the missing
-step is unlocking the LUKS container before mounting root. The source now
-orders mkinitcpio's `encrypt` hook before `filesystems` and uses Calamares'
-`grubcfg` module to generate mapper-aware kernel parameters. It keeps the EFI
-System Partition at `/boot` and does not embed a LUKS key in the unencrypted
-initramfs. The fixed source still needs a rebuilt ISO and repeat UEFI/BIOS
-install-and-first-boot acceptance. BIOS validation previously reached only
-the partition page. Package parity and cleanup acceptance also remain open.
-Captures, build provenance, and the exact validation boundary are recorded in
-[provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
+legacy-BIOS VMs, and both detected their firmware mode. On 2026-10-07, a UEFI
+run used 4 GiB RAM, 2 vCPUs, and a dedicated 40 GiB QCOW2. Calamares reviewed
+the encrypted hybrid GPT layout and created its partitions, but package
+installation failed before the target system was complete. The debug log shows
+pacman could not resolve `archive.archlinux.org`: the live session had a static
+host entry for the test mirror, while the target chroot received only the live
+resolver file. The installer source now also shares the live hosts file during
+the package step and removes both temporary mounts before configuring the new
+user. Static checks pass; a rebuilt ISO must still prove package installation,
+cleanup on success and failure, and first boot. BIOS testing has only reached
+the partition page. Captures, build provenance, and the validation boundary
+are recorded in [provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
+
+A previous image also reached the encrypted-root first boot and fell into the
+initramfs emergency shell because it lacked the `encrypt` hook and GRUB's
+kernel command line lacked `cryptdevice`. The current source orders
+mkinitcpio's `encrypt` hook before `filesystems` and uses Calamares' `grubcfg`
+module to generate mapper-aware kernel parameters. It keeps the EFI System
+Partition at `/boot` and does not embed a LUKS key in the unencrypted
+initramfs; this boot fix has not yet been retested in the latest image.
 
 The initial installation attempt exposed a nested loop-device failure:
 Calamares mounts its SquashFS source with `loop`, and Linux cannot create that
 loop device when the source itself is inside Archiso's loop-mounted live
 SquashFS. The build now places `base.sqfs` as a separate file on the ISO
-filesystem and points `unpackfs` at that path. The corrected image has been
-built, its checksum matches the generated manifest, and its contents were
-verified. The source now gates both the automatic launcher and menu entry on
-DNS resolution so the known failure is reported before the user reaches disk
-partitioning; that guard is not present in the already-built ISO. A successful
-full install and installed-system boot remain outstanding. The host
+filesystem and points `unpackfs` at that path. A prior corrected image had a
+checksum matching its generated manifest and verified contents. The source
+gates both the automatic launcher and menu entry on DNS resolution so a live
+network failure is reported before disk partitioning; that guard is not present
+in the already-built test ISO. A successful full install and installed-system
+boot remain outstanding. The host
 development machine is deliberately not used for ISO builds or disk tests.
 Do not use this preview as the sole copy of important data or as an unattended
 production deployment. Release signing and artifact publication remain an

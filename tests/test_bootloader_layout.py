@@ -44,3 +44,26 @@ def test_encrypted_root_unlocks_before_mount_without_embedded_keyfile() -> None:
     assert initcpio["hooks"]["append"] == ["encrypt", "filesystems", "fsck"]
     assert "luksbootkeyfile" not in modules
     assert "cryptdevice=UUID=" not in grub.get("kernel_params", [])
+
+
+def test_package_chroot_uses_live_dns_and_host_overrides() -> None:
+    settings = yaml.safe_load((ROOT / "image/calamares/settings.conf").read_text(encoding="utf-8"))
+    modules = settings["sequence"][1]["exec"]
+    resolver = yaml.safe_load(
+        (ROOT / "image/calamares/modules/shellprocess-resolver.conf").read_text(encoding="utf-8")
+    )
+    cleanup = yaml.safe_load(
+        (ROOT / "image/calamares/modules/shellprocess-resolver-cleanup.conf").read_text(encoding="utf-8")
+    )
+
+    assert resolver["script"] == [
+        "/usr/bin/mount --bind /etc/resolv.conf ${ROOT}/etc/resolv.conf",
+        "/usr/bin/mount --bind /etc/hosts ${ROOT}/etc/hosts",
+    ]
+    assert cleanup["script"] == [
+        "-/usr/bin/umount ${ROOT}/etc/hosts",
+        "-/usr/bin/umount ${ROOT}/etc/resolv.conf",
+    ]
+    assert modules.index("shellprocess@resolver") < modules.index("packages")
+    assert modules.index("packages") < modules.index("shellprocess@resolver-cleanup")
+    assert modules.index("shellprocess@resolver-cleanup") < modules.index("users")

@@ -76,9 +76,15 @@ def main() -> int:
     assert "/usr/bin/mount --bind /etc/resolv.conf ${ROOT}/etc/resolv.conf" in parsed[
         "shellprocess-resolver"
     ]["script"]
+    assert "/usr/bin/mount --bind /etc/hosts ${ROOT}/etc/hosts" in parsed[
+        "shellprocess-resolver"
+    ]["script"]
     assert parsed["shellprocess-resolver-cleanup"]["dontChroot"] is True
     assert parsed["shellprocess-resolver-cleanup"]["emergency"] is True
-    assert "/usr/bin/umount ${ROOT}/etc/resolv.conf" in parsed[
+    assert "-/usr/bin/umount ${ROOT}/etc/hosts" in parsed[
+        "shellprocess-resolver-cleanup"
+    ]["script"]
+    assert "-/usr/bin/umount ${ROOT}/etc/resolv.conf" in parsed[
         "shellprocess-resolver-cleanup"
     ]["script"]
     initcpiocfg = parsed["initcpiocfg"]
