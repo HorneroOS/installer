@@ -58,9 +58,9 @@ package installation on an encrypted Btrfs target. Its session log records
 `GRUB_ENABLE_CRYPTODISK=y` and a successful `x86_64-efi` GRUB install. The
 subsequent `i386-pc` install failed because the GPT erase layout had no BIOS
 boot partition. The source correction requests Calamares' GPT layout containing
-both an EFI System Partition and a BIOS boot partition, and sets
-`installHybridGRUB: false` so GRUB installs only for the firmware that booted
-the live ISO. Static checks pass for the correction; a rebuilt image and both
+both an EFI System Partition and a BIOS boot partition while retaining
+`installHybridGRUB: true`, so Calamares installs both GRUB targets into their
+matching partitions. Static checks pass for the correction; a rebuilt image and both
 firmware-mode installations remain required before this is considered fixed.
 The failed target disk and the local installer session log are disposable test
 artifacts; no host disk or host bootloader was touched.
