@@ -85,8 +85,14 @@ A built image is not accepted from a successful render or ISO build alone.
 Acceptance requires completed installations in disposable UEFI and legacy-BIOS
 VMs, successful boots of both installed systems, a package set matching the
 pinned resolver, correct cleanup after success and failure, and a complete
-written-path manifest. The current UEFI run reaches package installation but
-fails at GRUB because the tested ISO predates the cryptodisk fix; BIOS
-validation covers live boot and wizard navigation only. Until the full gates
-pass, the image profile remains provisional and must not be treated as a safe
-way to install a personal computer or homelab server.
+written-path manifest. The latest UEFI run reached GRUB after package
+installation; cryptodisk configuration succeeded, but the tested ISO also
+attempted a BIOS GRUB install without a GPT BIOS boot partition. After correcting
+that, the installed VM still failed while GRUB read the kernel from compressed,
+encrypted Btrfs. The source now creates a firmware-compatible GPT layout,
+disables cross-firmware GRUB installation, and mounts the EFI System Partition
+at `/boot` so kernels and initramfs remain readable by GRUB. These corrections
+still require a rebuilt ISO and UEFI/BIOS acceptance. BIOS validation currently
+covers live boot and wizard navigation only. Until the full gates pass, the
+image profile remains provisional and must not be treated as a safe way to
+install a personal computer or homelab server.

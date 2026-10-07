@@ -50,3 +50,26 @@ ISO. A rebuilt ISO, successful UEFI first boot, a legacy-BIOS install, package
 parity, and cleanup checks remain acceptance gates. The installer source also
 checks DNS before either launcher path opens Calamares, but the existing ISO
 predates that guard.
+
+## GPT firmware-layout diagnosis
+
+On 2026-10-06, a disposable UEFI install using the current preview completed
+package installation on an encrypted Btrfs target. Its session log records
+`GRUB_ENABLE_CRYPTODISK=y` and a successful `x86_64-efi` GRUB install. The
+subsequent `i386-pc` install failed because the GPT erase layout had no BIOS
+boot partition. The source correction requests Calamares' GPT layout containing
+both an EFI System Partition and a BIOS boot partition, and sets
+`installHybridGRUB: false` so GRUB installs only for the firmware that booted
+the live ISO. Static checks pass for the correction; a rebuilt image and both
+firmware-mode installations remain required before this is considered fixed.
+The failed target disk and the local installer session log are disposable test
+artifacts; no host disk or host bootloader was touched.
+
+The first installed-disk boot after the firmware-layout correction exposed a
+second failure: GRUB enumerated the kernel under the encrypted Btrfs root, then
+reported a premature end of file when asked to load it. The Btrfs mount options
+enable Zstandard compression, while GRUB's documented Btrfs compression support
+does not include Zstandard. The source now mounts the already-present EFI
+System Partition at `/boot`, so both the kernel and initramfs live on FAT and
+GRUB can read them without entering the compressed encrypted root. This change
+has not yet been exercised by a rebuilt ISO.

@@ -71,14 +71,17 @@ screenshot; the media lock records the capture's website commit and hashes.
 The live session and Calamares flow have been booted in disposable UEFI and
 legacy-BIOS VMs. Both detected their firmware mode and a blank virtual target.
 The latest UEFI run used 4 GiB RAM, 2 vCPUs, and a disposable 40 GiB overlay;
-it completed package installation on an encrypted Btrfs root, then failed at
-GRUB installation. The logged cause is that GRUB cryptodisk was not enabled in
-the target's `/etc/default/grub`. The installer source now adds an explicit
-step before GRUB to enable it, but that correction has not yet been tested in a
-rebuilt ISO. The target therefore has not booted, and successful installation,
-package-set parity, and cleanup acceptance remain outstanding. BIOS validation
-reached the partition page only. Captures, build provenance, and the exact
-validation boundary are recorded in
+it completed package installation on an encrypted Btrfs root and wrote
+`GRUB_ENABLE_CRYPTODISK=y` successfully. An earlier ISO then attempted both
+UEFI and BIOS GRUB installation without a BIOS boot partition. After that
+layout was corrected, the installed VM still failed before Linux loaded: GRUB
+reported a premature end of the kernel file. The kernel and initramfs had been
+placed inside the compressed, encrypted Btrfs root. The current source mounts
+the EFI System Partition at `/boot`, keeping boot files readable to GRUB on
+both firmware paths. This correction still needs a rebuilt ISO and complete
+UEFI/BIOS install-and-boot acceptance. Package parity and cleanup acceptance
+also remain outstanding. BIOS validation reached the partition page only.
+Captures, build provenance, and the exact validation boundary are recorded in
 [provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
 
 The initial installation attempt exposed a nested loop-device failure:

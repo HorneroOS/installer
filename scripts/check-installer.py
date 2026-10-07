@@ -119,7 +119,20 @@ def main() -> int:
                 if module_name != "packagechooser":
                     raise FileNotFoundError(f"Calamares schema missing for {module_name}: {schema_path}")
                 continue
-            jsonschema.Draft7Validator(load_yaml(schema_path)).validate(configuration)
+            schema = load_yaml(schema_path)
+            schema_configuration = configuration
+            if (
+                module_name == "partition"
+                and "createHybridBootloaderLayout" in configuration
+                and "createHybridBootloaderLayout" not in schema.get("properties", {})
+            ):
+                # Calamares 3.4.3 implements and documents this setting but
+                # omits it from partition.schema.yaml. Validate its value here
+                # and validate the remaining settings against the pinned schema.
+                assert isinstance(configuration["createHybridBootloaderLayout"], bool)
+                schema_configuration = dict(configuration)
+                del schema_configuration["createHybridBootloaderLayout"]
+            jsonschema.Draft7Validator(schema).validate(schema_configuration)
     assert parsed["welcome"]["geoip"]["style"] == "none"
     assert parsed["locale"]["geoip"]["style"] == "none"
     assert parsed["locale"]["region"] == "America"
@@ -131,6 +144,7 @@ def main() -> int:
     assert parsed["users"]["user"]["home_permissions"] == "750"
     assert parsed["users"]["passwordRequirements"]["minLength"] >= 12
     assert parsed["partition"]["initialPartitioningChoice"] == "none"
+    assert parsed["partition"]["createHybridBootloaderLayout"] is True
     assert parsed["partition"]["enableLuksAutomatedPartitioning"] is True
     assert parsed["bootloader"]["efiBootLoader"] == "grub"
     assert parsed["packages"]["backend"] == "pacman"
