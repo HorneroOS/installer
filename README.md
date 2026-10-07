@@ -66,6 +66,13 @@ organization defaults. The `label-sync` workflow keeps the shared labels
 available here without deleting installer-specific labels. The installer
 team retains ownership of installation behavior and release decisions.
 
+The public [HorneroOS Installer project](https://github.com/orgs/HorneroOS/projects/1)
+tracks installation outcomes, acceptance evidence, and the transition from
+the provisional Calamares path to Panda Foss's custom official installer. Its
+roadmap is an ordering aid rather than a release-date promise; this repository
+and the canonical edition catalogue remain the sources for implementation
+and package composition.
+
 ## License
 
 [MIT](LICENSE).
