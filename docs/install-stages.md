@@ -87,12 +87,13 @@ VMs, successful boots of both installed systems, a package set matching the
 pinned resolver, correct cleanup after success and failure, and a complete
 written-path manifest. The latest UEFI run reached GRUB after package
 installation; cryptodisk configuration succeeded, but the tested ISO also
-attempted a BIOS GRUB install without a GPT BIOS boot partition. After correcting
-that, the installed VM still failed while GRUB read the kernel from compressed,
+attempted a BIOS GRUB install without a GPT BIOS boot partition. After
+correcting that, the installed VM still failed while GRUB read the kernel from
+compressed,
 encrypted Btrfs. The source now creates a hybrid GPT layout with both boot
 partitions, retains Calamares' hybrid GRUB installation, and mounts the EFI
 System Partition at `/boot` so kernels and initramfs remain readable by GRUB.
 These corrections still require a rebuilt ISO and UEFI/BIOS acceptance. BIOS
 validation currently covers live boot and wizard navigation only. Until the
-full gates pass, the image profile remains provisional and must not be treated as a safe way to
-install a personal computer or homelab server.
+full gates pass, the image profile remains provisional and must not be treated
+as a safe way to install a personal computer or homelab server.
