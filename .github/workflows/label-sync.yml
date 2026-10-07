@@ -1,0 +1,28 @@
+# The installer consumes the organization-wide additive label taxonomy.
+# Keep this caller intentionally thin; the versioned governance engine is
+# pinned to a full commit SHA in HorneroOS/.github.
+
+name: label-sync
+
+on:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Preview without writing'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  sync:
+    # yamllint disable rule:line-length
+    uses: HorneroOS/.github/.github/workflows/label-sync-reusable.yml@c3e738404c35dcb4d3e9e82da217a0625feafb11  # immutable shared workflow revision
+    # yamllint enable rule:line-length
+    with:
+      engine-ref: c3e738404c35dcb4d3e9e82da217a0625feafb11
+      dry-run: ${{ inputs.dry-run }}
+    permissions:
+      contents: read
+      issues: write

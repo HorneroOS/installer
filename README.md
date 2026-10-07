@@ -57,6 +57,15 @@ packages or images never runs against the host installation.
 See [the provisional Calamares guide](docs/calamares-provisional.md) for
 installation limits, recovery notes, image composition and acceptance gates.
 
+## Contribution intake and planning
+
+Installer issues use the shared HorneroOS organization forms for bugs,
+features, documentation, and engineering tasks. This repository intentionally
+does not define a local `ISSUE_TEMPLATE` directory, so GitHub can inherit the
+organization defaults. The `label-sync` workflow keeps the shared labels
+available here without deleting installer-specific labels. The installer
+team retains ownership of installation behavior and release decisions.
+
 ## License
 
 [MIT](LICENSE).
