@@ -91,8 +91,8 @@ attempted a BIOS GRUB install without a GPT BIOS boot partition. After correctin
 that, the installed VM still failed while GRUB read the kernel from compressed,
 encrypted Btrfs. The source now creates a hybrid GPT layout with both boot
 partitions, retains Calamares' hybrid GRUB installation, and mounts the EFI
-System Partition at `/boot` so kernels and initramfs remain readable by GRUB. These corrections
-still require a rebuilt ISO and UEFI/BIOS acceptance. BIOS validation currently
-covers live boot and wizard navigation only. Until the full gates pass, the
-image profile remains provisional and must not be treated as a safe way to
+System Partition at `/boot` so kernels and initramfs remain readable by GRUB.
+These corrections still require a rebuilt ISO and UEFI/BIOS acceptance. BIOS
+validation currently covers live boot and wizard navigation only. Until the
+full gates pass, the image profile remains provisional and must not be treated as a safe way to
 install a personal computer or homelab server.

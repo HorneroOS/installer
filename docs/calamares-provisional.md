@@ -75,10 +75,11 @@ it completed package installation on an encrypted Btrfs root and wrote
 `GRUB_ENABLE_CRYPTODISK=y` successfully. An earlier ISO then attempted both
 UEFI and BIOS GRUB installation without a BIOS boot partition. The current
 source creates both GPT boot partitions and retains Calamares' hybrid GRUB
-installation. After that layout was corrected, the installed VM still failed before Linux loaded: GRUB
-reported a premature end of the kernel file. The kernel and initramfs had been
-placed inside the compressed, encrypted Btrfs root. The current source mounts
-the EFI System Partition at `/boot`, keeping boot files readable to GRUB on
+installation. After that layout was corrected, the installed VM still failed
+before Linux loaded: GRUB reported a premature end of the kernel file. The
+kernel and initramfs had been placed inside the compressed, encrypted Btrfs
+root. The current source mounts the EFI System Partition at `/boot`, keeping
+boot files readable to GRUB on
 both firmware paths. This correction still needs a rebuilt ISO and complete
 UEFI/BIOS install-and-boot acceptance. Package parity and cleanup acceptance
 also remain outstanding. BIOS validation reached the partition page only.
