@@ -70,19 +70,18 @@ screenshot; the media lock records the capture's website commit and hashes.
 
 The live session and Calamares flow have been booted in disposable UEFI and
 legacy-BIOS VMs. Both detected their firmware mode and a blank virtual target.
-The latest UEFI run used 4 GiB RAM, 2 vCPUs, and a disposable 40 GiB overlay;
-it completed package installation on an encrypted Btrfs root and wrote
-`GRUB_ENABLE_CRYPTODISK=y` successfully. An earlier ISO then attempted both
-UEFI and BIOS GRUB installation without a BIOS boot partition. The current
-source creates both GPT boot partitions and retains Calamares' hybrid GRUB
-installation. After that layout was corrected, the installed VM still failed
-before Linux loaded: GRUB reported a premature end of the kernel file. The
-kernel and initramfs had been placed inside the compressed, encrypted Btrfs
-root. The current source mounts the EFI System Partition at `/boot`, keeping
-boot files readable to GRUB on
-both firmware paths. This correction still needs a rebuilt ISO and complete
-UEFI/BIOS install-and-boot acceptance. Package parity and cleanup acceptance
-also remain outstanding. BIOS validation reached the partition page only.
+The latest UEFI run used 4 GiB RAM, 2 vCPUs, and a disposable 40 GiB QCOW2. It
+completed an encrypted Btrfs installation and installed GRUB; first boot then
+fell to the initramfs emergency shell because the image lacked the `encrypt`
+hook and GRUB's kernel command line lacked `cryptdevice`. The Btrfs UUID itself
+was present inside LUKS and matched `root=UUID`, confirming that the missing
+step is unlocking the LUKS container before mounting root. The source now
+orders mkinitcpio's `encrypt` hook before `filesystems` and uses Calamares'
+`grubcfg` module to generate mapper-aware kernel parameters. It keeps the EFI
+System Partition at `/boot` and does not embed a LUKS key in the unencrypted
+initramfs. The fixed source still needs a rebuilt ISO and repeat UEFI/BIOS
+install-and-first-boot acceptance. BIOS validation previously reached only
+the partition page. Package parity and cleanup acceptance also remain open.
 Captures, build provenance, and the exact validation boundary are recorded in
 [provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
 

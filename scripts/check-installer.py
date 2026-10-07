@@ -6,9 +6,7 @@ from __future__ import annotations
 import json
 import argparse
 import hashlib
-import os
 import re
-import subprocess
 import tempfile
 from pathlib import Path
 
@@ -59,8 +57,9 @@ def main() -> int:
     assert exec_modules.index("shellprocess@resolver") < exec_modules.index("packages")
     assert exec_modules.index("packages") < exec_modules.index("shellprocess@resolver-cleanup")
     assert exec_modules.index("shellprocess@resolver-cleanup") < exec_modules.index("shellprocess@cleanup")
-    assert exec_modules.index("initcpio") < exec_modules.index("shellprocess@grub-cryptodisk")
-    assert exec_modules.index("shellprocess@grub-cryptodisk") < exec_modules.index("bootloader")
+    assert exec_modules.index("initcpiocfg") < exec_modules.index("initcpio")
+    assert exec_modules.index("initcpio") < exec_modules.index("grubcfg")
+    assert exec_modules.index("grubcfg") < exec_modules.index("bootloader")
     assert "initcpio" in exec_modules
     assert "initramfs" not in exec_modules, (
         "initramfs is Debian-specific; Arch targets regenerate images with initcpio"
@@ -82,32 +81,13 @@ def main() -> int:
     assert "/usr/bin/umount ${ROOT}/etc/resolv.conf" in parsed[
         "shellprocess-resolver-cleanup"
     ]["script"]
-    cryptodisk_script = parsed["shellprocess-grub-cryptodisk"]
-    assert cryptodisk_script["dontChroot"] is True
-    assert cryptodisk_script.get("emergency") is not True, (
-        "cryptodisk must not run after an earlier target-system boot setup failure"
+    initcpiocfg = parsed["initcpiocfg"]
+    assert initcpiocfg["hooks"]["remove"] == ["filesystems", "fsck"]
+    assert initcpiocfg["hooks"]["append"] == ["encrypt", "filesystems", "fsck"]
+    assert "luksbootkeyfile" not in exec_modules, (
+        "the EFI System Partition mounted at /boot is unencrypted; do not put a LUKS keyfile in initramfs"
     )
-    assert any("GRUB_ENABLE_CRYPTODISK=y" in step for step in cryptodisk_script["script"])
-    with tempfile.TemporaryDirectory(prefix="hornero-grub-config-") as temporary_root:
-        grub_defaults = Path(temporary_root) / "etc/default/grub"
-        grub_defaults.parent.mkdir(parents=True)
-        grub_defaults.write_text(
-            "GRUB_TIMEOUT=5\nGRUB_ENABLE_CRYPTODISK=n\n", encoding="utf-8"
-        )
-        for _ in range(2):
-            for step in cryptodisk_script["script"]:
-                result = subprocess.run(
-                    step,
-                    shell=True,
-                    check=False,
-                    env={**os.environ, "ROOT": temporary_root},
-                    capture_output=True,
-                    text=True,
-                )
-                assert result.returncode == 0, result.stderr
-        resulting_defaults = grub_defaults.read_text(encoding="utf-8")
-        assert resulting_defaults.count("GRUB_ENABLE_CRYPTODISK=y") == 1
-        assert "GRUB_TIMEOUT=5" in resulting_defaults
+    assert parsed["grubcfg"]["kernel_params"] == ["quiet"]
     if args.schema_root:
         import jsonschema
 

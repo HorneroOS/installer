@@ -65,11 +65,12 @@ firmware-mode installations remain required before this is considered fixed.
 The failed target disk and the local installer session log are disposable test
 artifacts; no host disk or host bootloader was touched.
 
-The first installed-disk boot after the firmware-layout correction exposed a
-second failure: GRUB enumerated the kernel under the encrypted Btrfs root, then
-reported a premature end of file when asked to load it. The Btrfs mount options
-enable Zstandard compression, while GRUB's documented Btrfs compression support
-does not include Zstandard. The source now mounts the already-present EFI
-System Partition at `/boot`, so both the kernel and initramfs live on FAT and
-GRUB can read them without entering the compressed encrypted root. This change
-has not yet been exercised by a rebuilt ISO.
+The first installed-disk boot after the firmware-layout correction loaded the
+kernel and initramfs from the EFI System Partition, then fell to the initramfs
+emergency shell. The test disk's encrypted container opened manually and the
+inner Btrfs UUID matched `root=UUID`, but the generated kernel command line had
+no `cryptdevice` parameter and the initramfs had no `encrypt` hook. The current
+PR configures the mkinitcpio hook in the required order and uses Calamares'
+`grubcfg` module to write the mapper-aware kernel parameters. The unencrypted
+ESP remains at `/boot`; no keyfile is embedded in that initramfs. Rebuild and
+full UEFI/BIOS first-boot validation are still required before acceptance.

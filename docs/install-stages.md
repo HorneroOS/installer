@@ -33,10 +33,13 @@ installed-system acceptance remain in progress; see the
    `services-systemd` enables edition services. Do not claim completion if
    either stage fails.
 6. **Boot files** — `initcpiocfg` and `initcpio` configure filesystem/encryption
-   hooks and build Arch initramfs images with `mkinitcpio`.
-   `shellprocess@grub-cryptodisk` sets `GRUB_ENABLE_CRYPTODISK=y` in the
-   target's GRUB defaults before `bootloader` installs GRUB, so GRUB can read a
-   LUKS root. The Debian-only `initramfs` module is deliberately excluded.
+   hooks and build Arch initramfs images with `mkinitcpio`. The `encrypt` hook
+   is placed after `block` and before `filesystems`, so an encrypted root is
+   unlocked before the initramfs mounts it. `grubcfg` writes LUKS device and
+   mapper-root parameters into GRUB's kernel command line before `bootloader`
+   installs the firmware-specific GRUB targets. The EFI System Partition
+   mounted at `/boot` stays unencrypted; no LUKS key is embedded in its
+   initramfs. The Debian-only `initramfs` module is deliberately excluded.
    Firmware or mount failures can leave a target that does not boot.
 7. **Unmount and finish** — `umount`, `finished` unmount the target and show
    completion. Report unmount errors accurately; reboot remains the user's

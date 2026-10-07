@@ -1,9 +1,10 @@
 # Provisional installation image
 
 This directory defines HorneroOS's provisional Calamares installation medium.
-It is a development build profile, not the future official installer. Its
-current ISO boots into Calamares in disposable UEFI and legacy-BIOS VMs and
-reaches the partitioning page. A complete installation has not passed
+It is a development build profile, not the future official installer. The
+current source has completed an encrypted UEFI installation but first-boot
+testing exposed a missing initramfs LUKS-unlock configuration. The fix is under
+VM validation. A complete install-and-first-boot path has not passed
 acceptance. The profile offers only compositions that the HorneroOS edition
 catalogue marks installable. It targets x86_64 Desktop with Hyprland (default)
 and Niri (Experimental).
