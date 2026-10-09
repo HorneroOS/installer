@@ -67,3 +67,9 @@ def test_package_chroot_uses_live_dns_and_host_overrides() -> None:
     assert modules.index("shellprocess@resolver") < modules.index("packages")
     assert modules.index("packages") < modules.index("shellprocess@resolver-cleanup")
     assert modules.index("shellprocess@resolver-cleanup") < modules.index("users")
+
+
+def test_documented_iso_build_entrypoint_is_executable() -> None:
+    build_script = ROOT / "scripts/build-iso.sh"
+
+    assert build_script.stat().st_mode & 0o111

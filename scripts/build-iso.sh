@@ -31,6 +31,11 @@ output="$output_path"
   exit 1
 }
 [[ $(id -u) -eq 0 ]] || { echo 'Run mkarchiso from root inside the disposable build VM.' >&2; exit 1; }
+installer_revision=$(git -C "$ROOT" rev-parse --verify HEAD)
+[[ -z "$(git -C "$ROOT" status --porcelain --untracked-files=normal)" ]] || {
+  echo 'Refusing to build from a dirty installer checkout; commit or discard local changes first.' >&2
+  exit 1
+}
 jobs=${VJOBS:-2}
 [[ "$jobs" =~ ^[1-2]$ ]] || { echo 'VJOBS must be 1 or 2.' >&2; exit 1; }
 for tool in pacstrap mkinitcpio mkarchiso mksquashfs repo-add makepkg git python3 xorriso; do
@@ -195,7 +200,7 @@ xorriso -indev "$iso" -outdev "$enriched_iso" \
   -boot_image any replay -commit
 mv -- "$enriched_iso" "$iso"
 sha256sum "$iso" > "$iso.sha256"
-python3 - "$ROOT/installer.lock.yaml" "$profile/calamares/modules/compositions.json" "$iso" <<'PY'
+python3 - "$ROOT/installer.lock.yaml" "$profile/calamares/modules/compositions.json" "$iso" "$installer_revision" <<'PY'
 import hashlib
 import json
 import sys
@@ -211,6 +216,7 @@ with artifact.open("rb") as image_file:
         hasher.update(chunk)
 digest = hasher.hexdigest()
 manifest = {
+    "installerRevision": sys.argv[4],
     "productRevision": lock["product"]["revision"],
     "calamaresVersion": lock["calamares"]["version"],
     "archSnapshot": lock["arch"]["snapshot"],

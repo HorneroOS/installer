@@ -39,9 +39,10 @@ VJOBS=2 scripts/build-iso.sh \
 The VM needs Archiso, `arch-install-scripts`, `squashfs-tools`, `pacman-contrib`,
 base-devel, Git, Python with PyYAML, and the Calamares build dependencies. The
 builder uses Arch Linux Archive repositories at the snapshot date in the lock.
-It writes the image checksum and a JSON manifest containing product, package
-recipe and composition provenance next to the ISO. The artifact is unsigned;
-release signing is a separate gate.
+It refuses a dirty installer checkout and writes the image checksum plus a JSON
+manifest with the exact installer commit, product revision, package recipes and
+composition provenance next to the ISO. The artifact is unsigned; release
+signing is a separate gate.
 
 Do not test erase, replacement, encryption or bootloader flows on a personal
 disk. All graphical acceptance must use disposable UEFI and legacy-BIOS VMs
