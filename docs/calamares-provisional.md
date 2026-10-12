@@ -8,6 +8,12 @@ remains provisional until Panda's version is ready to publish and passes
 acceptance. The Calamares framework and its configuration are packaged
 separately, following Calamares deployment guidance.
 
+Installer contributors should follow the shared
+[HorneroOS design language](https://github.com/HorneroOS/docs/blob/main/development/design-language.md)
+for product identity, accessible interaction, honest maturity labels and
+high-consequence confirmation flows. The installer-specific controls and
+acceptance gates remain documented in this guide.
+
 The current image profile is a development preview; no certified ISO is
 available yet. It is configured to boot a small Xfce live session on UEFI or
 legacy BIOS, offer a graphical network tray and launch Calamares. Its edition
