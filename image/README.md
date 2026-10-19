@@ -1,9 +1,10 @@
 # Provisional installation image
 
 This directory defines HorneroOS's provisional Calamares installation medium.
-It is a development build profile, not the future official installer. Its
-current ISO boots into Calamares in disposable UEFI and legacy-BIOS VMs and
-reaches the partitioning page. A complete installation has not passed
+It is a development build profile, not the future official installer. The
+current source has completed an encrypted UEFI installation but first-boot
+testing exposed a missing initramfs LUKS-unlock configuration. The fix is under
+VM validation. A complete install-and-first-boot path has not passed
 acceptance. The profile offers only compositions that the HorneroOS edition
 catalogue marks installable. It targets x86_64 Desktop with Hyprland (default)
 and Niri (Experimental).
@@ -38,9 +39,10 @@ VJOBS=2 scripts/build-iso.sh \
 The VM needs Archiso, `arch-install-scripts`, `squashfs-tools`, `pacman-contrib`,
 base-devel, Git, Python with PyYAML, and the Calamares build dependencies. The
 builder uses Arch Linux Archive repositories at the snapshot date in the lock.
-It writes the image checksum and a JSON manifest containing product, package
-recipe and composition provenance next to the ISO. The artifact is unsigned;
-release signing is a separate gate.
+It refuses a dirty installer checkout and writes the image checksum plus a JSON
+manifest with the exact installer commit, product revision, package recipes and
+composition provenance next to the ISO. The artifact is unsigned; release
+signing is a separate gate.
 
 Do not test erase, replacement, encryption or bootloader flows on a personal
 disk. All graphical acceptance must use disposable UEFI and legacy-BIOS VMs

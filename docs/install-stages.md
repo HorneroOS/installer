@@ -33,10 +33,13 @@ installed-system acceptance remain in progress; see the
    `services-systemd` enables edition services. Do not claim completion if
    either stage fails.
 6. **Boot files** — `initcpiocfg` and `initcpio` configure filesystem/encryption
-   hooks and build Arch initramfs images with `mkinitcpio`.
-   `shellprocess@grub-cryptodisk` sets `GRUB_ENABLE_CRYPTODISK=y` in the
-   target's GRUB defaults before `bootloader` installs GRUB, so GRUB can read a
-   LUKS root. The Debian-only `initramfs` module is deliberately excluded.
+   hooks and build Arch initramfs images with `mkinitcpio`. The `encrypt` hook
+   is placed after `block` and before `filesystems`, so an encrypted root is
+   unlocked before the initramfs mounts it. `grubcfg` writes LUKS device and
+   mapper-root parameters into GRUB's kernel command line before `bootloader`
+   installs the firmware-specific GRUB targets. The EFI System Partition
+   mounted at `/boot` stays unencrypted; no LUKS key is embedded in its
+   initramfs. The Debian-only `initramfs` module is deliberately excluded.
    Firmware or mount failures can leave a target that does not boot.
 7. **Unmount and finish** — `umount`, `finished` unmount the target and show
    completion. Report unmount errors accurately; reboot remains the user's
@@ -71,11 +74,14 @@ passed acceptance.
 
 Target files and package state should be traceable to a Calamares stage and the
 repository that owns the content (`config`, `hornero`, `shell`, or `greeter`).
-The image artifact records composition and package-source provenance. The
-selected edition also installs its generated `hornero-profile-*` package, which
-owns `/usr/lib/hornero/system-profile.json`; `horneroctl system info` reads that
-immutable composition record and reports the active session compositor
-separately. The installer does not yet emit a complete written-path manifest.
+The image artifact records the exact installer commit, product composition,
+package-source provenance and checksum. The build refuses an installer
+checkout with uncommitted files so the recorded revision identifies the actual
+source. The selected edition also installs its generated
+`hornero-profile-*` package, which owns `/usr/lib/hornero/system-profile.json`;
+`horneroctl system info` reads that immutable composition record and reports
+the active session compositor separately. The installer does not yet emit a
+complete written-path manifest.
 That manifest remains a release gate before the official installer claims
 configuration-drift reconciliation.
 
@@ -85,8 +91,15 @@ A built image is not accepted from a successful render or ISO build alone.
 Acceptance requires completed installations in disposable UEFI and legacy-BIOS
 VMs, successful boots of both installed systems, a package set matching the
 pinned resolver, correct cleanup after success and failure, and a complete
-written-path manifest. The current UEFI run reaches package installation but
-fails at GRUB because the tested ISO predates the cryptodisk fix; BIOS
-validation covers live boot and wizard navigation only. Until the full gates
-pass, the image profile remains provisional and must not be treated as a safe
-way to install a personal computer or homelab server.
+written-path manifest. The latest UEFI run reached GRUB after package
+installation; cryptodisk configuration succeeded, but the tested ISO also
+attempted a BIOS GRUB install without a GPT BIOS boot partition. After
+correcting that, the installed VM still failed while GRUB read the kernel from
+compressed,
+encrypted Btrfs. The source now creates a hybrid GPT layout with both boot
+partitions, retains Calamares' hybrid GRUB installation, and mounts the EFI
+System Partition at `/boot` so kernels and initramfs remain readable by GRUB.
+These corrections still require a rebuilt ISO and UEFI/BIOS acceptance. BIOS
+validation currently covers live boot and wizard navigation only. Until the
+full gates pass, the image profile remains provisional and must not be treated
+as a safe way to install a personal computer or homelab server.
