@@ -75,19 +75,33 @@ screenshot; the media lock records the capture's website commit and hashes.
 
 ## Current limits
 
-The live session and Calamares flow have been booted in disposable UEFI and
-legacy-BIOS VMs, and both detected their firmware mode. On 2026-10-07, a UEFI
-run used 4 GiB RAM, 2 vCPUs, and a dedicated 40 GiB QCOW2. Calamares reviewed
-the encrypted hybrid GPT layout and created its partitions, but package
-installation failed before the target system was complete. The debug log shows
-pacman could not resolve `archive.archlinux.org`: the live session had a static
-host entry for the test mirror, while the target chroot received only the live
-resolver file. The installer source now also shares the live hosts file during
-the package step and removes both temporary mounts before configuring the new
-user. Static checks pass; a rebuilt ISO must still prove package installation,
-cleanup on success and failure, and first boot. BIOS testing has only reached
-the partition page. Captures, build provenance, and the validation boundary
-are recorded in [provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
+Earlier disposable UEFI and legacy-BIOS runs reached Calamares and exposed
+partitioning, package-chroot DNS, GRUB, and encrypted-root boot issues. Those
+historical results and captures remain in
+[provisional installer VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
+
+On 2026-10-23, a fresh image built from installer revision
+`78a292ec00c7eee989c68b40054580dff805270f` and product revision
+`7471351cbe26e2a8754fd1bd9c5f4a2b984115ad` booted to the live desktop in
+separate disposable UEFI and legacy-BIOS VMs. The exact artifact,
+`horneroos-2026.10-provisional-x86_64.iso`, is 2,703,360,000 bytes with
+SHA-256 `fde2e6f54f33c341afa6fa87a26cff86740f58e48d8b3ea949cafff35281a2a1`.
+In both modes the new launcher DNS preflight displayed its warning before
+Calamares opened and reported that no disk changes had been made. The test
+VMs had no outbound access to the Arch package server, so neither run reached
+partitioning or attempted an installation. A follow-up UEFI run used a
+temporary rootless QEMU `passt` backend. DNS resolved the Arch mirror to
+`49.12.124.107`, and an HTTP request reached the mirror. Calamares then failed
+to start: the package requires Qt symbol `Qt_6.12`, but the live image has
+`qt6-base 6.11.2-3`. The fresh image therefore still cannot install. The
+evidence points to the disposable builder's installed packages not matching
+the locked Arch snapshot; the build now needs to sync the builder to that
+snapshot before compiling local packages. No partitioning or installation was
+attempted. This validates live boot and DNS behavior only, not package
+installation, temporary mount cleanup, installed package parity, encryption,
+or first boot. The image is unsigned and provisional. Build and VM details
+are tracked in installer
+[issue #11](https://github.com/HorneroOS/installer/issues/11).
 
 A previous image also reached the encrypted-root first boot and fell into the
 initramfs emergency shell because it lacked the `encrypt` hook and GRUB's
@@ -104,8 +118,10 @@ SquashFS. The build now places `base.sqfs` as a separate file on the ISO
 filesystem and points `unpackfs` at that path. A prior corrected image had a
 checksum matching its generated manifest and verified contents. The source
 gates both the automatic launcher and menu entry on DNS resolution so a live
-network failure is reported before disk partitioning; that guard is not present
-in the already-built test ISO. A successful full install and installed-system
+network failure is reported before disk partitioning. The 2026-10-23 image
+includes and exercised this guard in both firmware modes. Its Calamares binary
+does not start with the live image's Qt version, so a compatible rebuild is
+required before install testing. A successful full install and installed-system
 boot remain outstanding. The host
 development machine is deliberately not used for ISO builds or disk tests.
 Do not use this preview as the sole copy of important data or as an unattended

@@ -1,5 +1,42 @@
 # Provisional Calamares ISO VM evidence
 
+## Latest build and live boot (2026-10-23)
+
+Built in a disposable Arch QEMU builder from installer revision
+`78a292ec00c7eee989c68b40054580dff805270f` and product revision
+`7471351cbe26e2a8754fd1bd9c5f4a2b984115ad`, with Calamares 3.4.3. The
+artifact `horneroos-2026.10-provisional-x86_64.iso` is 2,703,360,000 bytes;
+SHA-256 is
+`fde2e6f54f33c341afa6fa87a26cff86740f58e48d8b3ea949cafff35281a2a1`. The
+manifest digest matched the host-computed digest. `file` identified bootable
+ISO 9660 media, and `xorriso` reported hybrid MBR/GPT and El Torito boot
+records.
+
+Separate disposable OVMF UEFI and legacy BIOS VMs booted this exact ISO to the
+live desktop. The first run in each mode used QEMU user networking. Both
+showed the launcher DNS preflight warning before Calamares opened and stated
+that no disk changes had been made. A follow-up OVMF run used a temporary
+rootless QEMU `passt` backend. It resolved `archive.archlinux.org` to
+`49.12.124.107` and an HTTP request reached the mirror, but Calamares could
+not start. The package requires Qt symbol `Qt_6.12`; the live image contains
+`qt6-base 6.11.2-3`.
+
+- `live-boot-20261023/uefi-preflight-warning.png`: UEFI live desktop with the
+  DNS preflight warning.
+- `live-boot-20261023/bios-live-desktop.png`: legacy BIOS live desktop.
+- `live-boot-20261023/calamares-qt-runtime-failure.png`: UEFI terminal output
+  showing the Calamares loader failure.
+
+The ISO is an unsigned provisional test artifact. The issue #11 checklist
+remains open. The builder must first be synchronized to the locked Arch
+snapshot. A rebuilt image must then complete UEFI and BIOS install-to-first-boot
+runs, package parity checks, and resolver/package-repository cleanup checks on
+success and failure. No partitioning or target installation was attempted with
+this image. These outcomes supersede none of the historical results below;
+those refer to earlier ISO revisions.
+
+## Historical VM evidence from earlier images
+
 The provisional ISO was built from the pinned inputs in `installer.lock.yaml`
 inside an isolated Arch Linux QEMU build VM. The build completed and generated
 an ISO checksum and provenance manifest. The ISO SHA-256 was independently
