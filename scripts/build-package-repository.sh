@@ -25,7 +25,7 @@ product_source=${HORNEROS_PRODUCT_SOURCE:-}
 [[ $(systemd-detect-virt --vm 2>/dev/null) != none ]] || { echo 'Refusing to build AUR recipes on bare metal.' >&2; exit 1; }
 [[ $(id -u) -eq 0 ]] || { echo 'Run the isolated package builder as root inside the disposable VM.' >&2; exit 1; }
 jobs=${VJOBS:-2}
-pacman_conf=${PACMAN_CONF:-/etc/pacman.conf}
+pacman_conf=${PACMAN_CONF:?Set PACMAN_CONF to the configuration generated from installer.lock.yaml.}
 [[ "$jobs" =~ ^[1-2]$ ]] || { echo 'VJOBS must be 1 or 2.' >&2; exit 1; }
 [[ ! -e "$repository" && ! -L "$repository" ]] || { echo "Repository output already exists: $repository" >&2; exit 1; }
 [[ ! -L "$work" ]] || { echo "Work path cannot be a symlink: $work" >&2; exit 1; }
@@ -37,6 +37,11 @@ chown builder:builder "$work"
 repo_db="$repository/hornero-installer.db.tar.gz"
 base_pacman_conf="$pacman_conf"
 dependency_pacman_conf="$pacman_conf"
+# The builder VM may have newer packages than the locked Arch Linux Archive
+# snapshot. Reconcile the disposable build environment first so AUR and
+# Calamares binaries link against the same dependency versions that mkarchiso
+# will install into the live image.
+pacman --config "$pacman_conf" -Syyuu --noconfirm
 aur_repository=$(python3 - "$ROOT/installer.lock.yaml" <<'PY'
 import sys
 import yaml
