@@ -31,8 +31,8 @@ aur:
       version: 2.3.0-3
       revision: df5b264003f0d39ba75f42970074ff2465ed527c
     hornero-config:
-      version: 0.3.10-1
-      revision: c0038f3d87c9043a8579df6b0d8a72aa982a5dde
+      version: 0.3.11-1
+      revision: 42b83dd230bca27ca3f09a7c3b46db853a7a10fa
     horneroctl-bin:
       version: 0.2.0_preview15-1
       revision: 7ec0c2589ca7d40e626b707b36e1dc0bd0722676
