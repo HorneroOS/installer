@@ -20,12 +20,13 @@ def test_erase_layout_supports_uefi_and_legacy_bios_grub() -> None:
 
     # The erase layout has a GPT BIOS boot partition and an ESP. Mounting the
     # ESP at /boot keeps kernels and initramfs readable by GRUB outside the
-    # compressed, encrypted Btrfs root. Install both GRUB targets into the
-    # matching ESP and BIOS boot partition.
+    # compressed, encrypted Btrfs root. Calamares selects the GRUB target from
+    # the firmware used to boot the installer; hybrid mode incorrectly tries
+    # EFI GRUB installation during a Legacy BIOS install.
     assert partition["createHybridBootloaderLayout"] is True
     assert partition["efi"]["mountPoint"] == "/boot"
     assert bootloader["efiBootLoader"] == "grub"
-    assert bootloader["installHybridGRUB"] is True
+    assert bootloader["installHybridGRUB"] is False
 
 
 def test_encrypted_root_unlocks_before_mount_without_embedded_keyfile() -> None:

@@ -133,7 +133,7 @@ def main() -> int:
     assert parsed["partition"]["createHybridBootloaderLayout"] is True
     assert parsed["partition"]["enableLuksAutomatedPartitioning"] is True
     assert parsed["bootloader"]["efiBootLoader"] == "grub"
-    assert parsed["bootloader"]["installHybridGRUB"] is True
+    assert parsed["bootloader"]["installHybridGRUB"] is False
     assert parsed["packages"]["backend"] == "pacman"
     assert parsed["packages"]["update_system"] is False
     assert parsed["packages"]["pacman"]["num_retries"] >= 8
