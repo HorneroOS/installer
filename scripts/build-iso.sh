@@ -87,6 +87,8 @@ install -d "$profile/calamares/modules" "$profile/calamares/branding"
 install -Dm644 "$ROOT/image/calamares/settings.conf" "$profile/calamares/settings.conf"
 cp -a "$ROOT/image/calamares/modules/." "$profile/calamares/modules/"
 cp -a "$ROOT/image/calamares/branding/." "$profile/calamares/branding/"
+install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"
 install -Dm644 "$ROOT/image/calamares/hornero-installer-repo.conf" \
   "$profile/airootfs/etc/pacman.d/hornero-installer.conf"
 if [[ -n "$product_source" ]]; then

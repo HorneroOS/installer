@@ -57,6 +57,7 @@ def main() -> int:
     assert exec_modules.index("shellprocess@resolver") < exec_modules.index("packages")
     assert exec_modules.index("packages") < exec_modules.index("shellprocess@resolver-cleanup")
     assert exec_modules.index("shellprocess@resolver-cleanup") < exec_modules.index("shellprocess@cleanup")
+    assert exec_modules.index("users") < exec_modules.index("shellprocess@user-defaults")
     assert exec_modules.index("initcpiocfg") < exec_modules.index("initcpio")
     assert exec_modules.index("initcpio") < exec_modules.index("grubcfg")
     assert exec_modules.index("grubcfg") < exec_modules.index("bootloader")
@@ -73,6 +74,7 @@ def main() -> int:
     assert len(configs) >= 10, "expected the core target-system modules to be configured"
     parsed = {path.stem: load_yaml(path) for path in configs}
     assert parsed["shellprocess-resolver"]["dontChroot"] is True
+    assert parsed["shellprocess-user-defaults"]["dontChroot"] is True
     assert "/usr/bin/mount --bind /etc/resolv.conf ${ROOT}/etc/resolv.conf" in parsed[
         "shellprocess-resolver"
     ]["script"]
@@ -191,6 +193,8 @@ def main() -> int:
     profile_renderer = (ROOT / "scripts/render-installer-catalogue.py").read_text(encoding="utf-8")
     assert "system-profile.json" in profile_renderer and "/usr/lib/hornero/system-profile.json" in profile_renderer
     iso_builder = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
+    assert 'install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py"' in iso_builder
+    assert '"$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"' in iso_builder
     assert 'python3 "$product/scripts/resolve-edition.py"' not in iso_builder, (
         "the product resolver must only run after the catalogue renderer verifies its locked hash"
     )
@@ -359,6 +363,67 @@ def main() -> int:
         assert "hornero-installer" not in clean_conf
         assert clean_conf.count("Include = /etc/pacman.d/mirrorlist") == 2
         assert all(not (fake_root / path).exists() for path in ("etc/pacman.d/hornero-installer.conf", "etc/pacman.d/hornero-installer-mirrorlist.conf", "usr/lib/hornero-installer/cleanup-package-source.py"))
+
+    with tempfile.TemporaryDirectory(prefix="hornero-installer-user-defaults-") as directory:
+        fake_root = Path(directory)
+        defaults = fake_root / "etc/xdg/xfce4/helpers.rc"
+        defaults.parent.mkdir(parents=True)
+        defaults.write_text("TerminalEmulator=kitty\n", encoding="utf-8")
+        (fake_root / "etc/passwd").write_text(
+            "root:x:0:0:root:/root:/bin/bash\n"
+            "qauser:x:1000:1000:QA User:/home/qauser:/bin/bash\n",
+            encoding="utf-8",
+        )
+        (fake_root / "home/qauser").mkdir(parents=True)
+        user_defaults_spec = importlib.util.spec_from_file_location(
+            "configure_user_defaults", ROOT / "image/calamares/configure-user-defaults.py"
+        )
+        user_defaults_module = importlib.util.module_from_spec(user_defaults_spec)
+        user_defaults_spec.loader.exec_module(user_defaults_module)
+        user_defaults_module.configure_user_defaults(fake_root)
+        user_config = fake_root / "home/qauser/.config/xfce4/helpers.rc"
+        assert user_config.read_text(encoding="utf-8") == "TerminalEmulator=kitty\n"
+        assert user_config.stat().st_mode & 0o777 == 0o644
+        user_config.write_text("TerminalEmulator=custom\n", encoding="utf-8")
+        user_defaults_module.configure_user_defaults(fake_root)
+        assert user_config.read_text(encoding="utf-8") == "TerminalEmulator=custom\n"
+
+    with tempfile.TemporaryDirectory(prefix="hornero-installer-user-defaults-link-") as directory:
+        fixture = Path(directory)
+        fake_root = fixture / "target"
+        outside = fixture / "outside"
+        (fake_root / "etc/xdg/xfce4").mkdir(parents=True)
+        (fake_root / "etc/xdg/xfce4/helpers.rc").write_text(
+            "TerminalEmulator=kitty\n", encoding="utf-8"
+        )
+        (fake_root / "etc").joinpath("passwd").write_text(
+            "qauser:x:1000:1000:QA User:/home/qauser:/bin/bash\n", encoding="utf-8"
+        )
+        user_home = fake_root / "home/qauser"
+        user_home.mkdir(parents=True)
+        (user_home / ".config").symlink_to(outside, target_is_directory=True)
+        user_defaults_spec = importlib.util.spec_from_file_location(
+            "configure_user_defaults_link", ROOT / "image/calamares/configure-user-defaults.py"
+        )
+        user_defaults_module = importlib.util.module_from_spec(user_defaults_spec)
+        user_defaults_spec.loader.exec_module(user_defaults_module)
+        try:
+            user_defaults_module.configure_user_defaults(fake_root)
+        except ValueError as error:
+            assert "symlink" in str(error)
+        else:
+            raise AssertionError("user defaults followed a symlink outside the target root")
+        assert not (outside / "xfce4").exists()
+        (fake_root / "etc/passwd").write_text(
+            "qauser:x:1000:1000:QA User:/home/../../tmp/outside:/bin/bash\n",
+            encoding="utf-8",
+        )
+        try:
+            user_defaults_module.configure_user_defaults(fake_root)
+        except ValueError as error:
+            assert "unsafe path components" in str(error)
+        else:
+            raise AssertionError("user defaults accepted a passwd home with traversal components")
 
     print(f"installer config checks passed ({len(configs)} module configs; {len(item_ids)} catalogue choices)")
     return 0
