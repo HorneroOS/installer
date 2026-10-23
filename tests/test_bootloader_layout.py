@@ -80,3 +80,13 @@ def test_iso_builder_preflights_python_build_dependencies() -> None:
 
     assert '"yaml": "python-yaml"' in build_script
     assert '"jsonschema": "python-jsonschema"' in build_script
+
+
+def test_package_builder_syncs_to_locked_arch_snapshot_before_building() -> None:
+    build_script = (ROOT / "scripts/build-package-repository.sh").read_text(encoding="utf-8")
+
+    snapshot_sync = build_script.index('pacman --config "$pacman_conf" -Syyuu --noconfirm')
+    first_aur_clone = build_script.index('git clone --quiet --no-checkout "$aur_repository/')
+    first_package_build = build_script.index('runuser -u builder -- env VJOBS=')
+
+    assert snapshot_sync < first_aur_clone < first_package_build

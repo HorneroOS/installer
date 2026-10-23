@@ -37,6 +37,11 @@ chown builder:builder "$work"
 repo_db="$repository/hornero-installer.db.tar.gz"
 base_pacman_conf="$pacman_conf"
 dependency_pacman_conf="$pacman_conf"
+# The builder VM may have newer packages than the locked Arch Linux Archive
+# snapshot. Reconcile the disposable build environment first so AUR and
+# Calamares binaries link against the same dependency versions that mkarchiso
+# will install into the live image.
+pacman --config "$pacman_conf" -Syyuu --noconfirm
 aur_repository=$(python3 - "$ROOT/installer.lock.yaml" <<'PY'
 import sys
 import yaml
