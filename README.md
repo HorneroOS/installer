@@ -51,8 +51,10 @@ installable composition outside the repository. Those recipes are built into
 the local install repository by the disposable image builder.
 `scripts/build-iso.sh` requires a disposable Arch VM with 40 GiB free for work
 and 12 GiB for output (52 GiB if both share a filesystem), and limits
-compilation/compression to two workers. Building
-packages or images never runs against the host installation.
+compilation/compression to two workers. The `python-yaml` and
+`python-jsonschema` Arch packages are required alongside the build tools; the
+builder checks these Python dependencies before doing package or image work.
+Building packages or images never runs against the host installation.
 
 See [the provisional Calamares guide](docs/calamares-provisional.md) for
 installation limits, recovery notes, image composition and acceptance gates.

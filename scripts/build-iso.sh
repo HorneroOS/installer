@@ -41,6 +41,20 @@ jobs=${VJOBS:-2}
 for tool in pacstrap mkinitcpio mkarchiso mksquashfs repo-add makepkg git python3 xorriso; do
   command -v "$tool" >/dev/null || { echo "Missing build tool: $tool" >&2; exit 1; }
 done
+python3 - <<'PY'
+import importlib.util
+import sys
+
+required_modules = {"yaml": "python-yaml", "jsonschema": "python-jsonschema"}
+missing = [
+    package
+    for module, package in required_modules.items()
+    if importlib.util.find_spec(module) is None
+]
+if missing:
+    print("Missing Python build dependencies: " + ", ".join(missing), file=sys.stderr)
+    raise SystemExit(1)
+PY
 mkdir -p "$work" "$output"
 available_kib=$(df -Pk "$work" | awk 'NR == 2 { print $4 }')
 (( available_kib >= 41943040 )) || {

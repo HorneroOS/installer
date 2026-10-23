@@ -73,3 +73,10 @@ def test_documented_iso_build_entrypoint_is_executable() -> None:
     build_script = ROOT / "scripts/build-iso.sh"
 
     assert build_script.stat().st_mode & 0o111
+
+
+def test_iso_builder_preflights_python_build_dependencies() -> None:
+    build_script = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
+
+    assert '"yaml": "python-yaml"' in build_script
+    assert '"jsonschema": "python-jsonschema"' in build_script
