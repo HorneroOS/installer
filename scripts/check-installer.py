@@ -390,6 +390,12 @@ def main() -> int:
         )
         post_exit_module = importlib.util.module_from_spec(post_exit_spec)
         post_exit_spec.loader.exec_module(post_exit_module)
+        configured_mounts = {
+            Path(item["mountPoint"].lstrip("/"))
+            for item in parsed["mount"]["extraMounts"] + parsed["mount"]["btrfsSubvolumes"]
+        }
+        configured_mounts.add(Path(parsed["partition"]["efi"]["mountPoint"].lstrip("/")))
+        assert set(map(Path, post_exit_module.TARGET_MOUNTS)) == configured_mounts
         unmounted: list[Path] = []
         failures, cleaned = post_exit_module.cleanup_targets(
             [fake_target / "etc/pacman.conf"],
@@ -397,7 +403,22 @@ def main() -> int:
             lambda mountpoint: unmounted.append(mountpoint),
         )
         assert failures == [] and cleaned == [fake_target]
-        assert unmounted == [fake_target / "etc/hosts", fake_target / "etc/resolv.conf"]
+        assert unmounted == [
+            fake_target / "etc/hosts",
+            fake_target / "etc/resolv.conf",
+            fake_target / "sys/firmware/efi/efivars",
+            fake_target / "run/udev",
+            fake_target / "usr/share/hornero-installer/repo",
+            fake_target / "dev",
+            fake_target / "proc",
+            fake_target / "sys",
+            fake_target / "run",
+            fake_target / "var/cache",
+            fake_target / "var/log",
+            fake_target / "home",
+            fake_target / "boot",
+            fake_target,
+        ]
         assert "hornero-installer" not in (fake_target / "etc/pacman.conf").read_text(encoding="utf-8")
 
     with tempfile.TemporaryDirectory(prefix="hornero-installer-user-defaults-") as directory:

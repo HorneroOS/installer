@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unmount temporary Calamares resolver binds and restore target pacman config."""
+"""Remove temporary Calamares mounts and restore the target pacman config."""
 
 from __future__ import annotations
 
@@ -16,6 +16,21 @@ TARGET_GLOB = "/tmp/calamares-root-*/etc/pacman.conf"
 TEMP_INCLUDES = (
     "Include = /etc/pacman.d/hornero-installer.conf",
     "Include = /etc/pacman.d/hornero-installer-mirrorlist.conf",
+)
+RESOLVER_MOUNTS = ("etc/hosts", "etc/resolv.conf")
+TARGET_MOUNTS = (
+    "sys/firmware/efi/efivars",
+    "run/udev",
+    "usr/share/hornero-installer/repo",
+    "dev",
+    "proc",
+    "sys",
+    "run",
+    "var/cache",
+    "var/log",
+    "home",
+    "boot",
+    ".",
 )
 
 
@@ -45,19 +60,36 @@ def cleanup_targets(
     failures: list[str] = []
     cleaned: list[Path] = []
     for pacman_conf in pacman_configs:
+        if pacman_conf.is_symlink() or not pacman_conf.is_file():
+            continue
         try:
-            if pacman_conf.is_symlink() or not pacman_conf.is_file():
-                continue
             content = pacman_conf.read_text(encoding="utf-8")
-            if not any(include in content.splitlines() for include in TEMP_INCLUDES):
-                continue
-            target = pacman_conf.parents[1]
-            for relative in ("etc/hosts", "etc/resolv.conf"):
-                unmount(target / relative)
-            cleanup_module.cleanup(target)
-            cleaned.append(target)
-        except (OSError, ValueError, RuntimeError) as error:
+        except (OSError, ValueError) as error:
             failures.append(f"{pacman_conf}: {error}")
+            continue
+        if not any(include in content.splitlines() for include in TEMP_INCLUDES):
+            continue
+
+        target = pacman_conf.parents[1]
+        target_failures: list[str] = []
+        for relative in RESOLVER_MOUNTS:
+            try:
+                unmount(target / relative)
+            except RuntimeError as error:
+                target_failures.append(str(error))
+        try:
+            cleanup_module.cleanup(target)
+        except (OSError, ValueError, RuntimeError) as error:
+            target_failures.append(f"restore pacman config: {error}")
+        for relative in TARGET_MOUNTS:
+            try:
+                unmount(target / relative)
+            except RuntimeError as error:
+                target_failures.append(str(error))
+        if target_failures:
+            failures.extend(f"{pacman_conf}: {error}" for error in target_failures)
+        else:
+            cleaned.append(target)
     return failures, cleaned
 
 
