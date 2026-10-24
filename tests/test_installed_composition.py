@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import json
 from pathlib import Path
 
 
@@ -119,3 +120,19 @@ def test_installer_package_list_drift_fails():
         "installer package list differs from resolver packages plus profile metadata package"
         in report["errors"]
     )
+
+
+def test_committed_composition_options_match_the_audit_contract():
+    compositions = json.loads(
+        (ROOT / "image/calamares/modules/compositions.json").read_text(encoding="utf-8")
+    )
+
+    for option in compositions["options"]:
+        profile = {
+            "sourceRevision": compositions["productRevision"],
+            "profilePackage": option["profilePackage"],
+            "edition": option["profile"],
+        }
+        report = AUDIT_MODULE.audit(profile, compositions, set(option["packages"]))
+
+        assert report["result"] == "PASS", report["errors"]
