@@ -64,10 +64,10 @@ has not been published as a release.
 | UEFI cancellation cleanup during package stage | Pass |
 | Encrypted UEFI installation completes | Pass |
 | Installed UEFI system unlocks and reaches session lock screen | Pass |
-| Interactive UEFI first login and usable desktop | Not verified; login attempt rejected |
+| UEFI first login and usable desktop | Pending (login rejected) |
 | BIOS installation completes and Calamares cleans target mounts | Pass |
 | Installed BIOS system unlocks and reaches session lock screen | Pass |
-| Interactive BIOS first login and usable desktop | Not verified; login attempt rejected |
+| BIOS first login and usable desktop | Pending (login rejected) |
 | Installed composition/profile package parity | Not verified |
 | Package-failure cleanup path | Not verified on R11 |
 | Complete UEFI and BIOS acceptance through usable desktop | Incomplete |
