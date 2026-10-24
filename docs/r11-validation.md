@@ -75,6 +75,27 @@ has not been published as a release.
 | Package-failure cleanup path | Not verified on R11 |
 | Complete UEFI and BIOS acceptance through usable desktop | Incomplete |
 
+## Installed composition audit command
+
+After booting an installed VM, run the read-only audit from an installer
+checkout that contains `scripts/check-installed-composition.py`, and pass the
+`image/calamares/modules/compositions.json` generated for the exact ISO under
+test:
+
+```sh
+python3 scripts/check-installed-composition.py \
+  --root / \
+  --compositions /path/to/exact-iso-source/image/calamares/modules/compositions.json
+```
+
+The report passes only when the installed profile package and source revision
+match one manifest option, its metadata matches that resolver result, and all
+resolver-selected packages are present in the installed pacman database. Base
+image packages and transitive dependencies are expected extras, so this check
+does not claim equality of the entire installed package database. Record the
+JSON report alongside the VM firmware and boot evidence; a passing command
+still does not complete UEFI or BIOS acceptance on its own.
+
 This preview remains provisional and should only be exercised in disposable
 VMs. Do not treat a successful ISO build or partition installation as
 install-to-first-login acceptance. Signing and release publication remain
