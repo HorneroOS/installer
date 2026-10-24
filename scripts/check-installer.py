@@ -314,6 +314,11 @@ def main() -> int:
     launcher = (archiso / "airootfs/usr/local/bin/hornero-installer-start").read_text(encoding="utf-8")
     desktop_entry = (CALAMARES / "hornero-installer.desktop").read_text(encoding="utf-8")
     runner = (archiso / "airootfs/usr/local/bin/hornero-installer-run").read_text(encoding="utf-8")
+    live_cleanup = archiso / "airootfs/usr/local/lib/hornero-installer/cleanup-package-source.py"
+    assert live_cleanup.read_bytes() == (CALAMARES / "cleanup-package-source.py").read_bytes()
+    post_exit_cleanup = (
+        archiso / "airootfs/usr/local/lib/hornero-installer/cleanup-calamares-targets.py"
+    ).read_text(encoding="utf-8")
     assert "sudo -E" not in launcher + desktop_entry
     assert "sudo /usr/local/bin/hornero-installer-run" in launcher
     assert "/usr/bin/nm-online --quiet --timeout=45" in launcher
@@ -322,6 +327,9 @@ def main() -> int:
     assert "Exec=/usr/local/bin/hornero-installer-start" in desktop_entry
     assert "sudo /usr/local/bin/hornero-installer-run" not in desktop_entry
     assert "/usr/bin/calamares -D6" in runner
+    assert "/usr/local/lib/hornero-installer/cleanup-calamares-targets.py" in runner
+    assert "TEMP_INCLUDES" in post_exit_cleanup and "/usr/bin/umount" in post_exit_cleanup
+    assert "pacman_conf.parents[1]" in post_exit_cleanup
     assert "/root/.cache/calamares/session.log" in runner
     assert "/var/log/hornero-installer/session.log" in runner
     assert "install -d -m 0750 -o root -g hornero-live" in runner
@@ -363,6 +371,34 @@ def main() -> int:
         assert "hornero-installer" not in clean_conf
         assert clean_conf.count("Include = /etc/pacman.d/mirrorlist") == 2
         assert all(not (fake_root / path).exists() for path in ("etc/pacman.d/hornero-installer.conf", "etc/pacman.d/hornero-installer-mirrorlist.conf", "usr/lib/hornero-installer/cleanup-package-source.py"))
+
+    with tempfile.TemporaryDirectory(prefix="hornero-calamares-post-exit-") as directory:
+        fake_target = Path(directory) / "calamares-root-test"
+        (fake_target / "etc/pacman.d").mkdir(parents=True)
+        (fake_target / "etc").mkdir(exist_ok=True)
+        (fake_target / "usr/lib/hornero-installer").mkdir(parents=True)
+        (fake_target / "etc/pacman.conf").write_text(
+            "[core]\nInclude = /etc/pacman.d/hornero-installer.conf\n"
+            "[extra]\nInclude = /etc/pacman.d/hornero-installer-mirrorlist.conf\n",
+            encoding="utf-8",
+        )
+        (fake_target / "etc/pacman.d/hornero-installer.conf").write_text("temp\n", encoding="utf-8")
+        (fake_target / "etc/pacman.d/hornero-installer-mirrorlist.conf").write_text("temp\n", encoding="utf-8")
+        post_exit_spec = importlib.util.spec_from_file_location(
+            "cleanup_calamares_targets",
+            archiso / "airootfs/usr/local/lib/hornero-installer/cleanup-calamares-targets.py",
+        )
+        post_exit_module = importlib.util.module_from_spec(post_exit_spec)
+        post_exit_spec.loader.exec_module(post_exit_module)
+        unmounted: list[Path] = []
+        failures, cleaned = post_exit_module.cleanup_targets(
+            [fake_target / "etc/pacman.conf"],
+            cleanup_module,
+            lambda mountpoint: unmounted.append(mountpoint),
+        )
+        assert failures == [] and cleaned == [fake_target]
+        assert unmounted == [fake_target / "etc/hosts", fake_target / "etc/resolv.conf"]
+        assert "hornero-installer" not in (fake_target / "etc/pacman.conf").read_text(encoding="utf-8")
 
     with tempfile.TemporaryDirectory(prefix="hornero-installer-user-defaults-") as directory:
         fake_root = Path(directory)
