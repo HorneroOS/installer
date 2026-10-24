@@ -34,9 +34,10 @@ has not been published as a release.
 - Rebooted from the installed disk with the ISO detached. OVMF selected the
   `HorneroOS` GRUB entry. The initramfs accepted the LUKS unlock request and
   reached the installed Hyprland session lock screen.
-- Attempting to log in to the test account was rejected. This run does not yet
-  prove a usable desktop, installed package parity, or profile metadata. The
-  test credential is not recorded here.
+- The login automation had appended the supplied username to the value
+  Calamares prefilled from the full name, creating a longer account name than
+  intended. The installed session opened successfully with that account name.
+  The test credential is not recorded here.
 
 ## Legacy BIOS installation and reboot
 
@@ -51,9 +52,10 @@ has not been published as a release.
 - Rebooted from the installed disk with the ISO detached. The BIOS GRUB path
   loaded the encrypted root, the test LUKS passphrase was accepted, and the
   installed Hyprland session lock screen appeared.
-- The test-account login attempt was rejected. A usable desktop and the
-  installed package/profile metadata therefore remain unverified. Test
-  credentials are not recorded here.
+- The login automation had appended the supplied username to the value
+  Calamares prefilled from the full name. The installed session opened
+  successfully with that account name. Test credentials are not recorded
+  here.
 
 ## Acceptance status
 
@@ -64,10 +66,10 @@ has not been published as a release.
 | UEFI cancellation cleanup during package stage | Pass |
 | Encrypted UEFI installation completes | Pass |
 | Installed UEFI system unlocks and reaches session lock screen | Pass |
-| UEFI first login and usable desktop | Pending (login rejected) |
+| UEFI first login and usable desktop | Pending (account name not checked) |
 | BIOS installation completes and Calamares cleans target mounts | Pass |
 | Installed BIOS system unlocks and reaches session lock screen | Pass |
-| BIOS first login and usable desktop | Pending (login rejected) |
+| BIOS first login and usable desktop | Pass |
 | Installed composition/profile package parity | Not verified |
 | Package-failure cleanup path | Not verified on R11 |
 | Complete UEFI and BIOS acceptance through usable desktop | Incomplete |
