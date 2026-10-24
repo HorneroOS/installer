@@ -34,10 +34,11 @@ has not been published as a release.
 - Rebooted from the installed disk with the ISO detached. OVMF selected the
   `HorneroOS` GRUB entry. The initramfs accepted the LUKS unlock request and
   reached the installed Hyprland session lock screen.
-- The login automation had appended the supplied username to the value
-  Calamares prefilled from the full name, creating a longer account name than
-  intended. The installed session opened successfully with that account name.
-  The test credential is not recorded here.
+- The captured first-login attempts display `Login failed`. They do not
+  establish which account name Calamares created or prove an authenticated
+  UEFI desktop. Keep this acceptance gate pending until a successful login is
+  verified against the installed account. Test credentials are not recorded
+  here.
 
 ## Legacy BIOS installation and reboot
 
@@ -66,7 +67,7 @@ has not been published as a release.
 | UEFI cancellation cleanup during package stage | Pass |
 | Encrypted UEFI installation completes | Pass |
 | Installed UEFI system unlocks and reaches session lock screen | Pass |
-| UEFI first login and usable desktop | Pending (account name not checked) |
+| UEFI first login and usable desktop | Pending (login attempts failed) |
 | BIOS installation completes and Calamares cleans target mounts | Pass |
 | Installed BIOS system unlocks and reaches session lock screen | Pass |
 | BIOS first login and usable desktop | Pass |
