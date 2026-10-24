@@ -75,6 +75,15 @@ screenshot; the media lock records the capture's website commit and hashes.
 
 ## Current limits
 
+R11 supersedes the 2026-10-23 build described below. Its exact artifact
+identity, UEFI cancellation cleanup, encrypted install, and first-reboot
+evidence are recorded in [the R11 validation record](r11-validation.md).
+UEFI reboot reached the installed Hyprland lock screen, but interactive login
+and installed package/profile parity have not been verified. R11 legacy-BIOS
+install-to-first-login and package-failure cleanup were not run. Therefore the
+complete acceptance matrix remains open; the detailed 2026-10-23 report below
+is historical evidence, not the current test boundary.
+
 Earlier disposable UEFI and legacy-BIOS runs reached Calamares and exposed
 partitioning, package-chroot DNS, GRUB, and encrypted-root boot issues. Those
 historical results and captures remain in

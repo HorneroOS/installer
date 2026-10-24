@@ -1,11 +1,12 @@
 # Provisional installation image
 
 This directory defines HorneroOS's provisional Calamares installation medium.
-It is a development build profile, not the future official installer. The
-current source has completed an encrypted UEFI installation but first-boot
-testing exposed a missing initramfs LUKS-unlock configuration. The fix is under
-VM validation. A complete install-and-first-boot path has not passed
-acceptance. The profile offers only compositions that the HorneroOS edition
+It is a development build profile, not the future official installer. R11
+completed an encrypted UEFI install and rebooted to the installed Hyprland
+lock screen. Test-account login has not been verified, and BIOS install-to-
+first-boot remains untested. A complete install-and-first-boot path has not
+passed acceptance. The profile offers only compositions that the HorneroOS
+edition
 catalogue marks installable. It targets x86_64 Desktop with Hyprland (default)
 and Niri (Experimental).
 
@@ -59,5 +60,5 @@ limited to the intended live session. Its sudo rule permits only the fixed
 `/usr/bin/calamares` and copies the installer log; it does not grant the live
 user a general root shell. The
 installed target gets its own SDDM login and Hornero greeter from the Desktop
-composition. Live boot and wizard navigation are evidenced; installation and
-first-boot behavior still need acceptance.
+composition. See the [R11 validation record](../docs/r11-validation.md) for
+the tested boundary and remaining acceptance gaps.
