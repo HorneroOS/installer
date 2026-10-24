@@ -329,7 +329,9 @@ def main() -> int:
     assert "/usr/bin/calamares -D6" in runner
     assert "/usr/local/lib/hornero-installer/cleanup-calamares-targets.py" in runner
     assert "TEMP_INCLUDES" in post_exit_cleanup and "/usr/bin/umount" in post_exit_cleanup
-    assert "pacman_conf.parents[1]" in post_exit_cleanup
+    assert "def safe_target" in post_exit_cleanup
+    assert 'target.name.startswith("calamares-root-")' in post_exit_cleanup
+    assert "target_info.st_uid != owner_uid" in post_exit_cleanup
     assert "/root/.cache/calamares/session.log" in runner
     assert "/var/log/hornero-installer/session.log" in runner
     assert "install -d -m 0750 -o root -g hornero-live" in runner
@@ -401,6 +403,8 @@ def main() -> int:
             [fake_target / "etc/pacman.conf"],
             cleanup_module,
             lambda mountpoint: unmounted.append(mountpoint),
+            temp_root=Path(directory),
+            owner_uid=fake_target.stat().st_uid,
         )
         assert failures == [] and cleaned == [fake_target]
         assert unmounted == [
@@ -420,6 +424,14 @@ def main() -> int:
             fake_target,
         ]
         assert "hornero-installer" not in (fake_target / "etc/pacman.conf").read_text(encoding="utf-8")
+        rejected, ignored = post_exit_module.cleanup_targets(
+            [fake_target / "etc/pacman.conf"],
+            cleanup_module,
+            lambda _mountpoint: (_ for _ in ()).throw(AssertionError("unsafe target was unmounted")),
+            temp_root=Path(directory),
+            owner_uid=fake_target.stat().st_uid + 1,
+        )
+        assert rejected == [] and ignored == []
 
     with tempfile.TemporaryDirectory(prefix="hornero-installer-user-defaults-") as directory:
         fake_root = Path(directory)

@@ -6,6 +6,8 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 import glob
 import importlib.util
+import os
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -54,13 +56,43 @@ def unmount_bind(mountpoint: Path) -> None:
         raise RuntimeError(f"unmount {mountpoint}: {result.stderr.strip()}")
 
 
+def safe_target(pacman_conf: Path, temp_root: Path, owner_uid: int) -> Path | None:
+    """Accept only root-owned Calamares targets directly below the temp root."""
+    if pacman_conf.is_symlink() or pacman_conf.name != "pacman.conf":
+        return None
+    target = pacman_conf.parent.parent
+    try:
+        if target.parent != temp_root or not target.name.startswith("calamares-root-"):
+            return None
+        target_info = target.lstat()
+        etc_info = pacman_conf.parent.lstat()
+        conf_info = pacman_conf.lstat()
+    except FileNotFoundError:
+        return None
+    if not stat.S_ISDIR(target_info.st_mode) or target_info.st_uid != owner_uid:
+        return None
+    if target_info.st_mode & 0o022:
+        return None
+    if not stat.S_ISDIR(etc_info.st_mode) or etc_info.st_uid != owner_uid:
+        return None
+    if not stat.S_ISREG(conf_info.st_mode) or conf_info.st_uid != owner_uid:
+        return None
+    return target
+
+
 def cleanup_targets(
-    pacman_configs: Iterable[Path], cleanup_module, unmount: Callable[[Path], None]
+    pacman_configs: Iterable[Path],
+    cleanup_module,
+    unmount: Callable[[Path], None],
+    *,
+    temp_root: Path = Path("/tmp"),
+    owner_uid: int = 0,
 ) -> tuple[list[str], list[Path]]:
     failures: list[str] = []
     cleaned: list[Path] = []
     for pacman_conf in pacman_configs:
-        if pacman_conf.is_symlink() or not pacman_conf.is_file():
+        target = safe_target(pacman_conf, temp_root, owner_uid)
+        if target is None:
             continue
         try:
             content = pacman_conf.read_text(encoding="utf-8")
@@ -70,7 +102,6 @@ def cleanup_targets(
         if not any(include in content.splitlines() for include in TEMP_INCLUDES):
             continue
 
-        target = pacman_conf.parents[1]
         target_failures: list[str] = []
         for relative in RESOLVER_MOUNTS:
             try:
@@ -97,7 +128,11 @@ def main() -> int:
     try:
         cleanup_module = load_cleanup_module()
         failures, cleaned = cleanup_targets(
-            map(Path, glob.glob(TARGET_GLOB)), cleanup_module, unmount_bind
+            map(Path, glob.glob(TARGET_GLOB)),
+            cleanup_module,
+            unmount_bind,
+            temp_root=Path("/tmp"),
+            owner_uid=os.geteuid(),
         )
         for target in cleaned:
             print(f"Cleaned temporary Calamares target {target}")
