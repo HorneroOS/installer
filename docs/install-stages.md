@@ -29,9 +29,11 @@ installed-system acceptance remain in progress; see the
    `shellprocess@cleanup` removes the temporary package repository configuration
    and restores Arch mirrors. Both cleanup jobs also run after package failure;
    VM acceptance verifies their behavior on success and failure.
-5. **User and services** — `users` creates the named account and
+5. **User and services** — `users` creates the named account, then
+   `shellprocess@user-defaults` seeds Exo's package-provided terminal helper
+   into each new home without replacing an existing user override.
    `services-systemd` enables edition services. Do not claim completion if
-   either stage fails.
+   any of these stages fails.
 6. **Boot files** — `initcpiocfg` and `initcpio` configure filesystem/encryption
    hooks and build Arch initramfs images with `mkinitcpio`. The `encrypt` hook
    is placed after `block` and before `filesystems`, so an encrypted root is

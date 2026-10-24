@@ -7,6 +7,18 @@ set -u
 /usr/bin/calamares -D6
 installer_status=$?
 
+# Calamares emergency modules do not run when a user cancels the wizard.
+# Clean only temporary targets carrying this installer's repository includes.
+cleanup_log=/var/log/hornero-installer/post-exit-cleanup.log
+if ! /usr/bin/python3 /usr/local/lib/hornero-installer/cleanup-calamares-targets.py >"$cleanup_log" 2>&1; then
+  /usr/bin/chmod 0640 "$cleanup_log" || true
+  /usr/bin/chown root:hornero-live "$cleanup_log" || true
+  /usr/bin/logger -t hornero-installer "Post-exit cleanup failed; see $cleanup_log"
+else
+  /usr/bin/chmod 0640 "$cleanup_log" || true
+  /usr/bin/chown root:hornero-live "$cleanup_log" || true
+fi
+
 log_source=/root/.cache/calamares/session.log
 log_destination=/var/log/hornero-installer/session.log
 if [[ -r "$log_source" ]]; then

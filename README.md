@@ -24,8 +24,14 @@ official path. This repository's Calamares implementation bridges current
 product testing and remains provisional until Panda's version is ready to
 publish and passes acceptance. Its intended path is a booted live image, a
 human-reviewed disk layout and a Calamares net-install into the selected target.
-No ISO has completed installation acceptance yet. Never run preview media
-against a system that contains data you have not backed up.
+The R11 preview completed encrypted installations in UEFI and legacy BIOS;
+both systems unlocked the encrypted root. BIOS reached the desktop and login
+was verified after accounting for Calamares' prefilled username; UEFI reached
+the login screen. UEFI login and installed package/profile parity remain
+unverified, so the acceptance
+matrix is still open. Never run preview media against a system that
+contains data you have not backed up. See the
+[R11 validation record](docs/r11-validation.md).
 
 The canonical edition and package composition model lives in
 [`HorneroOS/hornero`'s `editions/catalogue.yaml`](https://github.com/HorneroOS/hornero/blob/main/editions/catalogue.yaml).

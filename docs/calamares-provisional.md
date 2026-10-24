@@ -75,6 +75,17 @@ screenshot; the media lock records the capture's website commit and hashes.
 
 ## Current limits
 
+R11 supersedes the 2026-10-23 build described below. Its exact artifact
+identity, UEFI cancellation cleanup, encrypted install, and first-reboot
+evidence are recorded in [the R11 validation record](r11-validation.md).
+UEFI and legacy-BIOS installs both completed and unlocked the encrypted root.
+The BIOS system reached the desktop, and login was verified using the
+username Calamares created from its prefilled value. UEFI reached the login
+screen; its login, installed
+package/profile parity, and package-failure cleanup have not been verified.
+Therefore the complete acceptance matrix remains open; the detailed
+2026-10-23 report below is historical evidence, not the current test boundary.
+
 Earlier disposable UEFI and legacy-BIOS runs reached Calamares and exposed
 partitioning, package-chroot DNS, GRUB, and encrypted-root boot issues. Those
 historical results and captures remain in
