@@ -3,10 +3,13 @@
 The provisional installer uses Calamares. This map describes the modules in
 `image/calamares/settings.conf` and the data each stage is expected to own. It
 is not a claim that every recovery and preflight behavior is complete. The
-live ISO has booted in disposable UEFI and legacy-BIOS VMs and Calamares
-has been navigated through its partitioning page. Full installation and
-installed-system acceptance remain in progress; see the
-[VM evidence](../.github/evidence/provisional-installer-2026-10/README.md).
+R11 provisional ISO completed encrypted installations in disposable UEFI and
+legacy-BIOS VMs, and both installed systems unlocked their encrypted roots.
+The BIOS test reached an authenticated desktop; the UEFI test reached the
+installed login screen, but authentication remains unverified. Installed
+package/profile parity and cleanup after a simulated package-install failure
+also remain unverified. See the [R11 evidence and exact artifact identity](r11-validation.md)
+and [acceptance issue #11](https://github.com/HorneroOS/installer/issues/11).
 
 ## Calamares flow
 
@@ -92,18 +95,22 @@ configuration-drift reconciliation.
 ## Installation acceptance
 
 A built image is not accepted from a successful render or ISO build alone.
-Acceptance requires completed installations in disposable UEFI and legacy-BIOS
-VMs, successful boots of both installed systems, a package set matching the
-pinned resolver, correct cleanup after success and failure, and a complete
-written-path manifest. The latest UEFI run reached GRUB after package
-installation; cryptodisk configuration succeeded, but the tested ISO also
-attempted a BIOS GRUB install without a GPT BIOS boot partition. After
-correcting that, the installed VM still failed while GRUB read the kernel from
-compressed,
-encrypted Btrfs. The source now creates a hybrid GPT layout with both boot
-partitions, retains Calamares' hybrid GRUB installation, and mounts the EFI
-System Partition at `/boot` so kernels and initramfs remain readable by GRUB.
-These corrections still require a rebuilt ISO and UEFI/BIOS acceptance. BIOS
-validation currently covers live boot and wizard navigation only. Until the
-full gates pass, the image profile remains provisional and must not be treated
-as a safe way to install a personal computer or homelab server.
+The R11 evidence records completed encrypted installations and successful
+first boots through the login surface in both disposable firmware modes. BIOS
+login reached the desktop; UEFI authentication remains unverified. Calamares
+cleaned target mounts after successful installs, and a cancelled UEFI package
+transaction returned to the live desktop with no temporary target or resolver
+mounts. The following gates remain open:
+
+- Verify the installed profile revision and package set against the pinned
+  Hornero composition resolver in both installed VMs.
+- Run a disposable simulated package-install failure and verify repository
+  configuration, mirrors, and temporary mounts are cleaned up.
+- Complete and validate the installer written-path manifest before claiming
+  configuration-drift reconciliation.
+
+The exact source revisions, ISO checksum, firmware evidence, and acceptance
+status are maintained in the [R11 validation record](r11-validation.md).
+Until the remaining gates pass—and Panda Foss completes the official
+installer acceptance—the Calamares image remains provisional. Do not treat it
+as a supported or safe installer for a personal computer or homelab server.
