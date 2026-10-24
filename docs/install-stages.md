@@ -48,9 +48,11 @@ installed-system acceptance remain in progress; see the
    choice and is never automatic.
 
 The Welcome, Locale, Keyboard, Partition, Users, Edition and Summary pages are
-shown before execution. The Welcome page warns about network availability, but
-the profile does not yet have a separate automated hardware, power or storage
-preflight stage.
+shown before execution. The Welcome page checks RAM, power, root access and
+screen size. It omits Calamares' built-in storage check because that check only
+measures whole-device capacity; it does not measure free space or the selected
+install layout. The profile still lacks an automated minimum-space check for
+the selected target, so review the partition summary before confirming.
 
 Calamares runs through a fixed root-owned launcher with detailed local logging.
 When the installer exits, the launcher copies the session log to
