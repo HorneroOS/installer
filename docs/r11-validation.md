@@ -34,10 +34,26 @@ has not been published as a release.
 - Rebooted from the installed disk with the ISO detached. OVMF selected the
   `HorneroOS` GRUB entry. The initramfs accepted the LUKS unlock request and
   reached the installed Hyprland session lock screen.
-- Interactive login to the test account has not been verified. The first
-  login attempts failed, so this run does not yet prove a usable desktop,
-  installed package parity, or profile metadata. The test credential is not
-  recorded here.
+- Attempting to log in to the test account was rejected. This run does not yet
+  prove a usable desktop, installed package parity, or profile metadata. The
+  test credential is not recorded here.
+
+## Legacy BIOS installation and reboot
+
+- Booted the same ISO in a disposable SeaBIOS VM. After resolving the Arch
+  mirror, Calamares showed `BIOS` firmware and a blank 32 GiB `/dev/vda`.
+- Completed the encrypted erase-disk flow. The summary showed GPT, a 512 MiB
+  FAT32 EFI System Partition, an 8 MiB BIOS boot partition, a LUKS-encrypted
+  Btrfs root, and GRUB installed to the MBR of `/dev/vda`.
+- Calamares displayed “All done.” The session log reported
+  `completion: succeeded` and unmounted the target's `/run`, `/proc`, `/home`,
+  `/dev`, `/boot`, and root.
+- Rebooted from the installed disk with the ISO detached. The BIOS GRUB path
+  loaded the encrypted root, the test LUKS passphrase was accepted, and the
+  installed Hyprland session lock screen appeared.
+- The test-account login attempt was rejected. A usable desktop and the
+  installed package/profile metadata therefore remain unverified. Test
+  credentials are not recorded here.
 
 ## Acceptance status
 
@@ -48,11 +64,13 @@ has not been published as a release.
 | UEFI cancellation cleanup during package stage | Pass |
 | Encrypted UEFI installation completes | Pass |
 | Installed UEFI system unlocks and reaches session lock screen | Pass |
-| Interactive first login and usable desktop | Not verified |
+| Interactive UEFI first login and usable desktop | Not verified; login attempt rejected |
+| BIOS installation completes and Calamares cleans target mounts | Pass |
+| Installed BIOS system unlocks and reaches session lock screen | Pass |
+| Interactive BIOS first login and usable desktop | Not verified; login attempt rejected |
 | Installed composition/profile package parity | Not verified |
 | Package-failure cleanup path | Not verified on R11 |
-| Legacy-BIOS install through first login | Not run on R11 |
-| Complete UEFI and BIOS acceptance | Incomplete |
+| Complete UEFI and BIOS acceptance through usable desktop | Incomplete |
 
 This preview remains provisional and should only be exercised in disposable
 VMs. Do not treat a successful ISO build or partition installation as

@@ -3,11 +3,10 @@
 This directory defines HorneroOS's provisional Calamares installation medium.
 It is a development build profile, not the future official installer. R11
 completed an encrypted UEFI install and rebooted to the installed Hyprland
-lock screen. Test-account login has not been verified, and BIOS install-to-
-first-boot remains untested. A complete install-and-first-boot path has not
-passed acceptance. The profile offers only compositions that the HorneroOS
-edition
-catalogue marks installable. It targets x86_64 Desktop with Hyprland (default)
+lock screen. Test-account login was rejected in both UEFI and BIOS runs. A
+complete install-and-first-boot path has not passed acceptance. The profile
+offers only compositions that the HorneroOS edition catalogue marks
+installable. It targets x86_64 Desktop with Hyprland (default)
 and Niri (Experimental).
 
 ## Source of truth

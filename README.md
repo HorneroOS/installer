@@ -26,8 +26,9 @@ publish and passes acceptance. Its intended path is a booted live image, a
 human-reviewed disk layout and a Calamares net-install into the selected target.
 The R11 preview completed a full encrypted UEFI installation and rebooted to
 the installed Hyprland lock screen. Test-account login has not yet been
-verified, and legacy-BIOS install-to-first-boot remains untested. This is not
-installation acceptance. Never run preview media against a system that
+verified on either firmware mode: both installed systems unlocked and reached
+the login screen, but the test-account login attempts were rejected. This is
+not installation acceptance. Never run preview media against a system that
 contains data you have not backed up. See the
 [R11 validation record](docs/r11-validation.md).
 
