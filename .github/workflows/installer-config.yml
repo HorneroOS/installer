@@ -32,6 +32,8 @@ jobs:
         run: python scripts/check-installer.py --schema-root "$RUNNER_TEMP/calamares-source/src/modules"
       - name: Test pinned source-cache recovery
         run: python -m pytest tests/test_installer_source_cache.py -q
+      - name: Test installed composition audit
+        run: python -m pytest tests/test_installed_composition.py -q
       - name: Confirm the chooser matches the pinned product resolver
         run: |
           python scripts/render-installer-catalogue.py --cache-dir "$RUNNER_TEMP/product-cache" --output "$RUNNER_TEMP/generated/packagechooser.conf" --profile-packages-dir "$RUNNER_TEMP/generated/profile-packages"
