@@ -122,6 +122,9 @@ def main() -> int:
                 del schema_configuration["createHybridBootloaderLayout"]
             jsonschema.Draft7Validator(schema).validate(schema_configuration)
     assert parsed["welcome"]["geoip"]["style"] == "none"
+    assert "storage" not in parsed["welcome"]["requirements"]["check"], (
+        "Calamares Welcome storage checks whole-device capacity, not target free space"
+    )
     assert parsed["locale"]["geoip"]["style"] == "none"
     assert parsed["locale"]["region"] == "America"
     assert parsed["locale"]["zone"] == "Argentina/Buenos_Aires"
