@@ -5,7 +5,7 @@ product:
   catalogueSha256: 815eabb3c68797d29f1bcf2dcfd00ddebee05c64339efd06f3acf05f5ed939bb
   resolverSha256: b2d205a4e450df2a9b21f77f28fe8e7b93d2f6b7bc7e02b4ac448e4ce0935ff1
 arch:
-  snapshot: 2026/10/05
+  snapshot: 2026/10/10
   architecture: x86_64
 calamares:
   version: 3.4.3
