@@ -119,9 +119,14 @@ PY
 # from the same catalogue/resolver as the package chooser; they do not carry
 # their own package lists.
 profile_packages="$work/profile-packages"
+candidate_args=()
+if [[ "${HORNEROS_INSTALLER_CANDIDATE_STUDIO:-0}" == "1" ]]; then
+  candidate_args+=(--candidate-studio)
+fi
 python3 "$ROOT/scripts/render-installer-catalogue.py" \
   --product-source "$product_source" \
   --cache-dir "$work/profile-cache" \
+  "${candidate_args[@]}" \
   --output "$work/profile-package-chooser.conf" \
   --profile-packages-dir "$profile_packages"
 for recipe in "$profile_packages"/*/PKGBUILD; do

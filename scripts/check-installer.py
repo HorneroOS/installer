@@ -151,7 +151,24 @@ def main() -> int:
     assert item_ids == option_ids and item_ids
     assert chooser["default"] in item_ids
     assert len(item_ids) == len(set(item_ids))
-    assert set(item_ids) == {"desktop-hyprland", "desktop-niri"}
+    candidate_studio = any(item_id.startswith("studio-hyprland-") for item_id in item_ids)
+    if candidate_studio:
+        # Candidate/testing render: planned Studio specialization choices
+        # may appear only with explicit candidate invariants. The default
+        # (release) render must never contain them.
+        studio_ids = {item_id for item_id in item_ids if item_id.startswith("studio-hyprland-")}
+        assert len(studio_ids) == 10, "candidate render must expose the ten canonical specializations"
+        assert {"desktop-hyprland", "desktop-niri"} <= set(item_ids)
+        for item in chooser["items"]:
+            if item["id"].startswith("studio-hyprland-"):
+                assert "reaper" not in item["packages"], "proprietary payloads need explicit opt-in"
+                assert "Planned" in item["description"]
+        for option in compositions["options"]:
+            if option["id"].startswith("studio-hyprland-"):
+                assert option["edition"] == "studio"
+                assert option["profile"]["studioSelection"]["specializations"]
+    else:
+        assert set(item_ids) == {"desktop-hyprland", "desktop-niri"}
     assert all(item.get("packages") for item in chooser["items"])
     screenshots = {item["id"]: item.get("screenshot") for item in chooser["items"]}
     assert screenshots["desktop-hyprland"] == "screenshots/desktop-hyprland.jpg"
@@ -160,7 +177,8 @@ def main() -> int:
         path.startswith(":/") or (config_root / "branding/hornero" / path).is_file()
         for path in screenshots.values()
     )
-    assert all(item["edition"] not in {"agents", "studio", "server"} for item in compositions["options"])
+    assert all(item["edition"] not in {"agents", "server"} for item in compositions["options"])
+    assert candidate_studio or all(item["edition"] != "studio" for item in compositions["options"])
     branding_root = config_root / "branding/hornero"
     branding = load_yaml(branding_root / "branding.desc")
     slideshow = branding.get("slideshow")
