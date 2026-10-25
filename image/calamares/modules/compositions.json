@@ -1,5 +1,5 @@
 {
-  "productRevision": "03476d8bc71626648434587470064e2b82b88463",
+  "productRevision": "cacd063455bd2b27cedc88291c876af27a0c4d39",
   "options": [
     {
       "id": "desktop-hyprland",
@@ -83,7 +83,11 @@
           "hyprland",
           "xdg-desktop-portal-hyprland"
         ],
-        "optionalPackages": []
+        "optionalPackages": [],
+        "packageProvenance": {},
+        "optionalIntegrations": [],
+        "audioModes": null,
+        "performanceMode": null
       },
       "edition": "desktop",
       "compositor": "hyprland",
@@ -177,7 +181,11 @@
           "xdg-desktop-portal-gtk",
           "xdg-desktop-portal-gnome"
         ],
-        "optionalPackages": []
+        "optionalPackages": [],
+        "packageProvenance": {},
+        "optionalIntegrations": [],
+        "audioModes": null,
+        "performanceMode": null
       },
       "edition": "desktop",
       "compositor": "niri",
