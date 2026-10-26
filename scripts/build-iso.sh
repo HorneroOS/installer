@@ -109,9 +109,15 @@ PY
   curl --fail --location --silent --show-error "$url/archive/$revision.tar.gz" -o "$work/product.tar.gz"
   tar -xzf "$work/product.tar.gz" --strip-components=1 -C "$product"
 fi
+candidate_args=()
+if [[ "${HORNEROS_INSTALLER_CANDIDATE_STUDIO:-0}" == "1" ]]; then
+  candidate_args+=(--candidate-studio)
+  echo "Candidate build: planned Studio specialization choices are included (testing only)."
+fi
 python3 "$ROOT/scripts/render-installer-catalogue.py" \
   --product-source "$product" \
   --cache-dir "$work/cache" \
+  "${candidate_args[@]}" \
   --output "$profile/calamares/modules/packagechooser.conf"
 
 snapshot=$(python3 - "$ROOT/installer.lock.yaml" <<'PY'
