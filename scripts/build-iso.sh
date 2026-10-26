@@ -246,7 +246,7 @@ manifest = {
     "installChoices": choices["options"],
     "artifact": artifact.name,
     "sha256": digest,
-    "status": "unsigned provisional preview",
+    "status": "provisional preview",
 }
 artifact.with_suffix(artifact.suffix + ".manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 PY
