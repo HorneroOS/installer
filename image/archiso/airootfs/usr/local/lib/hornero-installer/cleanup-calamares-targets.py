@@ -56,6 +56,27 @@ def unmount_bind(mountpoint: Path) -> None:
         raise RuntimeError(f"unmount {mountpoint}: {result.stderr.strip()}")
 
 
+def unmount_recursive(mountpoint: Path) -> None:
+    """Detach a target and every submount below it, deepest first.
+
+    Plain per-directory umounts fail when Calamares left nested mounts such
+    as ``dev/pts`` or ``run/udev`` behind (cancel path, installer#31), which
+    leaked the target root mount. ``umount -R`` handles the whole tree; the
+    lazy variant is the last resort so the live session never keeps a
+    cancelled target attached.
+    """
+    for flags in (["-R"], ["-R", "-l"]):
+        result = subprocess.run(
+            ["/usr/bin/umount", *flags, str(mountpoint)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0 or "not mounted" in result.stderr.lower():
+            return
+    raise RuntimeError(f"unmount -R {mountpoint}: {result.stderr.strip()}")
+
+
 def safe_target(pacman_conf: Path, temp_root: Path, owner_uid: int) -> Path | None:
     """Accept only root-owned Calamares targets directly below the temp root."""
     if pacman_conf.is_symlink() or pacman_conf.name != "pacman.conf":
@@ -85,6 +106,7 @@ def cleanup_targets(
     cleanup_module,
     unmount: Callable[[Path], None],
     *,
+    unmount_recursive: Callable[[Path], None] | None = None,
     temp_root: Path = Path("/tmp"),
     owner_uid: int = 0,
 ) -> tuple[list[str], list[Path]]:
@@ -117,6 +139,21 @@ def cleanup_targets(
                 unmount(target / relative)
             except RuntimeError as error:
                 target_failures.append(str(error))
+        if target_failures and unmount_recursive is not None:
+            # Nested submounts (dev/pts, run/udev, ...) can make the plain
+            # per-directory umounts above fail and leak the target root on
+            # the cancel path (installer#31). One recursive detach of the
+            # whole target tree resolves that; only keep the failures if
+            # even the recursive detach fails.
+            try:
+                unmount_recursive(target)
+                target_failures = [
+                    failure
+                    for failure in target_failures
+                    if failure.startswith("restore pacman config:")
+                ]
+            except RuntimeError as error:
+                target_failures.append(str(error))
         if target_failures:
             failures.extend(f"{pacman_conf}: {error}" for error in target_failures)
         else:
@@ -131,6 +168,7 @@ def main() -> int:
             map(Path, glob.glob(TARGET_GLOB)),
             cleanup_module,
             unmount_bind,
+            unmount_recursive=unmount_recursive,
             temp_root=Path("/tmp"),
             owner_uid=os.geteuid(),
         )
