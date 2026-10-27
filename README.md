@@ -30,7 +30,10 @@ composition carried from preview21, cancel-cleanup retested end to end).
 That is virtual-machine evidence only: no physical-hardware validation
 has been performed, the installer's own R11 record still lists UEFI
 first login as pending and installed package parity as unverified, and
-the acceptance matrix for physical hardware remains open. Never run preview media against a system that
+has been performed, the installer's own R11 record still lists UEFI
+first login as pending and installed package parity as unverified, and
+the acceptance matrix for physical hardware remains open. Never run
+preview media against a system that
 contains data you have not backed up. See the
 [R11 validation record](docs/r11-validation.md).
 

@@ -8,7 +8,8 @@ disposable UEFI and legacy-BIOS VMs (Desktop and Studio, encrypted and
 unencrypted), and the installed systems unlocked their encrypted roots.
 The R11 record behind it reached an authenticated desktop on BIOS; on
 UEFI it reached the installed login screen, but authentication remains
-unverified there. Installed package/profile parity and cleanup after a simulated package-install failure
+unverified there. Installed package/profile parity and cleanup after a
+simulated package-install failure
 also remain unverified. See the [R11 evidence and exact artifact identity](r11-validation.md)
 and [acceptance issue #11](https://github.com/HorneroOS/installer/issues/11).
 
@@ -114,5 +115,6 @@ The exact source revisions, ISO checksum, firmware evidence, and acceptance
 status are maintained in the [R11 validation record](r11-validation.md).
 Until the remaining gates pass—and Panda Foss completes the official
 installer acceptance—the Calamares image remains provisional and is not
-a supported installer for physical hardware, which has not been
+validated. Do not treat it as a supported or safe installer for a
+personal computer or homelab server.
 validated. Do not treat it as a supported or safe installer for a personal computer or homelab server.

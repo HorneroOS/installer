@@ -17,7 +17,8 @@ acceptance gates remain documented in this guide.
 The current image profile produced the published, signed
 v0.2.0-preview22 Desktop+Studio Preview ISO (one x86_64 image). It
 passed the VM installation matrix; it is not certified for physical
-hardware, which has not been validated. It is configured to boot a small Xfce live session on UEFI or
+legacy BIOS, offer a graphical network tray and launch Calamares. Its
+edition
 legacy BIOS, offer a graphical network tray and launch Calamares. Its edition
 choices come from the pinned
 [`HorneroOS/hornero` edition catalogue](https://github.com/HorneroOS/hornero/blob/main/editions/catalogue.yaml)
