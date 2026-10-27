@@ -33,7 +33,9 @@ and [acceptance issue #11](https://github.com/HorneroOS/installer/issues/11).
    emergency-capable `shellprocess@resolver-cleanup` unmounts the bind, then
    `shellprocess@cleanup` removes the temporary package repository configuration
    and restores Arch mirrors. Both cleanup jobs also run after package failure;
-   VM acceptance verifies their behavior on success and failure.
+   VM acceptance verifies their behavior on success and on cancellation
+   (preview22, end to end). A simulated package-install failure remains
+   unverified, as the gate list below records.
 5. **User and services** — `users` creates the named account, then
    `shellprocess@user-defaults` seeds Exo's package-provided terminal helper
    into each new home without replacing an existing user override.
