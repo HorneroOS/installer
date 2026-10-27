@@ -14,8 +14,11 @@ for product identity, accessible interaction, honest maturity labels and
 high-consequence confirmation flows. The installer-specific controls and
 acceptance gates remain documented in this guide.
 
-The current image profile is a development preview; no certified ISO is
-available yet. It is configured to boot a small Xfce live session on UEFI or
+The current image profile produced the published, signed
+v0.2.0-preview22 Desktop+Studio Preview ISO (one x86_64 image). It
+passed the VM installation matrix; it is not certified for physical
+legacy BIOS, offer a graphical network tray and launch Calamares. Its
+edition
 legacy BIOS, offer a graphical network tray and launch Calamares. Its edition
 choices come from the pinned
 [`HorneroOS/hornero` edition catalogue](https://github.com/HorneroOS/hornero/blob/main/editions/catalogue.yaml)
@@ -33,7 +36,7 @@ Only compositions whose product maturity
 allows installation appear in the choice page; experimental compositor choices
 are labelled as such. Planned editions stay hidden until their system and
 installer path have been validated.
-The Hyprland option includes a certified Hornero desktop capture. Niri uses an
+The Hyprland option includes an approved Hornero desktop capture. Niri uses an
 explicit experimental-status card instead of a fabricated compositor
 screenshot; the media lock records the capture's website commit and hashes.
 

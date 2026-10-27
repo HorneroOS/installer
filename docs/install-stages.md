@@ -3,11 +3,13 @@
 The provisional installer uses Calamares. This map describes the modules in
 `image/calamares/settings.conf` and the data each stage is expected to own. It
 is not a claim that every recovery and preflight behavior is complete. The
-R11 provisional ISO completed encrypted installations in disposable UEFI and
-legacy-BIOS VMs, and both installed systems unlocked their encrypted roots.
-The BIOS test reached an authenticated desktop; the UEFI test reached the
-installed login screen, but authentication remains unverified. Installed
-package/profile parity and cleanup after a simulated package-install failure
+published v0.2.0-preview22 ISO completed its VM installation matrix in
+disposable UEFI and legacy-BIOS VMs (Desktop and Studio, encrypted and
+unencrypted), and the installed systems unlocked their encrypted roots.
+The R11 record behind it reached an authenticated desktop on BIOS; on
+UEFI it reached the installed login screen, but authentication remains
+unverified there. Installed package/profile parity and cleanup after a
+simulated package-install failure
 also remain unverified. See the [R11 evidence and exact artifact identity](r11-validation.md)
 and [acceptance issue #11](https://github.com/HorneroOS/installer/issues/11).
 
@@ -31,7 +33,9 @@ and [acceptance issue #11](https://github.com/HorneroOS/installer/issues/11).
    emergency-capable `shellprocess@resolver-cleanup` unmounts the bind, then
    `shellprocess@cleanup` removes the temporary package repository configuration
    and restores Arch mirrors. Both cleanup jobs also run after package failure;
-   VM acceptance verifies their behavior on success and failure.
+   VM acceptance verifies their behavior on success and on cancellation
+   (preview22, end to end). A simulated package-install failure remains
+   unverified, as the gate list below records.
 5. **User and services** — `users` creates the named account, then
    `shellprocess@user-defaults` seeds Exo's package-provided terminal helper
    into each new home without replacing an existing user override.
@@ -112,5 +116,7 @@ mounts. The following gates remain open:
 The exact source revisions, ISO checksum, firmware evidence, and acceptance
 status are maintained in the [R11 validation record](r11-validation.md).
 Until the remaining gates pass—and Panda Foss completes the official
-installer acceptance—the Calamares image remains provisional. Do not treat it
-as a supported or safe installer for a personal computer or homelab server.
+installer acceptance—the Calamares image remains provisional. It is not
+a supported installer for physical hardware, which has not been
+validated, and it must not be treated as a safe installer for a
+personal computer or homelab server.

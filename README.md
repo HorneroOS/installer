@@ -24,12 +24,16 @@ official path. This repository's Calamares implementation bridges current
 product testing and remains provisional until Panda's version is ready to
 publish and passes acceptance. Its intended path is a booted live image, a
 human-reviewed disk layout and a Calamares net-install into the selected target.
-The R11 preview completed encrypted installations in UEFI and legacy BIOS;
-both systems unlocked the encrypted root. BIOS reached the desktop and login
-was verified after accounting for Calamares' prefilled username; UEFI reached
-the login screen. UEFI login and installed package/profile parity remain
-unverified, so the acceptance
-matrix is still open. Never run preview media against a system that
+The published v0.2.0-preview22 ISO passed the VM installation matrix
+(Desktop and Studio, UEFI and legacy BIOS, encrypted and unencrypted;
+composition carried from preview21, cancel-cleanup retested end to end).
+That is virtual-machine evidence only: no physical-hardware validation
+has been performed, the installer's own R11 record still lists UEFI
+first login as pending and installed package parity as unverified, and
+has been performed, the installer's own R11 record still lists UEFI
+first login as pending and installed package parity as unverified, and
+the acceptance matrix for physical hardware remains open. Never run
+preview media against a system that
 contains data you have not backed up. See the
 [R11 validation record](docs/r11-validation.md).
 
@@ -39,6 +43,15 @@ The installer pins that source revision and asks its resolver for package
 composition. It does not maintain an independent edition catalogue. Only
 installable product compositions are shown; experimental backends are labeled
 and planned editions remain hidden.
+
+## Try the Preview ISO
+
+Download and verify the signed v0.2.0-preview22 ISO from the
+[HorneroOS website install page](https://www.horneroos.com/install) or
+the [v0.2.0-preview22 release](https://github.com/HorneroOS/hornero/releases/tag/v0.2.0-preview22).
+It installs Desktop or Studio Preview and was validated in virtual
+machines only; no physical-hardware validation has been performed.
+Report installation problems in this repository's issue chooser.
 
 ## Development checks
 
