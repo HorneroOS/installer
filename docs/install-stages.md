@@ -116,7 +116,7 @@ mounts. The following gates remain open:
 The exact source revisions, ISO checksum, firmware evidence, and acceptance
 status are maintained in the [R11 validation record](r11-validation.md).
 Until the remaining gates pass—and Panda Foss completes the official
-installer acceptance—the Calamares image remains provisional and is not
-validated. Do not treat it as a supported or safe installer for a
+installer acceptance—the Calamares image remains provisional. It is not
+a supported installer for physical hardware, which has not been
+validated, and it must not be treated as a safe installer for a
 personal computer or homelab server.
-validated. Do not treat it as a supported or safe installer for a personal computer or homelab server.
