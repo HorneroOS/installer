@@ -1,8 +1,10 @@
 # Calamares branding sources
 
-All artwork in this directory is reused from the canonical HorneroOS brand
-assets in HorneroOS/config (`assets/brand/`, see `docs/BRAND.md` there);
-nothing here is third-party or newly invented:
+The artwork in this directory comes from the canonical HorneroOS brand
+assets in HorneroOS/config (`assets/brand/`, see `docs/BRAND.md` there).
+Files are either used unmodified, resized, or — for `installer-banner.svg`
+— an original composition in this repo built from the canonical art.
+Nothing here is third-party:
 
 - `hornero.svg` — `assets/brand/logo.svg` (canonical full-color mark).
 - `hornero-installer.svg` — `assets/brand/icons/hornero-app.svg`.
