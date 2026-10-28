@@ -18,9 +18,13 @@ images:
   productWelcome: installer-banner.svg
 slideshow:
   - screenshots/desktop-hyprland.jpg
+  - screenshots/wallpaper-hornero-dark.jpg
+  - screenshots/wallpaper-hornero-199x.jpg
   - screenshots/niri-experimental.svg
 style:
-  SidebarBackground: "#141b24"
-  SidebarText: "#f4f6f8"
-  SidebarTextCurrent: "#141b24"
-  SidebarBackgroundCurrent: "#9ec5ae"
+  # Canonical HorneroOS brand palette (HorneroOS/config docs/BRAND.md):
+  # night adobe sidebar, cream text, sunset amber current-step highlight.
+  SidebarBackground: "#1D1410"
+  SidebarText: "#F6E9DB"
+  SidebarTextCurrent: "#1D1410"
+  SidebarBackgroundCurrent: "#F2B749"

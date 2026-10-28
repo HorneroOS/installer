@@ -1,9 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="220" viewBox="0 0 760 220">
-  <rect width="760" height="220" rx="28" fill="#17212b"/>
-  <path d="M104 36c-14 32-13 61 5 84 13 16 31 25 53 27-14 23-36 38-67 41-35 3-61-12-77-43 25 4 45-3 59-22 14-18 16-43 5-75 9-5 16-9 22-12z" fill="#d9a46c" transform="translate(26 0)"/>
-  <path d="M81 176c18 10 39 13 63 7-11 19-25 31-43 35-20 4-36-2-48-19 12-3 22-11 28-23z" fill="#9ec5ae" transform="translate(26 0)"/>
-  <text x="238" y="104" fill="#f4f6f8" font-family="sans-serif" font-size="42" font-weight="700">HorneroOS</text>
-  <text x="241" y="148" fill="#b8c4ce" font-family="sans-serif" font-size="19">Calamares · Provisional installer</text>
-  <rect x="570" y="78" width="150" height="48" rx="24" fill="#31564a"/>
-  <text x="645" y="109" text-anchor="middle" fill="#f4f6f8" font-family="sans-serif" font-size="16" font-weight="700">PREVIEW</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="220" viewBox="0 0 760 220" role="img" aria-label="HorneroOS installer banner">
+  <!-- Brand art inlined from HorneroOS/config assets/brand/logo-dark.svg
+       (canonical HorneroOS brand identity, config/docs/BRAND.md).
+       Palette: night adobe #1D1410, sunset amber #F2B749, ember
+       terracotta #E07856, cream #F6E9DB. -->
+  <defs>
+    <linearGradient id="banner-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#241610"/>
+      <stop offset="1" stop-color="#1D1410"/>
+    </linearGradient>
+    <linearGradient id="banner-sun" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F2B749"/>
+      <stop offset="0.55" stop-color="#E89A55"/>
+      <stop offset="1" stop-color="#E07856"/>
+    </linearGradient>
+  </defs>
+  <rect width="760" height="220" rx="28" fill="url(#banner-bg)"/>
+  <g transform="translate(30 22) scale(0.6875)">
+    <circle cx="128" cy="124" r="86" fill="url(#banner-sun)"/>
+    <g fill="#F6E9DB">
+      <path d="M100,168 L52,206 L70,212 L114,180 Z"/>
+      <ellipse cx="124" cy="140" rx="34" ry="42" transform="rotate(-12 124 140)"/>
+      <circle cx="140" cy="92" r="24"/>
+      <path d="M160,85 C169,88 180,93 189,100 L160,105 Z"/>
+      <rect x="111" y="176" width="7" height="22" rx="3.5"/>
+      <rect x="129" y="174" width="7" height="23" rx="3.5"/>
+    </g>
+    <path d="M36,200 C90,188 166,188 220,200" fill="none" stroke="#F6E9DB" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="146" cy="88" r="5.5" fill="#B24827"/>
+  </g>
+  <text x="252" y="104" fill="#F6E9DB" font-family="Rubik, sans-serif" font-size="44" font-weight="800" letter-spacing="2">HORNERO<tspan fill="#E07856">OS</tspan></text>
+  <rect x="256" y="122" width="120" height="8" rx="4" fill="#F2B749"/>
+  <text x="254" y="162" fill="#D9C6B2" font-family="Rubik, sans-serif" font-size="19">Calamares · Provisional installer</text>
+  <rect x="580" y="84" width="140" height="44" rx="22" fill="#E07856"/>
+  <text x="650" y="112" text-anchor="middle" fill="#1D1410" font-family="Rubik, sans-serif" font-size="16" font-weight="800" letter-spacing="2">PREVIEW</text>
 </svg>
