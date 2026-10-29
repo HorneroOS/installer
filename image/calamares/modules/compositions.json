@@ -1,5 +1,5 @@
 {
-  "productRevision": "bcc53ede593d54f6b9e7562a50cf6c620e56b275",
+  "productRevision": "2ea9e368d18d2ef8f78a5a18abed7127683ff551",
   "options": [
     {
       "id": "desktop-hyprland",
@@ -188,6 +188,794 @@
         "performanceMode": null
       },
       "edition": "desktop",
+      "compositor": "niri",
+      "maturity": "preview",
+      "compositorMaturity": "experimental",
+      "isDefault": false
+    },
+    {
+      "id": "studio-hyprland",
+      "name": "HorneroOS Studio \u2014 Hyprland",
+      "description": "Creative workstation based on HorneroOS Desktop. Compositor: Hyprland. Preview support.",
+      "packages": [
+        "base",
+        "linux",
+        "linux-firmware",
+        "sudo",
+        "btrfs-progs",
+        "cryptsetup",
+        "dosfstools",
+        "efibootmgr",
+        "e2fsprogs",
+        "grub",
+        "lvm2",
+        "hornero-shell",
+        "hornero-config",
+        "horneroctl-bin",
+        "quickshell",
+        "exo",
+        "kitty",
+        "thunar",
+        "networkmanager",
+        "xdg-desktop-portal",
+        "qt6ct",
+        "papirus-icon-theme",
+        "ttf-cascadia-code-nerd",
+        "ttf-material-symbols-variable",
+        "ttf-rubik-vf",
+        "sddm",
+        "hornero-greeter",
+        "hornero-greeter-media-base",
+        "pipewire",
+        "pipewire-audio",
+        "pipewire-alsa",
+        "pipewire-pulse",
+        "pipewire-jack",
+        "wireplumber",
+        "qpwgraph",
+        "ardour",
+        "guitarix",
+        "obs-studio",
+        "kdenlive",
+        "ffmpeg",
+        "blender",
+        "krita",
+        "hyprland",
+        "xdg-desktop-portal-hyprland",
+        "hornero-profile-studio-hyprland"
+      ],
+      "profilePackage": "hornero-profile-studio-hyprland",
+      "profile": {
+        "edition": "studio",
+        "title": "HorneroOS Studio",
+        "maturity": "preview",
+        "role": "creative-workstation",
+        "compositor": "hyprland",
+        "compositorMaturity": "supported",
+        "packageSets": [
+          "base",
+          "desktop",
+          "studio",
+          "compositor:hyprland"
+        ],
+        "packages": [
+          "base",
+          "linux",
+          "linux-firmware",
+          "sudo",
+          "btrfs-progs",
+          "cryptsetup",
+          "dosfstools",
+          "efibootmgr",
+          "e2fsprogs",
+          "grub",
+          "lvm2",
+          "hornero-shell",
+          "hornero-config",
+          "horneroctl-bin",
+          "quickshell",
+          "exo",
+          "kitty",
+          "thunar",
+          "networkmanager",
+          "xdg-desktop-portal",
+          "qt6ct",
+          "papirus-icon-theme",
+          "ttf-cascadia-code-nerd",
+          "ttf-material-symbols-variable",
+          "ttf-rubik-vf",
+          "sddm",
+          "hornero-greeter",
+          "hornero-greeter-media-base",
+          "pipewire",
+          "pipewire-audio",
+          "pipewire-alsa",
+          "pipewire-pulse",
+          "pipewire-jack",
+          "wireplumber",
+          "qpwgraph",
+          "ardour",
+          "guitarix",
+          "obs-studio",
+          "kdenlive",
+          "ffmpeg",
+          "blender",
+          "krita",
+          "hyprland",
+          "xdg-desktop-portal-hyprland"
+        ],
+        "optionalPackages": [],
+        "packageProvenance": {
+          "pipewire": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire/",
+            "licenses": [
+              "LGPL-2.1-or-later",
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-audio": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-audio/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-alsa": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-alsa/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-pulse": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-pulse/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-jack": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-jack/",
+            "licenses": [
+              "GPL-2.0-only",
+              "LGPL-2.1-or-later",
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "wireplumber": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/wireplumber/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "qpwgraph": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/qpwgraph/",
+            "licenses": [
+              "GPL-2.0-or-later"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "ardour": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/ardour/",
+            "licenses": [
+              "CC0-1.0",
+              "GPL-2.0-or-later",
+              "GPL-3.0-or-later",
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "guitarix": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/guitarix/",
+            "licenses": [
+              "GPL-2.0-or-later",
+              "GPL-3.0-or-later",
+              "LGPL-3.0-or-later"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "obs-studio": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/obs-studio/",
+            "licenses": [
+              "GPL-2.0-only"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "kdenlive": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/kdenlive/",
+            "licenses": [
+              "GPL-2.0-or-later"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "ffmpeg": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/ffmpeg/",
+            "licenses": [
+              "GPL-3.0-only"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "blender": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/blender/",
+            "licenses": [
+              "Apache-2.0",
+              "BSD-2-Clause",
+              "BSD-3-Clause",
+              "GPL-2.0-or-later",
+              "GPL-3.0-or-later",
+              "LGPL-2.1-or-later",
+              "MIT",
+              "MPL-2.0",
+              "Zlib"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "krita": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/krita/",
+            "licenses": [
+              "GPL3"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          }
+        },
+        "optionalIntegrations": [
+          {
+            "id": "reaper",
+            "source": "arch-extra",
+            "licensing": "proprietary-user-license",
+            "provenance": {
+              "source": "arch-extra",
+              "sourceUrl": "https://archlinux.org/packages/extra/x86_64/reaper/",
+              "licenses": [
+                "LicenseRef-EULA"
+              ],
+              "licenseClass": "proprietary",
+              "installMethod": "pacman-repository-opt-in",
+              "optional": true,
+              "support": "planned",
+              "notes": "Proprietary DAW distributed free of charge by Cockos under its own EULA. Opt-in only; HorneroOS ships no license and grants no usage rights beyond the vendor's terms."
+            }
+          },
+          {
+            "id": "yabridge",
+            "source": "arch-extra",
+            "licensing": "user-supplied-windows-vst",
+            "provenance": {
+              "source": "arch-extra",
+              "sourceUrl": "https://archlinux.org/packages/extra/x86_64/yabridge/",
+              "licenses": [
+                "GPL-3.0-or-later"
+              ],
+              "licenseClass": "open-source",
+              "installMethod": "pacman-repository-opt-in",
+              "optional": true,
+              "support": "planned",
+              "notes": "Windows VST compatibility layer. Requires Wine and Windows plugins the user has legally obtained; HorneroOS supplies neither Wine configuration nor any plugin."
+            }
+          }
+        ],
+        "audioModes": {
+          "balanced": {
+            "title": "Balanced",
+            "default": true,
+            "explicitOptIn": false,
+            "rate": "follow-device",
+            "quantum": "follow-device",
+            "presentsQuantumAsPhysicalLatency": false,
+            "restoresPreviousStateOn": [
+              "disable",
+              "error",
+              "logout",
+              "reboot"
+            ]
+          },
+          "low-latency": {
+            "title": "Low Latency",
+            "default": false,
+            "explicitOptIn": true,
+            "rate": "follow-device",
+            "quantum": "smallest-supported",
+            "presentsQuantumAsPhysicalLatency": false,
+            "restoresPreviousStateOn": [
+              "disable",
+              "error",
+              "logout",
+              "reboot"
+            ]
+          },
+          "advanced": {
+            "title": "Advanced",
+            "default": false,
+            "explicitOptIn": true,
+            "rate": "per-interface",
+            "quantum": "per-interface",
+            "perInterfaceCalibration": true,
+            "presentsQuantumAsPhysicalLatency": false,
+            "restoresPreviousStateOn": [
+              "disable",
+              "error",
+              "logout",
+              "reboot"
+            ]
+          }
+        },
+        "performanceMode": {
+          "title": "Temporary Performance",
+          "explicitOptIn": true,
+          "temporary": true,
+          "usesPowerProfilesDaemon": true,
+          "restoresPreviousStateOn": [
+            "timeout",
+            "cancel",
+            "error",
+            "reboot"
+          ],
+          "forbiddenOperations": [
+            "rt-kernel",
+            "irq-tuning",
+            "cpu-governor",
+            "gpu-tuning",
+            "io-scheduler",
+            "privilege-policy"
+          ]
+        }
+      },
+      "edition": "studio",
+      "compositor": "hyprland",
+      "maturity": "preview",
+      "compositorMaturity": "supported",
+      "isDefault": false
+    },
+    {
+      "id": "studio-niri",
+      "name": "HorneroOS Studio \u2014 Niri (Experimental)",
+      "description": "Creative workstation based on HorneroOS Desktop. Compositor: Niri. Preview, Experimental compositor support.",
+      "packages": [
+        "base",
+        "linux",
+        "linux-firmware",
+        "sudo",
+        "btrfs-progs",
+        "cryptsetup",
+        "dosfstools",
+        "efibootmgr",
+        "e2fsprogs",
+        "grub",
+        "lvm2",
+        "hornero-shell",
+        "hornero-config",
+        "horneroctl-bin",
+        "quickshell",
+        "exo",
+        "kitty",
+        "thunar",
+        "networkmanager",
+        "xdg-desktop-portal",
+        "qt6ct",
+        "papirus-icon-theme",
+        "ttf-cascadia-code-nerd",
+        "ttf-material-symbols-variable",
+        "ttf-rubik-vf",
+        "sddm",
+        "hornero-greeter",
+        "hornero-greeter-media-base",
+        "pipewire",
+        "pipewire-audio",
+        "pipewire-alsa",
+        "pipewire-pulse",
+        "pipewire-jack",
+        "wireplumber",
+        "qpwgraph",
+        "ardour",
+        "guitarix",
+        "obs-studio",
+        "kdenlive",
+        "ffmpeg",
+        "blender",
+        "krita",
+        "niri",
+        "xwayland-satellite",
+        "xdg-desktop-portal-gtk",
+        "xdg-desktop-portal-gnome",
+        "hornero-profile-studio-niri"
+      ],
+      "profilePackage": "hornero-profile-studio-niri",
+      "profile": {
+        "edition": "studio",
+        "title": "HorneroOS Studio",
+        "maturity": "preview",
+        "role": "creative-workstation",
+        "compositor": "niri",
+        "compositorMaturity": "experimental",
+        "packageSets": [
+          "base",
+          "desktop",
+          "studio",
+          "compositor:niri"
+        ],
+        "packages": [
+          "base",
+          "linux",
+          "linux-firmware",
+          "sudo",
+          "btrfs-progs",
+          "cryptsetup",
+          "dosfstools",
+          "efibootmgr",
+          "e2fsprogs",
+          "grub",
+          "lvm2",
+          "hornero-shell",
+          "hornero-config",
+          "horneroctl-bin",
+          "quickshell",
+          "exo",
+          "kitty",
+          "thunar",
+          "networkmanager",
+          "xdg-desktop-portal",
+          "qt6ct",
+          "papirus-icon-theme",
+          "ttf-cascadia-code-nerd",
+          "ttf-material-symbols-variable",
+          "ttf-rubik-vf",
+          "sddm",
+          "hornero-greeter",
+          "hornero-greeter-media-base",
+          "pipewire",
+          "pipewire-audio",
+          "pipewire-alsa",
+          "pipewire-pulse",
+          "pipewire-jack",
+          "wireplumber",
+          "qpwgraph",
+          "ardour",
+          "guitarix",
+          "obs-studio",
+          "kdenlive",
+          "ffmpeg",
+          "blender",
+          "krita",
+          "niri",
+          "xwayland-satellite",
+          "xdg-desktop-portal-gtk",
+          "xdg-desktop-portal-gnome"
+        ],
+        "optionalPackages": [],
+        "packageProvenance": {
+          "pipewire": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire/",
+            "licenses": [
+              "LGPL-2.1-or-later",
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-audio": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-audio/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-alsa": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-alsa/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-pulse": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-pulse/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-jack": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-jack/",
+            "licenses": [
+              "GPL-2.0-only",
+              "LGPL-2.1-or-later",
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "wireplumber": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/wireplumber/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "qpwgraph": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/qpwgraph/",
+            "licenses": [
+              "GPL-2.0-or-later"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "ardour": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/ardour/",
+            "licenses": [
+              "CC0-1.0",
+              "GPL-2.0-or-later",
+              "GPL-3.0-or-later",
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "guitarix": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/guitarix/",
+            "licenses": [
+              "GPL-2.0-or-later",
+              "GPL-3.0-or-later",
+              "LGPL-3.0-or-later"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "obs-studio": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/obs-studio/",
+            "licenses": [
+              "GPL-2.0-only"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "kdenlive": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/kdenlive/",
+            "licenses": [
+              "GPL-2.0-or-later"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "ffmpeg": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/ffmpeg/",
+            "licenses": [
+              "GPL-3.0-only"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "blender": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/blender/",
+            "licenses": [
+              "Apache-2.0",
+              "BSD-2-Clause",
+              "BSD-3-Clause",
+              "GPL-2.0-or-later",
+              "GPL-3.0-or-later",
+              "LGPL-2.1-or-later",
+              "MIT",
+              "MPL-2.0",
+              "Zlib"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "krita": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/krita/",
+            "licenses": [
+              "GPL3"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          }
+        },
+        "optionalIntegrations": [
+          {
+            "id": "reaper",
+            "source": "arch-extra",
+            "licensing": "proprietary-user-license",
+            "provenance": {
+              "source": "arch-extra",
+              "sourceUrl": "https://archlinux.org/packages/extra/x86_64/reaper/",
+              "licenses": [
+                "LicenseRef-EULA"
+              ],
+              "licenseClass": "proprietary",
+              "installMethod": "pacman-repository-opt-in",
+              "optional": true,
+              "support": "planned",
+              "notes": "Proprietary DAW distributed free of charge by Cockos under its own EULA. Opt-in only; HorneroOS ships no license and grants no usage rights beyond the vendor's terms."
+            }
+          },
+          {
+            "id": "yabridge",
+            "source": "arch-extra",
+            "licensing": "user-supplied-windows-vst",
+            "provenance": {
+              "source": "arch-extra",
+              "sourceUrl": "https://archlinux.org/packages/extra/x86_64/yabridge/",
+              "licenses": [
+                "GPL-3.0-or-later"
+              ],
+              "licenseClass": "open-source",
+              "installMethod": "pacman-repository-opt-in",
+              "optional": true,
+              "support": "planned",
+              "notes": "Windows VST compatibility layer. Requires Wine and Windows plugins the user has legally obtained; HorneroOS supplies neither Wine configuration nor any plugin."
+            }
+          }
+        ],
+        "audioModes": {
+          "balanced": {
+            "title": "Balanced",
+            "default": true,
+            "explicitOptIn": false,
+            "rate": "follow-device",
+            "quantum": "follow-device",
+            "presentsQuantumAsPhysicalLatency": false,
+            "restoresPreviousStateOn": [
+              "disable",
+              "error",
+              "logout",
+              "reboot"
+            ]
+          },
+          "low-latency": {
+            "title": "Low Latency",
+            "default": false,
+            "explicitOptIn": true,
+            "rate": "follow-device",
+            "quantum": "smallest-supported",
+            "presentsQuantumAsPhysicalLatency": false,
+            "restoresPreviousStateOn": [
+              "disable",
+              "error",
+              "logout",
+              "reboot"
+            ]
+          },
+          "advanced": {
+            "title": "Advanced",
+            "default": false,
+            "explicitOptIn": true,
+            "rate": "per-interface",
+            "quantum": "per-interface",
+            "perInterfaceCalibration": true,
+            "presentsQuantumAsPhysicalLatency": false,
+            "restoresPreviousStateOn": [
+              "disable",
+              "error",
+              "logout",
+              "reboot"
+            ]
+          }
+        },
+        "performanceMode": {
+          "title": "Temporary Performance",
+          "explicitOptIn": true,
+          "temporary": true,
+          "usesPowerProfilesDaemon": true,
+          "restoresPreviousStateOn": [
+            "timeout",
+            "cancel",
+            "error",
+            "reboot"
+          ],
+          "forbiddenOperations": [
+            "rt-kernel",
+            "irq-tuning",
+            "cpu-governor",
+            "gpu-tuning",
+            "io-scheduler",
+            "privilege-policy"
+          ]
+        }
+      },
+      "edition": "studio",
       "compositor": "niri",
       "maturity": "preview",
       "compositorMaturity": "experimental",

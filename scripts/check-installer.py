@@ -184,7 +184,11 @@ def main() -> int:
                 assert option["edition"] == "studio"
                 assert option["profile"]["studioSelection"]["specializations"]
     elif not candidate_gaming:
-        assert set(item_ids) == {"desktop-hyprland", "desktop-niri"}
+        # Release render: Desktop plus Studio Preview choices. Studio
+        # specialization choices stay candidate-only (above).
+        assert set(item_ids) == {
+            "desktop-hyprland", "desktop-niri", "studio-hyprland", "studio-niri",
+        }
     assert all(item.get("packages") for item in chooser["items"])
     screenshots = {item["id"]: item.get("screenshot") for item in chooser["items"]}
     assert screenshots["desktop-hyprland"] == "screenshots/desktop-hyprland.jpg"
@@ -194,7 +198,13 @@ def main() -> int:
         for path in screenshots.values()
     )
     assert all(item["edition"] not in {"agents", "server"} for item in compositions["options"])
-    assert candidate_studio or all(item["edition"] != "studio" for item in compositions["options"])
+    # Studio is a published Preview edition: its base choices belong to
+    # the release render. Only specialization choices stay candidate-only.
+    assert all(
+        item["maturity"] == "preview"
+        for item in compositions["options"]
+        if item["edition"] == "studio"
+    )
     assert candidate_gaming or all(item["edition"] != "gaming" for item in compositions["options"])
     branding_root = config_root / "branding/hornero"
     branding = load_yaml(branding_root / "branding.desc")

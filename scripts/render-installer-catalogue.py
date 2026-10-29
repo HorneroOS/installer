@@ -242,7 +242,7 @@ def choices(root: Path, candidate_studio: bool = False, candidate_gaming: bool =
                 "compositor": backend,
                 "maturity": maturity,
                 "compositorMaturity": backend_maturity,
-                "isDefault": bool(compositor and backend == compositor.get("default")),
+                "isDefault": bool(edition_id == "desktop" and compositor and backend == compositor.get("default")),
             })
     if candidate_studio or candidate_gaming:
         desktop = next((c for c in result if c["id"] == "desktop-hyprland"), None)
