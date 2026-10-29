@@ -103,9 +103,10 @@ def resolve_gaming_selection(root: Path, specialization: str) -> dict:
 
 
 def gaming_candidate_choices(root: Path, catalogue: dict, desktop_packages: list[str]) -> list[dict]:
-    """Gaming choices for a candidate/testing ISO build.
+    """Gaming specialization choices for a candidate/testing ISO build.
 
-    Gaming stays `planned` in the canonical catalogue; these items only
+    The Gaming edition itself is `preview` in the canonical catalogue
+    and is offered by the default render; these specialization items only
     exist when the builder explicitly opts into a candidate build. Each
     specialization resolves through the canonical resolver: Steam is
     proprietary and never installed by group selection (recorded as a
@@ -128,7 +129,7 @@ def gaming_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
         opt_ins = selection["proprietaryOptInRequired"]
         description = (
             f"Gaming desktop based on HorneroOS Desktop. Profile: {spec['title']}. "
-            "Planned edition — candidate testing only, not a supported release. "
+             "Preview edition — candidate testing only, not a supported release. "
             "No hardware is qualified by choosing this profile."
         )
         if opt_ins:
@@ -139,14 +140,14 @@ def gaming_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
             )
         result.append({
             "id": f"gaming-hyprland-{spec_id}",
-            "name": f"HorneroOS Gaming — {spec['title']} (Planned candidate)",
+            "name": f"HorneroOS Gaming — {spec['title']} (Preview candidate)",
             "description": description,
             "packages": [*packages, profile_package],
             "profilePackage": profile_package,
             "profile": profile,
             "edition": "gaming",
             "compositor": "hyprland",
-            "maturity": "planned",
+            "maturity": catalogue["editions"]["gaming"]["maturity"],
             "compositorMaturity": catalogue["compositors"]["hyprland"]["maturity"],
             "isDefault": False,
             "candidate": True,

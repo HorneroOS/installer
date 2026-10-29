@@ -28,11 +28,16 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_default_choices_exclude_planned_gaming():
+def test_default_choices_include_preview_gaming_edition():
     renderer = _renderer()
-    ids = [choice["id"] for choice in renderer.choices(PRODUCT)]
+    options = renderer.choices(PRODUCT)
+    ids = [choice["id"] for choice in options]
     assert "desktop-hyprland" in ids
-    assert not any(item_id.startswith("gaming-") for item_id in ids)
+    # The promoted Gaming edition is offered by the default render...
+    gaming = [c for c in options if c["edition"] == "gaming"]
+    assert gaming and all(c["maturity"] == "preview" for c in gaming)
+    # ...but specialization choices stay candidate-only.
+    assert not any(item_id.startswith("gaming-hyprland-") for item_id in ids)
 
 
 def test_candidate_choices_cover_all_profiles_without_steam():
@@ -41,10 +46,10 @@ def test_candidate_choices_cover_all_profiles_without_steam():
     gaming = [choice for choice in options if choice["id"].startswith("gaming-hyprland-")]
     assert len(gaming) == 6
     for choice in gaming:
-        assert choice["maturity"] == "planned"
+        assert choice["maturity"] == "preview"
         assert choice["candidate"] is True
         assert choice["isDefault"] is False
-        assert "Planned edition" in choice["description"]
+        assert "Preview edition" in choice["description"]
         # Steam is proprietary: never installed by group selection.
         assert "steam" not in choice["packages"]
         selection = choice["profile"]["gamingSelection"]
