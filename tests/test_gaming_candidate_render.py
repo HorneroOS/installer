@@ -40,6 +40,16 @@ def test_default_choices_include_preview_gaming_edition():
     assert not any(item_id.startswith("gaming-hyprland-") for item_id in ids)
 
 
+def test_gaming_choices_describe_gaming_not_agents():
+    renderer = _renderer()
+    options = renderer.choices(PRODUCT)
+    gaming = [c for c in options if c["edition"] == "gaming"]
+    assert gaming
+    for choice in gaming:
+        assert choice["description"].startswith("Gaming desktop based on HorneroOS Desktop")
+        assert "autonomous-agent" not in choice["description"]
+
+
 def test_candidate_choices_cover_all_profiles_without_steam():
     renderer = _renderer()
     options = renderer.choices(PRODUCT, candidate_gaming=True)
