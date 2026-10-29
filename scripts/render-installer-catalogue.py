@@ -313,6 +313,8 @@ def description(edition: str, compositor: str | None, maturity: str, backend_mat
         summary = "Wayland-first desktop with Hornero Shell, themes, layouts and Control Center."
     elif edition == "studio":
         summary = "Creative workstation based on HorneroOS Desktop."
+    elif edition == "gaming":
+        summary = "Gaming desktop based on HorneroOS Desktop, with Gamescope, GameMode and MangoHud; launchers are explicit opt-ins."
     else:
         summary = "Server-derived host for isolated autonomous-agent workloads."
     if compositor:

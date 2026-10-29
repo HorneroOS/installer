@@ -984,7 +984,7 @@
     {
       "id": "gaming-hyprland",
       "name": "HorneroOS Gaming \u2014 Hyprland",
-      "description": "Server-derived host for isolated autonomous-agent workloads. Compositor: Hyprland. Preview support.",
+      "description": "Gaming desktop based on HorneroOS Desktop, with Gamescope, GameMode and MangoHud; launchers are explicit opt-ins. Compositor: Hyprland. Preview support.",
       "packages": [
         "base",
         "linux",
@@ -1217,7 +1217,7 @@
     {
       "id": "gaming-niri",
       "name": "HorneroOS Gaming \u2014 Niri (Experimental)",
-      "description": "Server-derived host for isolated autonomous-agent workloads. Compositor: Niri. Preview, Experimental compositor support.",
+      "description": "Gaming desktop based on HorneroOS Desktop, with Gamescope, GameMode and MangoHud; launchers are explicit opt-ins. Compositor: Niri. Preview, Experimental compositor support.",
       "packages": [
         "base",
         "linux",
