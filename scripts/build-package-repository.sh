@@ -130,6 +130,9 @@ candidate_args=()
 if [[ "${HORNEROS_INSTALLER_CANDIDATE_STUDIO:-0}" == "1" ]]; then
   candidate_args+=(--candidate-studio)
 fi
+if [[ "${HORNEROS_INSTALLER_CANDIDATE_GAMING:-0}" == "1" ]]; then
+  candidate_args+=(--candidate-gaming)
+fi
 python3 "$ROOT/scripts/render-installer-catalogue.py" \
   --product-source "$product_source" \
   --cache-dir "$work/profile-cache" \

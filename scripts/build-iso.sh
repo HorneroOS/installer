@@ -151,6 +151,9 @@ Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch
 
 [extra]
 Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch
+
+[multilib]
+Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch
 EOF
 export PACMAN_CONF="$work/pacman.conf"
 export HORNEROS_CALAMARES_CONFIG="$profile/calamares"
@@ -180,6 +183,9 @@ Include = $work/build-repo.conf
 Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch
 
 [extra]
+Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch
+
+[multilib]
 Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch
 EOF
 target="$work/target-root"
