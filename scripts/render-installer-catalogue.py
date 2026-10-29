@@ -96,6 +96,65 @@ def resolve_studio_selection(root: Path, specialization: str) -> dict:
     return json.loads(subprocess.check_output(command, text=True))
 
 
+def resolve_gaming_selection(root: Path, specialization: str) -> dict:
+    command = ["python3", str(root / "scripts" / "resolve-edition.py"), "gaming",
+               "--specialization", specialization]
+    return json.loads(subprocess.check_output(command, text=True))
+
+
+def gaming_candidate_choices(root: Path, catalogue: dict, desktop_packages: list[str]) -> list[dict]:
+    """Gaming choices for a candidate/testing ISO build.
+
+    Gaming stays `planned` in the canonical catalogue; these items only
+    exist when the builder explicitly opts into a candidate build. Each
+    specialization resolves through the canonical resolver: Steam is
+    proprietary and never installed by group selection (recorded as a
+    post-install opt-in), reference-only applications cannot appear, and
+    no GPU driver is chosen here (hardware decision at install/first
+    boot, never from a PCI ID). Packages = Desktop (Hyprland) + Gaming
+    platform + the specialization's own applications.
+    """
+    resolved_gaming = resolve(root, "gaming", "hyprland")
+    result = []
+    for spec_id, spec in catalogue["gamingSpecializations"].items():
+        selection = resolve_gaming_selection(root, spec_id)
+        packages = list(desktop_packages)
+        for package in selection["packages"]:
+            if package not in packages:
+                packages.append(package)
+        profile_package = f"hornero-profile-gaming-hyprland-{spec_id}"
+        profile = dict(resolved_gaming)
+        profile["gamingSelection"] = selection
+        opt_ins = selection["proprietaryOptInRequired"]
+        description = (
+            f"Gaming desktop based on HorneroOS Desktop. Profile: {spec['title']}. "
+            "Planned edition — candidate testing only, not a supported release. "
+            "No hardware is qualified by choosing this profile."
+        )
+        if opt_ins:
+            titles = [catalogue["gamingApplications"][app]["title"] for app in opt_ins]
+            description += (
+                " Not installed by this selection (explicit post-install opt-in required): "
+                + ", ".join(titles) + "."
+            )
+        result.append({
+            "id": f"gaming-hyprland-{spec_id}",
+            "name": f"HorneroOS Gaming — {spec['title']} (Planned candidate)",
+            "description": description,
+            "packages": [*packages, profile_package],
+            "profilePackage": profile_package,
+            "profile": profile,
+            "edition": "gaming",
+            "compositor": "hyprland",
+            "maturity": "planned",
+            "compositorMaturity": catalogue["compositors"]["hyprland"]["maturity"],
+            "isDefault": False,
+            "candidate": True,
+            "specializations": [spec_id],
+        })
+    return result
+
+
 def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list[str]) -> list[dict]:
     """Studio choices for a candidate/testing ISO build.
 
@@ -147,7 +206,7 @@ def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
     return result
 
 
-def choices(root: Path, candidate_studio: bool = False) -> list[dict]:
+def choices(root: Path, candidate_studio: bool = False, candidate_gaming: bool = False) -> list[dict]:
     catalogue = yaml.safe_load((root / "editions" / "catalogue.yaml").read_text(encoding="utf-8"))
     result = []
     for edition_id, edition in catalogue["editions"].items():
@@ -185,12 +244,15 @@ def choices(root: Path, candidate_studio: bool = False) -> list[dict]:
                 "compositorMaturity": backend_maturity,
                 "isDefault": bool(compositor and backend == compositor.get("default")),
             })
-    if candidate_studio:
+    if candidate_studio or candidate_gaming:
         desktop = next((c for c in result if c["id"] == "desktop-hyprland"), None)
         if desktop is None:
-            raise ValueError("candidate Studio choices require the desktop-hyprland composition")
+            raise ValueError("candidate choices require the desktop-hyprland composition")
         desktop_packages = [pkg for pkg in desktop["packages"] if pkg != desktop["profilePackage"]]
+    if candidate_studio:
         result.extend(studio_candidate_choices(root, catalogue, desktop_packages))
+    if candidate_gaming:
+        result.extend(gaming_candidate_choices(root, catalogue, desktop_packages))
     if not result:
         raise ValueError("the pinned product catalogue exposes no installable compositions")
     return result
@@ -271,10 +333,11 @@ def main() -> int:
     parser.add_argument("--cache-dir", type=Path, default=Path.home() / ".cache" / "hornero-installer")
     parser.add_argument("--profile-packages-dir", type=Path, help="also render one profile metadata package per install choice")
     parser.add_argument("--candidate-studio", action="store_true", help="also render planned Studio specialization choices for a candidate/testing ISO (never for a release build)")
+    parser.add_argument("--candidate-gaming", action="store_true", help="also render planned Gaming specialization choices for a candidate/testing ISO (never for a release build)")
     args = parser.parse_args()
     lock = yaml.safe_load(LOCK_PATH.read_text(encoding="utf-8"))
     root = load_product_root(lock, args.product_source, args.cache_dir.expanduser().absolute())
-    options = choices(root, candidate_studio=args.candidate_studio)
+    options = choices(root, candidate_studio=args.candidate_studio, candidate_gaming=args.candidate_gaming)
     if args.profile_packages_dir:
         output_dir = args.profile_packages_dir.expanduser().absolute()
         if output_dir.is_symlink():

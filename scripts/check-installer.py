@@ -155,6 +155,19 @@ def main() -> int:
     assert chooser["default"] in item_ids
     assert len(item_ids) == len(set(item_ids))
     candidate_studio = any(item_id.startswith("studio-hyprland-") for item_id in item_ids)
+    candidate_gaming = any(item_id.startswith("gaming-hyprland-") for item_id in item_ids)
+    if candidate_gaming:
+        gaming_ids = {item_id for item_id in item_ids if item_id.startswith("gaming-hyprland-")}
+        assert len(gaming_ids) == 6, "candidate render must expose the six canonical Gaming profiles"
+        assert {"desktop-hyprland", "desktop-niri"} <= set(item_ids)
+        for item in chooser["items"]:
+            if item["id"].startswith("gaming-hyprland-"):
+                assert "steam" not in item["packages"], "Steam is proprietary and needs explicit opt-in"
+                assert "Planned" in item["description"]
+        for option in compositions["options"]:
+            if option["id"].startswith("gaming-hyprland-"):
+                assert option["edition"] == "gaming"
+                assert option["profile"]["gamingSelection"]["specializations"]
     if candidate_studio:
         # Candidate/testing render: planned Studio specialization choices
         # may appear only with explicit candidate invariants. The default
@@ -170,7 +183,7 @@ def main() -> int:
             if option["id"].startswith("studio-hyprland-"):
                 assert option["edition"] == "studio"
                 assert option["profile"]["studioSelection"]["specializations"]
-    else:
+    elif not candidate_gaming:
         assert set(item_ids) == {"desktop-hyprland", "desktop-niri"}
     assert all(item.get("packages") for item in chooser["items"])
     screenshots = {item["id"]: item.get("screenshot") for item in chooser["items"]}
@@ -182,6 +195,7 @@ def main() -> int:
     )
     assert all(item["edition"] not in {"agents", "server"} for item in compositions["options"])
     assert candidate_studio or all(item["edition"] != "studio" for item in compositions["options"])
+    assert candidate_gaming or all(item["edition"] != "gaming" for item in compositions["options"])
     branding_root = config_root / "branding/hornero"
     branding = load_yaml(branding_root / "branding.desc")
     slideshow = branding.get("slideshow")
