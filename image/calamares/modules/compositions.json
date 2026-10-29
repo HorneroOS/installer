@@ -1,5 +1,5 @@
 {
-  "productRevision": "8436a8a97961d9f65a2e866e0584f4e4755741e1",
+  "productRevision": "3ef23cab7455665bd2148d0dcbd42b4231371ad5",
   "options": [
     {
       "id": "desktop-hyprland",
@@ -34,6 +34,11 @@
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
+        "pipewire",
+        "pipewire-audio",
+        "pipewire-alsa",
+        "pipewire-pulse",
+        "wireplumber",
         "hyprland",
         "xdg-desktop-portal-hyprland",
         "hornero-profile-desktop-hyprland"
@@ -80,11 +85,73 @@
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
+          "pipewire",
+          "pipewire-audio",
+          "pipewire-alsa",
+          "pipewire-pulse",
+          "wireplumber",
           "hyprland",
           "xdg-desktop-portal-hyprland"
         ],
         "optionalPackages": [],
-        "packageProvenance": {},
+        "packageProvenance": {
+          "pipewire": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire/",
+            "licenses": [
+              "LGPL-2.1-or-later",
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-audio": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-audio/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-alsa": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-alsa/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-pulse": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-pulse/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "wireplumber": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/wireplumber/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          }
+        },
         "optionalIntegrations": [],
         "audioModes": null,
         "performanceMode": null
@@ -128,6 +195,11 @@
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
+        "pipewire",
+        "pipewire-audio",
+        "pipewire-alsa",
+        "pipewire-pulse",
+        "wireplumber",
         "niri",
         "xwayland-satellite",
         "xdg-desktop-portal-gtk",
@@ -176,13 +248,75 @@
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
+          "pipewire",
+          "pipewire-audio",
+          "pipewire-alsa",
+          "pipewire-pulse",
+          "wireplumber",
           "niri",
           "xwayland-satellite",
           "xdg-desktop-portal-gtk",
           "xdg-desktop-portal-gnome"
         ],
         "optionalPackages": [],
-        "packageProvenance": {},
+        "packageProvenance": {
+          "pipewire": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire/",
+            "licenses": [
+              "LGPL-2.1-or-later",
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-audio": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-audio/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-alsa": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-alsa/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "pipewire-pulse": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-pulse/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "wireplumber": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/wireplumber/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          }
+        },
         "optionalIntegrations": [],
         "audioModes": null,
         "performanceMode": null
@@ -230,8 +364,8 @@
         "pipewire-audio",
         "pipewire-alsa",
         "pipewire-pulse",
-        "pipewire-jack",
         "wireplumber",
+        "pipewire-jack",
         "qpwgraph",
         "ardour",
         "guitarix",
@@ -291,8 +425,8 @@
           "pipewire-audio",
           "pipewire-alsa",
           "pipewire-pulse",
-          "pipewire-jack",
           "wireplumber",
+          "pipewire-jack",
           "qpwgraph",
           "ardour",
           "guitarix",
@@ -351,12 +485,10 @@
             "optional": false,
             "support": "planned"
           },
-          "pipewire-jack": {
+          "wireplumber": {
             "source": "arch-extra",
-            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-jack/",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/wireplumber/",
             "licenses": [
-              "GPL-2.0-only",
-              "LGPL-2.1-or-later",
               "MIT"
             ],
             "licenseClass": "open-source",
@@ -364,10 +496,12 @@
             "optional": false,
             "support": "planned"
           },
-          "wireplumber": {
+          "pipewire-jack": {
             "source": "arch-extra",
-            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/wireplumber/",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-jack/",
             "licenses": [
+              "GPL-2.0-only",
+              "LGPL-2.1-or-later",
               "MIT"
             ],
             "licenseClass": "open-source",
@@ -622,8 +756,8 @@
         "pipewire-audio",
         "pipewire-alsa",
         "pipewire-pulse",
-        "pipewire-jack",
         "wireplumber",
+        "pipewire-jack",
         "qpwgraph",
         "ardour",
         "guitarix",
@@ -685,8 +819,8 @@
           "pipewire-audio",
           "pipewire-alsa",
           "pipewire-pulse",
-          "pipewire-jack",
           "wireplumber",
+          "pipewire-jack",
           "qpwgraph",
           "ardour",
           "guitarix",
@@ -747,12 +881,10 @@
             "optional": false,
             "support": "planned"
           },
-          "pipewire-jack": {
+          "wireplumber": {
             "source": "arch-extra",
-            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-jack/",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/wireplumber/",
             "licenses": [
-              "GPL-2.0-only",
-              "LGPL-2.1-or-later",
               "MIT"
             ],
             "licenseClass": "open-source",
@@ -760,10 +892,12 @@
             "optional": false,
             "support": "planned"
           },
-          "wireplumber": {
+          "pipewire-jack": {
             "source": "arch-extra",
-            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/wireplumber/",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/pipewire-jack/",
             "licenses": [
+              "GPL-2.0-only",
+              "LGPL-2.1-or-later",
               "MIT"
             ],
             "licenseClass": "open-source",
@@ -1014,6 +1148,11 @@
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
+        "pipewire",
+        "pipewire-audio",
+        "pipewire-alsa",
+        "pipewire-pulse",
+        "wireplumber",
         "vulkan-icd-loader",
         "lib32-vulkan-icd-loader",
         "vulkan-tools",
@@ -1071,6 +1210,11 @@
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
+          "pipewire",
+          "pipewire-audio",
+          "pipewire-alsa",
+          "pipewire-pulse",
+          "wireplumber",
           "vulkan-icd-loader",
           "lib32-vulkan-icd-loader",
           "vulkan-tools",
@@ -1247,6 +1391,11 @@
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
+        "pipewire",
+        "pipewire-audio",
+        "pipewire-alsa",
+        "pipewire-pulse",
+        "wireplumber",
         "vulkan-icd-loader",
         "lib32-vulkan-icd-loader",
         "vulkan-tools",
@@ -1306,6 +1455,11 @@
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
+          "pipewire",
+          "pipewire-audio",
+          "pipewire-alsa",
+          "pipewire-pulse",
+          "wireplumber",
           "vulkan-icd-loader",
           "lib32-vulkan-icd-loader",
           "vulkan-tools",
