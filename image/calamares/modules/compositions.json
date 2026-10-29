@@ -1,5 +1,5 @@
 {
-  "productRevision": "2ea9e368d18d2ef8f78a5a18abed7127683ff551",
+  "productRevision": "8436a8a97961d9f65a2e866e0584f4e4755741e1",
   "options": [
     {
       "id": "desktop-hyprland",
@@ -976,6 +976,476 @@
         }
       },
       "edition": "studio",
+      "compositor": "niri",
+      "maturity": "preview",
+      "compositorMaturity": "experimental",
+      "isDefault": false
+    },
+    {
+      "id": "gaming-hyprland",
+      "name": "HorneroOS Gaming \u2014 Hyprland",
+      "description": "Server-derived host for isolated autonomous-agent workloads. Compositor: Hyprland. Preview support.",
+      "packages": [
+        "base",
+        "linux",
+        "linux-firmware",
+        "sudo",
+        "btrfs-progs",
+        "cryptsetup",
+        "dosfstools",
+        "efibootmgr",
+        "e2fsprogs",
+        "grub",
+        "lvm2",
+        "hornero-shell",
+        "hornero-config",
+        "horneroctl-bin",
+        "quickshell",
+        "exo",
+        "kitty",
+        "thunar",
+        "networkmanager",
+        "xdg-desktop-portal",
+        "qt6ct",
+        "papirus-icon-theme",
+        "ttf-cascadia-code-nerd",
+        "ttf-material-symbols-variable",
+        "ttf-rubik-vf",
+        "sddm",
+        "hornero-greeter",
+        "hornero-greeter-media-base",
+        "vulkan-icd-loader",
+        "lib32-vulkan-icd-loader",
+        "vulkan-tools",
+        "xorg-xwayland",
+        "steam-devices",
+        "gamemode",
+        "lib32-gamemode",
+        "gamescope",
+        "mangohud",
+        "lib32-mangohud",
+        "hyprland",
+        "xdg-desktop-portal-hyprland",
+        "hornero-profile-gaming-hyprland"
+      ],
+      "profilePackage": "hornero-profile-gaming-hyprland",
+      "profile": {
+        "edition": "gaming",
+        "title": "HorneroOS Gaming",
+        "maturity": "preview",
+        "role": "gaming-workstation",
+        "compositor": "hyprland",
+        "compositorMaturity": "supported",
+        "packageSets": [
+          "base",
+          "desktop",
+          "gaming",
+          "compositor:hyprland"
+        ],
+        "packages": [
+          "base",
+          "linux",
+          "linux-firmware",
+          "sudo",
+          "btrfs-progs",
+          "cryptsetup",
+          "dosfstools",
+          "efibootmgr",
+          "e2fsprogs",
+          "grub",
+          "lvm2",
+          "hornero-shell",
+          "hornero-config",
+          "horneroctl-bin",
+          "quickshell",
+          "exo",
+          "kitty",
+          "thunar",
+          "networkmanager",
+          "xdg-desktop-portal",
+          "qt6ct",
+          "papirus-icon-theme",
+          "ttf-cascadia-code-nerd",
+          "ttf-material-symbols-variable",
+          "ttf-rubik-vf",
+          "sddm",
+          "hornero-greeter",
+          "hornero-greeter-media-base",
+          "vulkan-icd-loader",
+          "lib32-vulkan-icd-loader",
+          "vulkan-tools",
+          "xorg-xwayland",
+          "steam-devices",
+          "gamemode",
+          "lib32-gamemode",
+          "gamescope",
+          "mangohud",
+          "lib32-mangohud",
+          "hyprland",
+          "xdg-desktop-portal-hyprland"
+        ],
+        "optionalPackages": [],
+        "packageProvenance": {
+          "vulkan-icd-loader": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/vulkan-icd-loader/",
+            "licenses": [
+              "Apache-2.0"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "lib32-vulkan-icd-loader": {
+            "source": "arch-multilib",
+            "sourceUrl": "https://archlinux.org/packages/multilib/x86_64/lib32-vulkan-icd-loader/",
+            "licenses": [
+              "Apache-2.0"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "vulkan-tools": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/vulkan-tools/",
+            "licenses": [
+              "Apache-2.0"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "xorg-xwayland": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/xorg-xwayland/",
+            "licenses": [
+              "MIT",
+              "X11"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "steam-devices": {
+            "source": "arch-multilib",
+            "sourceUrl": "https://archlinux.org/packages/multilib/x86_64/steam-devices/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned",
+            "notes": "Controller and VR device udev rules shipped with Steam; harmless without Steam installed and required for controller discovery."
+          },
+          "gamemode": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/gamemode/",
+            "licenses": [
+              "BSD-3-Clause"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned",
+            "notes": "Feral Interactive GameMode daemon. Process-scoped and temporary; HorneroOS never enables it globally or persists its tweaks."
+          },
+          "lib32-gamemode": {
+            "source": "arch-multilib",
+            "sourceUrl": "https://archlinux.org/packages/multilib/x86_64/lib32-gamemode/",
+            "licenses": [
+              "BSD-3-Clause"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "gamescope": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/gamescope/",
+            "licenses": [
+              "BSD-2-Clause",
+              "BSD-3-Clause",
+              "LicenseRef-Reshade"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned",
+            "notes": "Valve Gamescope micro-compositor, available as a tool and as the handheld Gaming Session compositor. Never forced around every game; session use is hardware-qualified per device."
+          },
+          "mangohud": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/mangohud/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned",
+            "notes": "Diagnostics and measurement overlay only; not a tuning tool."
+          },
+          "lib32-mangohud": {
+            "source": "arch-multilib",
+            "sourceUrl": "https://archlinux.org/packages/multilib/x86_64/lib32-mangohud/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          }
+        },
+        "optionalIntegrations": [],
+        "audioModes": null,
+        "performanceMode": null
+      },
+      "edition": "gaming",
+      "compositor": "hyprland",
+      "maturity": "preview",
+      "compositorMaturity": "supported",
+      "isDefault": false
+    },
+    {
+      "id": "gaming-niri",
+      "name": "HorneroOS Gaming \u2014 Niri (Experimental)",
+      "description": "Server-derived host for isolated autonomous-agent workloads. Compositor: Niri. Preview, Experimental compositor support.",
+      "packages": [
+        "base",
+        "linux",
+        "linux-firmware",
+        "sudo",
+        "btrfs-progs",
+        "cryptsetup",
+        "dosfstools",
+        "efibootmgr",
+        "e2fsprogs",
+        "grub",
+        "lvm2",
+        "hornero-shell",
+        "hornero-config",
+        "horneroctl-bin",
+        "quickshell",
+        "exo",
+        "kitty",
+        "thunar",
+        "networkmanager",
+        "xdg-desktop-portal",
+        "qt6ct",
+        "papirus-icon-theme",
+        "ttf-cascadia-code-nerd",
+        "ttf-material-symbols-variable",
+        "ttf-rubik-vf",
+        "sddm",
+        "hornero-greeter",
+        "hornero-greeter-media-base",
+        "vulkan-icd-loader",
+        "lib32-vulkan-icd-loader",
+        "vulkan-tools",
+        "xorg-xwayland",
+        "steam-devices",
+        "gamemode",
+        "lib32-gamemode",
+        "gamescope",
+        "mangohud",
+        "lib32-mangohud",
+        "niri",
+        "xwayland-satellite",
+        "xdg-desktop-portal-gtk",
+        "xdg-desktop-portal-gnome",
+        "hornero-profile-gaming-niri"
+      ],
+      "profilePackage": "hornero-profile-gaming-niri",
+      "profile": {
+        "edition": "gaming",
+        "title": "HorneroOS Gaming",
+        "maturity": "preview",
+        "role": "gaming-workstation",
+        "compositor": "niri",
+        "compositorMaturity": "experimental",
+        "packageSets": [
+          "base",
+          "desktop",
+          "gaming",
+          "compositor:niri"
+        ],
+        "packages": [
+          "base",
+          "linux",
+          "linux-firmware",
+          "sudo",
+          "btrfs-progs",
+          "cryptsetup",
+          "dosfstools",
+          "efibootmgr",
+          "e2fsprogs",
+          "grub",
+          "lvm2",
+          "hornero-shell",
+          "hornero-config",
+          "horneroctl-bin",
+          "quickshell",
+          "exo",
+          "kitty",
+          "thunar",
+          "networkmanager",
+          "xdg-desktop-portal",
+          "qt6ct",
+          "papirus-icon-theme",
+          "ttf-cascadia-code-nerd",
+          "ttf-material-symbols-variable",
+          "ttf-rubik-vf",
+          "sddm",
+          "hornero-greeter",
+          "hornero-greeter-media-base",
+          "vulkan-icd-loader",
+          "lib32-vulkan-icd-loader",
+          "vulkan-tools",
+          "xorg-xwayland",
+          "steam-devices",
+          "gamemode",
+          "lib32-gamemode",
+          "gamescope",
+          "mangohud",
+          "lib32-mangohud",
+          "niri",
+          "xwayland-satellite",
+          "xdg-desktop-portal-gtk",
+          "xdg-desktop-portal-gnome"
+        ],
+        "optionalPackages": [],
+        "packageProvenance": {
+          "vulkan-icd-loader": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/vulkan-icd-loader/",
+            "licenses": [
+              "Apache-2.0"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "lib32-vulkan-icd-loader": {
+            "source": "arch-multilib",
+            "sourceUrl": "https://archlinux.org/packages/multilib/x86_64/lib32-vulkan-icd-loader/",
+            "licenses": [
+              "Apache-2.0"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "vulkan-tools": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/vulkan-tools/",
+            "licenses": [
+              "Apache-2.0"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "xorg-xwayland": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/xorg-xwayland/",
+            "licenses": [
+              "MIT",
+              "X11"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "steam-devices": {
+            "source": "arch-multilib",
+            "sourceUrl": "https://archlinux.org/packages/multilib/x86_64/steam-devices/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned",
+            "notes": "Controller and VR device udev rules shipped with Steam; harmless without Steam installed and required for controller discovery."
+          },
+          "gamemode": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/gamemode/",
+            "licenses": [
+              "BSD-3-Clause"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned",
+            "notes": "Feral Interactive GameMode daemon. Process-scoped and temporary; HorneroOS never enables it globally or persists its tweaks."
+          },
+          "lib32-gamemode": {
+            "source": "arch-multilib",
+            "sourceUrl": "https://archlinux.org/packages/multilib/x86_64/lib32-gamemode/",
+            "licenses": [
+              "BSD-3-Clause"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          },
+          "gamescope": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/gamescope/",
+            "licenses": [
+              "BSD-2-Clause",
+              "BSD-3-Clause",
+              "LicenseRef-Reshade"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned",
+            "notes": "Valve Gamescope micro-compositor, available as a tool and as the handheld Gaming Session compositor. Never forced around every game; session use is hardware-qualified per device."
+          },
+          "mangohud": {
+            "source": "arch-extra",
+            "sourceUrl": "https://archlinux.org/packages/extra/x86_64/mangohud/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned",
+            "notes": "Diagnostics and measurement overlay only; not a tuning tool."
+          },
+          "lib32-mangohud": {
+            "source": "arch-multilib",
+            "sourceUrl": "https://archlinux.org/packages/multilib/x86_64/lib32-mangohud/",
+            "licenses": [
+              "MIT"
+            ],
+            "licenseClass": "open-source",
+            "installMethod": "pacman-repository",
+            "optional": false,
+            "support": "planned"
+          }
+        },
+        "optionalIntegrations": [],
+        "audioModes": null,
+        "performanceMode": null
+      },
+      "edition": "gaming",
       "compositor": "niri",
       "maturity": "preview",
       "compositorMaturity": "experimental",
