@@ -26,11 +26,14 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_default_choices_exclude_planned_studio():
+def test_default_choices_include_preview_studio_edition():
     renderer = _renderer()
-    ids = [choice["id"] for choice in renderer.choices(PRODUCT)]
+    options = renderer.choices(PRODUCT)
+    ids = [choice["id"] for choice in options]
     assert "desktop-hyprland" in ids
-    assert not any(item_id.startswith("studio-") for item_id in ids)
+    studio = [c for c in options if c["edition"] == "studio"]
+    assert studio and all(c["maturity"] == "preview" for c in studio)
+    assert not any(item_id.startswith("studio-hyprland-") for item_id in ids)
 
 
 def test_candidate_choices_cover_all_specializations_without_proprietary_packages():
