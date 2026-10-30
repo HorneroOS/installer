@@ -17,4 +17,5 @@ file_permissions=(
   ["/etc/sudoers.d/hornero-live"]="0:0:440"
   ["/usr/local/bin/hornero-installer-start"]="0:0:755"
   ["/usr/local/bin/hornero-installer-run"]="0:0:755"
+  ["/usr/local/bin/hornero-live-session-setup"]="0:0:755"
 )

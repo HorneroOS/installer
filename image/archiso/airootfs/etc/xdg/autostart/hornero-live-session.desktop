@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=HorneroOS live session setup
+Comment=Keep the installer live session awake (no lock, blank, or suspend)
+Exec=/usr/local/bin/hornero-live-session-setup
+Icon=hornero-installer
+Terminal=false
+X-GNOME-Autostart-enabled=true

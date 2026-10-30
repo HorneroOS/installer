@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Live-session setup: an installer medium must never lock, blank, or
+# suspend while an installation runs. The live user has no password, so
+# the installed-system idle lock (Hornero Shell IdleMonitors, 180 s by
+# default) would trap the session with no way back in. Disable every
+# idle action for this ephemeral live user only; installed systems keep
+# the packaged defaults and the account password chosen in Calamares.
+set -euo pipefail
+
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+mkdir -p "$config_home/hornero" "$config_home/hypr"
+
+# Hornero Shell reads $XDG_CONFIG_HOME/hornero/shell.json and reloads it
+# on change, so writing this before (or shortly after) shell start is
+# enough to disarm its idle lock / dpms / suspend timeouts.
+shell_json="$config_home/hornero/shell.json"
+if [[ ! -e "$shell_json" ]]; then
+  cat > "$shell_json" <<'JSON'
+{
+  "general": {
+    "idle": {
+      "lockBeforeSleep": false,
+      "inhibitWhenAudio": false,
+      "timeouts": [
+        { "timeout": 180, "idleAction": "lock", "enabled": false },
+        { "timeout": 300, "idleAction": "dpms off", "returnAction": "dpms on", "enabled": false },
+        { "timeout": 600, "idleAction": ["systemctl", "suspend-then-hibernate"], "enabled": false }
+      ]
+    }
+  }
+}
+JSON
+fi
+
+# hypridle ships packaged listeners (dpms off at 420 s, suspend at
+# 1800 s). The live override intentionally declares no listeners.
+hypridle_conf="$config_home/hypr/hypridle.conf"
+cat > "$hypridle_conf" <<'CONF'
+# HorneroOS live session: no idle listeners.
+# The installer medium must never blank or suspend during installation.
+CONF
+if pgrep -x hypridle >/dev/null 2>&1; then
+  pkill -x hypridle || true
+  nohup hypridle >/dev/null 2>&1 &
+fi
+
+# Belt and braces: hold a logind idle/sleep inhibitor for the session.
+if command -v systemd-inhibit >/dev/null 2>&1; then
+  nohup systemd-inhibit --what=idle:sleep --mode=block sleep infinity >/dev/null 2>&1 &
+fi
