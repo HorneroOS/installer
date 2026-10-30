@@ -62,3 +62,13 @@ def test_live_sleep_targets_masked_and_logind_idle_ignored():
         assert link.is_symlink() and link.readlink().as_posix() == "/dev/null", target
     logind = (ARCHISO / "airootfs/etc/systemd/logind.conf.d/10-hornero-live.conf").read_text(encoding="utf-8")
     assert "IdleAction=ignore" in logind and "HandleLidSwitch=ignore" in logind
+
+
+def test_live_firstboot_prompt_masked():
+    """The live image must not stop at the systemd-firstboot tty1 prompt.
+
+    The mask lives in the live airootfs only; the installed target is built
+    from base.sqfs and keeps its normal first-boot behavior.
+    """
+    link = ARCHISO / "airootfs/etc/systemd/system/systemd-firstboot.service"
+    assert link.is_symlink() and link.readlink().as_posix() == "/dev/null"
