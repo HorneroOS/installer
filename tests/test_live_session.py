@@ -43,6 +43,17 @@ def test_live_session_never_locks_blanks_or_suspends():
     assert '["/usr/local/bin/hornero-live-session-setup"]="0:0:755"' in profile
 
 
+def test_live_session_seeds_terminal_helper():
+    """SUPER+Return uses exo; the live home must define TerminalEmulator."""
+    setup = ARCHISO / "airootfs/usr/local/bin/hornero-live-session-setup"
+    text = setup.read_text(encoding="utf-8")
+    assert "xfce4/helpers.rc" in text
+    assert "TerminalEmulator=kitty" in text
+    # Seeding must not clobber an existing session choice.
+    assert "grep -q '^TerminalEmulator='" in text
+    assert "kitty" in _packages()
+
+
 def test_live_sleep_targets_masked_and_logind_idle_ignored():
     system_dir = ARCHISO / "airootfs/etc/systemd/system"
     for target in ("sleep.target", "suspend.target", "hibernate.target",

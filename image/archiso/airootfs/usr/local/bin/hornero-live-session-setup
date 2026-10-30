@@ -44,6 +44,18 @@ if pgrep -x hypridle >/dev/null 2>&1; then
   nohup hypridle >/dev/null 2>&1 &
 fi
 
+# Installed systems receive the exo preferred-terminal helper from the
+# Hornero Config defaults materialized at install time. The live home
+# starts empty, so seed it here or SUPER+Return fails with exo's
+# "Could not find fallback TerminalEmulator application" dialog even
+# though kitty is installed (installer#56). Never override a choice the
+# session already made.
+helpers_rc="$config_home/xfce4/helpers.rc"
+if command -v kitty >/dev/null 2>&1 && ! grep -q '^TerminalEmulator=' "$helpers_rc" 2>/dev/null; then
+  mkdir -p "$config_home/xfce4"
+  printf 'TerminalEmulator=kitty\n' >> "$helpers_rc"
+fi
+
 # Belt and braces: hold a logind idle/sleep inhibitor for the session.
 if command -v systemd-inhibit >/dev/null 2>&1; then
   nohup systemd-inhibit --what=idle:sleep --mode=block sleep infinity >/dev/null 2>&1 &
