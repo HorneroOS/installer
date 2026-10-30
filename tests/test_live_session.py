@@ -28,3 +28,26 @@ def test_live_session_is_hyprland():
 def test_installer_wrapper_keeps_wayland_env():
     sudoers = (ARCHISO / "airootfs/etc/sudoers.d/hornero-live").read_text(encoding="utf-8")
     assert "WAYLAND_DISPLAY" in sudoers and "XDG_RUNTIME_DIR" in sudoers
+
+
+def test_live_session_never_locks_blanks_or_suspends():
+    """The live user has no password: an idle lock would trap the install."""
+    setup = ARCHISO / "airootfs/usr/local/bin/hornero-live-session-setup"
+    text = setup.read_text(encoding="utf-8")
+    assert "shell.json" in text and "hypridle.conf" in text
+    assert text.count('"enabled": false') == 3
+    assert '"lockBeforeSleep": false' in text
+    desktop = ARCHISO / "airootfs/etc/xdg/autostart/hornero-live-session.desktop"
+    assert "Exec=/usr/local/bin/hornero-live-session-setup" in desktop.read_text(encoding="utf-8")
+    profile = (ARCHISO / "profiledef.sh").read_text(encoding="utf-8")
+    assert '["/usr/local/bin/hornero-live-session-setup"]="0:0:755"' in profile
+
+
+def test_live_sleep_targets_masked_and_logind_idle_ignored():
+    system_dir = ARCHISO / "airootfs/etc/systemd/system"
+    for target in ("sleep.target", "suspend.target", "hibernate.target",
+                   "hybrid-sleep.target", "suspend-then-hibernate.target"):
+        link = system_dir / target
+        assert link.is_symlink() and link.readlink().as_posix() == "/dev/null", target
+    logind = (ARCHISO / "airootfs/etc/systemd/logind.conf.d/10-hornero-live.conf").read_text(encoding="utf-8")
+    assert "IdleAction=ignore" in logind and "HandleLidSwitch=ignore" in logind
