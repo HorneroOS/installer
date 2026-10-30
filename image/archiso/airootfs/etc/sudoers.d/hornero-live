@@ -1,2 +1,2 @@
-Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"
+Defaults:hornero-live env_keep += "WAYLAND_DISPLAY XDG_RUNTIME_DIR DISPLAY XAUTHORITY"
 hornero-live ALL=(root) NOPASSWD: /usr/local/bin/hornero-installer-run ""
