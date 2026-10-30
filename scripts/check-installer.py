@@ -323,14 +323,19 @@ def main() -> int:
         "rsync",
         "sddm",
         "syslinux",
-        "xfce4-panel",
-        "xfce4-session",
-        "xfce4-settings",
-        "xfce4-terminal",
-        "xfconf",
-        "xfdesktop",
-        "xfwm4",
+        "hyprland",
+        "quickshell",
+        "hornero-shell",
+        "hornero-config",
+        "horneroctl-bin",
+        "kitty",
+        "xdg-desktop-portal-hyprland",
     } <= live_packages
+    assert not any(name.startswith("xfce") or name == "xfconf" for name in live_packages), (
+        "the live session is HorneroOS Desktop (Hyprland), not XFCE"
+    )
+    live_session = (archiso / "airootfs/etc/sddm.conf.d/10-hornero-live.conf").read_text(encoding="utf-8")
+    assert "Session=hyprland.desktop" in live_session
     unpackfs = load_yaml(config_root / "modules/unpackfs.conf")
     assert unpackfs["unpack"] and unpackfs["unpack"][0]["sourcefs"] == "squashfs"
     assert "/run/archiso/bootmnt/hornero/x86_64/base.sqfs" == unpackfs["unpack"][0]["source"]
@@ -361,7 +366,7 @@ def main() -> int:
     assert "-boot_image any replay" in build_script
     assert (archiso / "airootfs/etc/sudoers.d/hornero-live").is_file()
     sudoers = (archiso / "airootfs/etc/sudoers.d/hornero-live").read_text(encoding="utf-8")
-    assert 'Defaults:hornero-live env_keep += "DISPLAY XAUTHORITY"' in sudoers
+    assert 'Defaults:hornero-live env_keep += "WAYLAND_DISPLAY XDG_RUNTIME_DIR DISPLAY XAUTHORITY"' in sudoers
     assert 'NOPASSWD: /usr/local/bin/hornero-installer-run ""' in sudoers
     launcher = (archiso / "airootfs/usr/local/bin/hornero-installer-start").read_text(encoding="utf-8")
     desktop_entry = (CALAMARES / "hornero-installer.desktop").read_text(encoding="utf-8")

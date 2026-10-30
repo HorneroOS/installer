@@ -1,5 +1,7 @@
 # Packages for the live installer environment only.
-# Installed-target packages come from HorneroOS/hornero's edition resolver.
+# The live session is the real HorneroOS Desktop (Hyprland + Hornero
+# Shell); installed-target packages come from HorneroOS/hornero's
+# edition resolver.
 arch-install-scripts
 archiso
 btrfs-progs
@@ -15,7 +17,6 @@ linux-firmware
 mkinitcpio
 mkinitcpio-archiso
 networkmanager
-network-manager-applet
 ntfs-3g
 os-prober
 parted
@@ -25,23 +26,24 @@ sddm
 syslinux
 sudo
 systemd-sysvcompat
-xf86-video-fbdev
-xf86-video-vesa
+mesa
+hyprland
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+quickshell
+hornero-shell
+hornero-config
+horneroctl-bin
+hornero-greeter
+kitty
+thunar
 exo
 garcon
-thunar
 thunar-volman
 tumbler
-xfce4-appfinder
-xfce4-notifyd
-xfce4-panel
-xfce4-pulseaudio-plugin
-xfce4-session
-xfce4-settings
-xfce4-terminal
-xfce4-whiskermenu-plugin
-xfconf
-xfdesktop
-xfwm4
-xorg-server
+polkit-gnome
+dex
+hypridle
+wl-clipboard
+cliphist
 zenity
