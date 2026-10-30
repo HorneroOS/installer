@@ -12,8 +12,41 @@ LOCAL_INCLUDES = {
     "Include = /etc/pacman.d/hornero-installer.conf",
     "Include = /etc/pacman.d/hornero-installer-mirrorlist.conf",
 }
-REPOSITORIES = {"[core]", "[extra]"}
+REPOSITORIES = {"[core]", "[extra]", "[multilib]"}
 NORMAL_MIRROR = "Include = /etc/pacman.d/mirrorlist"
+
+# A stock Arch mirrorlist ships with every Server commented out, so a
+# freshly installed target would have no usable repository at all. When
+# (and only when) the target mirrorlist enables no server, prepend these
+# well-known defaults; any user- or image-provided server wins untouched.
+DEFAULT_SERVERS = [
+    "Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch",
+    "Server = https://mirror.rackspace.com/archlinux/$repo/os/$arch",
+    "Server = https://mirrors.kernel.org/archlinux/$repo/os/$arch",
+]
+DEFAULT_MIRROR_HEADER = "## HorneroOS defaults (added at install time: no server was enabled)\n"
+
+
+def ensure_mirrorlist(root: Path) -> None:
+    mirrorlist = root / "etc/pacman.d/mirrorlist"
+    if mirrorlist.is_symlink():
+        raise ValueError("target mirrorlist must not be a symlink")
+    if mirrorlist.is_file():
+        lines = mirrorlist.read_text(encoding="utf-8").splitlines()
+        if any(line.startswith("Server =") or line.startswith("Server=") for line in lines):
+            return
+        content = DEFAULT_MIRROR_HEADER + "\n".join(DEFAULT_SERVERS) + "\n"
+        if lines:
+            content += "\n" + "\n".join(lines) + "\n"
+        temporary = mirrorlist.with_name(".mirrorlist.hornero-tmp")
+        if temporary.is_symlink():
+            raise ValueError("temporary mirrorlist path must not be a symlink")
+        temporary.write_text(content, encoding="utf-8")
+        os.replace(temporary, mirrorlist)
+        return
+    mirrorlist.write_text(
+        DEFAULT_MIRROR_HEADER + "\n".join(DEFAULT_SERVERS) + "\n", encoding="utf-8"
+    )
 
 
 def cleanup(root: Path) -> None:
@@ -43,6 +76,7 @@ def cleanup(root: Path) -> None:
         raise ValueError("temporary pacman.conf path must not be a symlink")
     temporary.write_text("\n".join(output) + "\n", encoding="utf-8")
     os.replace(temporary, pacman_conf)
+    ensure_mirrorlist(root)
     (root / "etc/pacman.d/hornero-installer.conf").unlink(missing_ok=True)
     (root / "etc/pacman.d/hornero-installer-mirrorlist.conf").unlink(missing_ok=True)
     (root / "usr/lib/hornero-installer/cleanup-package-source.py").unlink(missing_ok=True)

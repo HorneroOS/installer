@@ -146,3 +146,44 @@ def test_post_exit_cleanup_reports_unmount_failure_but_attempts_all_targets(
     assert "simulated resolver unmount failure" in failures[0]
     assert target in unmounted
     assert all(include not in (target / "etc/pacman.conf").read_text() for include in TEMP_INCLUDES)
+
+
+def test_cleanup_enables_default_mirrors_when_none_active(tmp_path: Path) -> None:
+    module = load_module("cleanup_package_source", CLEANUP_PACKAGE_SOURCE)
+    target = make_calamares_target(tmp_path)
+    (target / "etc/pacman.d/mirrorlist").write_text(
+        "##\n## Arch Linux repository mirrorlist\n##\n#Server = https://example.invalid/$repo/os/$arch\n",
+        encoding="utf-8",
+    )
+    module.cleanup(target)
+    mirrorlist = (target / "etc/pacman.d/mirrorlist").read_text(encoding="utf-8")
+    active = [line for line in mirrorlist.splitlines() if line.startswith("Server =")]
+    assert len(active) == 3
+    assert "#Server = https://example.invalid/$repo/os/$arch" in mirrorlist
+    # Idempotent: a second run must not stack more defaults.
+    module.cleanup(target)
+    mirrorlist = (target / "etc/pacman.d/mirrorlist").read_text(encoding="utf-8")
+    assert len([line for line in mirrorlist.splitlines() if line.startswith("Server =")]) == 3
+
+
+def test_cleanup_preserves_existing_active_mirror(tmp_path: Path) -> None:
+    module = load_module("cleanup_package_source", CLEANUP_PACKAGE_SOURCE)
+    target = make_calamares_target(tmp_path)
+    original = "Server = https://mirror.example.com/archlinux/$repo/os/$arch\n"
+    (target / "etc/pacman.d/mirrorlist").write_text(original, encoding="utf-8")
+    module.cleanup(target)
+    assert (target / "etc/pacman.d/mirrorlist").read_text(encoding="utf-8") == original
+
+
+def test_cleanup_restores_multilib_include(tmp_path: Path) -> None:
+    module = load_module("cleanup_package_source", CLEANUP_PACKAGE_SOURCE)
+    target = make_calamares_target(tmp_path)
+    conf = target / "etc/pacman.conf"
+    conf.write_text(
+        conf.read_text(encoding="utf-8") + "[multilib]\n" + TEMP_INCLUDES[0] + "\n",
+        encoding="utf-8",
+    )
+    module.cleanup(target)
+    restored = conf.read_text(encoding="utf-8")
+    assert restored.count("Include = /etc/pacman.d/mirrorlist") == 3
+    assert "[multilib]\nInclude = /etc/pacman.d/mirrorlist" in restored
