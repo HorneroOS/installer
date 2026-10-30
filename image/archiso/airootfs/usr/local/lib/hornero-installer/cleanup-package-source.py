@@ -12,7 +12,7 @@ LOCAL_INCLUDES = {
     "Include = /etc/pacman.d/hornero-installer.conf",
     "Include = /etc/pacman.d/hornero-installer-mirrorlist.conf",
 }
-REPOSITORIES = {"[core]", "[extra]"}
+REPOSITORIES = {"[core]", "[extra]", "[multilib]"}
 NORMAL_MIRROR = "Include = /etc/pacman.d/mirrorlist"
 
 # A stock Arch mirrorlist ships with every Server commented out, so a

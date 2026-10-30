@@ -173,3 +173,17 @@ def test_cleanup_preserves_existing_active_mirror(tmp_path: Path) -> None:
     (target / "etc/pacman.d/mirrorlist").write_text(original, encoding="utf-8")
     module.cleanup(target)
     assert (target / "etc/pacman.d/mirrorlist").read_text(encoding="utf-8") == original
+
+
+def test_cleanup_restores_multilib_include(tmp_path: Path) -> None:
+    module = load_module("cleanup_package_source", CLEANUP_PACKAGE_SOURCE)
+    target = make_calamares_target(tmp_path)
+    conf = target / "etc/pacman.conf"
+    conf.write_text(
+        conf.read_text(encoding="utf-8") + "[multilib]\n" + TEMP_INCLUDES[0] + "\n",
+        encoding="utf-8",
+    )
+    module.cleanup(target)
+    restored = conf.read_text(encoding="utf-8")
+    assert restored.count("Include = /etc/pacman.d/mirrorlist") == 3
+    assert "[multilib]\nInclude = /etc/pacman.d/mirrorlist" in restored
