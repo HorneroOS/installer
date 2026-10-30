@@ -18,6 +18,10 @@ CLEANUP_TARGETS = (
     ROOT
     / "image/archiso/airootfs/usr/local/lib/hornero-installer/cleanup-calamares-targets.py"
 )
+PREFLIGHT_PAYLOAD = (
+    ROOT
+    / "image/archiso/airootfs/usr/local/lib/hornero-installer/preflight-payload.py"
+)
 TEMP_INCLUDES = (
     "Include = /etc/pacman.d/hornero-installer.conf",
     "Include = /etc/pacman.d/hornero-installer-mirrorlist.conf",
@@ -187,3 +191,25 @@ def test_cleanup_restores_multilib_include(tmp_path: Path) -> None:
     restored = conf.read_text(encoding="utf-8")
     assert restored.count("Include = /etc/pacman.d/mirrorlist") == 3
     assert "[multilib]\nInclude = /etc/pacman.d/mirrorlist" in restored
+
+
+def test_preflight_payload_detects_missing_and_present_sources(tmp_path: Path) -> None:
+    module = load_module("preflight_payload", PREFLIGHT_PAYLOAD)
+    conf = tmp_path / "unpackfs.conf"
+    conf.write_text(
+        "---\nunpack:\n  - source: /run/archiso/bootmnt/hornero/x86_64/base.sqfs\n"
+        "    sourcefs: squashfs\n    destination: \"\"\n",
+        encoding="utf-8",
+    )
+    assert module.missing_sources(conf, tmp_path) == [
+        "/run/archiso/bootmnt/hornero/x86_64/base.sqfs"
+    ]
+    payload = tmp_path / "run/archiso/bootmnt/hornero/x86_64/base.sqfs"
+    payload.parent.mkdir(parents=True)
+    payload.write_bytes(b"")
+    assert module.missing_sources(conf, tmp_path) == [
+        "/run/archiso/bootmnt/hornero/x86_64/base.sqfs"
+    ]
+    payload.write_bytes(b"squashfs")
+    assert module.missing_sources(conf, tmp_path) == []
+    assert module.missing_sources(tmp_path / "absent.conf", tmp_path)
