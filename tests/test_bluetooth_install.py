@@ -82,7 +82,11 @@ def test_verify_fails_when_bluez_installed_but_not_enabled(tmp_path):
     unit.write_text("[Unit]\n", encoding="utf-8")
     problems = verify.verify_install(root)
     assert any("bluetooth.service installed but not enabled" in p for p in problems)
-    wants = root / "etc/systemd/system/multi-user.target.wants"
+    # `systemctl enable bluetooth` files the link under
+    # bluetooth.target.wants (the unit's [Install] WantedBy), not
+    # multi-user.target.wants — the gate must accept what enable
+    # actually creates or every bluez install fails (preview30 VM).
+    wants = root / "etc/systemd/system/bluetooth.target.wants"
     wants.mkdir(parents=True)
     (wants / "bluetooth.service").symlink_to("/usr/lib/systemd/system/bluetooth.service")
     assert verify.verify_install(root) == []
