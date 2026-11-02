@@ -329,6 +329,116 @@ def description(edition: str, compositor: str | None, maturity: str, backend_mat
     return summary
 
 
+def composable_catalogue(catalogue: dict) -> dict | None:
+    """Catalogue kernel/bootloader/capability maps, or None if absent.
+
+    The pinned catalogue is the only source. When it does not yet ship
+    these maps the composable choosers are not rendered and the current
+    single-chooser flow stays byte-identical — nothing is invented here.
+    """
+    kernels = catalogue.get("kernels")
+    bootloaders = catalogue.get("bootloaders")
+    if not kernels or not bootloaders:
+        return None
+    return {
+        "kernels": kernels,
+        "bootloaders": bootloaders,
+        "capabilities": catalogue.get("capabilities") or {},
+    }
+
+
+def render_composable_choosers(output_dir: Path, catalogue: dict) -> list[str]:
+    """Render kernel/bootloader/capability choosers from catalogue maps."""
+    import sys as _sys
+
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import installation_plan as plan_module
+
+    maps = composable_catalogue(catalogue)
+    if maps is None:
+        return []
+    written: list[str] = []
+    defaults = [k for k, v in maps["kernels"].items() if v.get("default")]
+    if len(defaults) > 1:
+        raise ValueError(f"catalogue must have at most one default kernel; found {defaults}")
+    kernel_conf = {
+        "mode": "requiredmultiple",
+        "method": "packages",
+        "default": defaults,
+        "labels": {
+            "step": "Kernels (Ctrl-click to select multiple; primary listed first)"
+        },
+        "items": [
+            {
+                "id": kernel_id,
+                "name": kernel_id + (" (primary default)" if entry.get("default") else ""),
+                "description": f"Kernel {kernel_id}.",
+                "packages": [
+                    *entry.get("packages", []),
+                    *([entry["headers"]] if entry.get("headers") else []),
+                ],
+            }
+            for kernel_id, entry in maps["kernels"].items()
+        ],
+    }
+    (output_dir / "packagechooser-kernel.conf").write_text(
+        yaml.safe_dump(kernel_conf, sort_keys=False, allow_unicode=True), encoding="utf-8"
+    )
+    written.append("packagechooser-kernel.conf")
+
+    bootloader_defaults = [b for b, v in maps["bootloaders"].items() if v.get("default")]
+    bootloader_conf = {
+        "mode": "required",
+        "method": "legacy",
+        "default": bootloader_defaults[0] if bootloader_defaults else "grub",
+        "labels": {"step": "Bootloader"},
+        "items": [
+            {
+                "id": bootloader_id,
+                "name": bootloader_id,
+                "description": (
+                    f"Bootloader {bootloader_id}. "
+                    f"Firmware: {', '.join(entry.get('firmwares', []))}. "
+                    f"ESP base: {entry.get('espBaseMiB')} MiB."
+                ),
+            }
+            for bootloader_id, entry in maps["bootloaders"].items()
+        ],
+    }
+    (output_dir / "packagechooser-bootloader.conf").write_text(
+        yaml.safe_dump(bootloader_conf, sort_keys=False, allow_unicode=True), encoding="utf-8"
+    )
+    written.append("packagechooser-bootloader.conf")
+
+    if maps["capabilities"]:
+        capability_items = []
+        for capability_id, entry in maps["capabilities"].items():
+            packages = plan_module.entry_packages(catalogue, entry)
+            capability_items.append(
+                {
+                    "id": capability_id,
+                    "name": capability_id,
+                    "description": f"Capability {capability_id}.",
+                    "packages": packages,
+                }
+            )
+        capability_conf = {
+            "mode": "optionalmultiple",
+            "method": "packages",
+            "default": [],
+            "labels": {
+                "step": "Capabilities (Ctrl-click to select multiple)"
+            },
+            "items": capability_items,
+        }
+        (output_dir / "packagechooser-capabilities.conf").write_text(
+            yaml.safe_dump(capability_conf, sort_keys=False, allow_unicode=True),
+            encoding="utf-8",
+        )
+        written.append("packagechooser-capabilities.conf")
+    return written
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--product-source", type=Path, help="use a local Hornero checkout instead of the pinned source")
@@ -337,6 +447,7 @@ def main() -> int:
     parser.add_argument("--profile-packages-dir", type=Path, help="also render one profile metadata package per install choice")
     parser.add_argument("--candidate-studio", action="store_true", help="also render planned Studio specialization choices for a candidate/testing ISO (never for a release build)")
     parser.add_argument("--candidate-gaming", action="store_true", help="also render planned Gaming specialization choices for a candidate/testing ISO (never for a release build)")
+    parser.add_argument("--composable-choosers", action="store_true", help="also render kernel/bootloader/capability choosers from the catalogue maps (only once settings.conf wires them; default off so shipped modules stay inert-free)")
     args = parser.parse_args()
     lock = yaml.safe_load(LOCK_PATH.read_text(encoding="utf-8"))
     root = load_product_root(lock, args.product_source, args.cache_dir.expanduser().absolute())
@@ -371,6 +482,18 @@ def main() -> int:
             "screenshot": CHOICE_SCREENSHOTS.get(choice["id"], ":/images/no-selection.png"),
         })
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    catalogue_doc = yaml.safe_load((root / "editions" / "catalogue.yaml").read_text(encoding="utf-8"))
+    if args.composable_choosers:
+        composable_files = render_composable_choosers(args.output.parent, catalogue_doc)
+        if composable_files:
+            print(f"rendered composable choosers: {', '.join(composable_files)}")
+        else:
+            print("pinned catalogue has no kernels/bootloaders maps; composable choosers not rendered")
+    else:
+        # Rendered chooser files without settings.conf wiring would be
+        # inert in the ISO and fail check-installer; they are emitted
+        # only by the wiring change that also delegates bootloader.conf.
+        print("composable choosers not rendered (pass --composable-choosers with the settings wiring)")
     args.output.write_text(yaml.safe_dump(rendered, sort_keys=False, allow_unicode=True), encoding="utf-8")
     provenance = args.output.with_name("compositions.json")
     provenance.write_text(json.dumps({"productRevision": lock["product"]["revision"], "options": options}, indent=2) + "\n", encoding="utf-8")

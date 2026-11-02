@@ -16,17 +16,88 @@ import sys
 from pathlib import Path
 
 
-def verify_install(root: Path) -> list[str]:
+def _load_plan(root: Path, plan: dict | None) -> dict | None:
+    if plan is not None:
+        return plan
+    plan_path = root / "usr/lib/hornero/installation-plan.json"
+    if plan_path.is_file():
+        import json
+
+        return json.loads(plan_path.read_text(encoding="utf-8"))
+    return None
+
+
+def verify_install(root: Path, plan: dict | None = None) -> list[str]:
     problems: list[str] = []
+    plan = _load_plan(root, plan)
 
     def require_file(rel: str, what: str) -> None:
         path = root / rel
         if not path.is_file() or path.stat().st_size == 0:
             problems.append(f"missing or empty {what}: {rel}")
 
-    require_file("boot/grub/grub.cfg", "GRUB configuration")
-    require_file("boot/vmlinuz-linux", "kernel image")
-    require_file("boot/initramfs-linux.img", "initramfs")
+    if plan is None:
+        # Legacy single-kernel GRUB flow (unchanged).
+        require_file("boot/grub/grub.cfg", "GRUB configuration")
+        require_file("boot/vmlinuz-linux", "kernel image")
+        require_file("boot/initramfs-linux.img", "initramfs")
+    else:
+        selection = plan.get("selection", {})
+        kernels = selection.get("kernels") or ["linux"]
+        for kernel in kernels:
+            require_file(f"boot/vmlinuz-{kernel}", f"kernel image ({kernel})")
+            require_file(f"boot/initramfs-{kernel}.img", f"initramfs ({kernel})")
+            require_file(
+                f"boot/initramfs-{kernel}-fallback.img",
+                f"fallback initramfs ({kernel})",
+            )
+        # ESP capacity: the plan's espRecommendedMiB must fit the
+        # filesystem that holds /boot (the ESP on UEFI installs). A
+        # too-small ESP strands kernel updates; fail before success.
+        esp_recommended = plan.get("espRecommendedMiB")
+        if esp_recommended:
+            import shutil
+
+            boot_total_mib = shutil.disk_usage(root / "boot").total // (1024 * 1024)
+            if boot_total_mib < int(esp_recommended):
+                problems.append(
+                    f"boot filesystem too small for the selected kernels: "
+                    f"{boot_total_mib} MiB available, plan recommends "
+                    f"{esp_recommended} MiB (espRecommendedMiB)"
+                )
+        bootloader = selection.get("bootloader", "grub")
+        if bootloader == "systemd-boot":
+            require_file("boot/loader/loader.conf", "systemd-boot loader configuration")
+            entries = sorted((root / "boot/loader/entries").glob("*.conf")) if (root / "boot/loader/entries").is_dir() else []
+            entry_text = "\n".join(
+                entry.read_text(encoding="utf-8", errors="replace") for entry in entries
+            )
+            for kernel in kernels:
+                if f"vmlinuz-{kernel}" not in entry_text:
+                    problems.append(
+                        f"no systemd-boot entry for kernel {kernel}: boot/loader/entries/*.conf"
+                    )
+        else:
+            require_file("boot/grub/grub.cfg", "GRUB configuration")
+            grub_cfg = root / "boot/grub/grub.cfg"
+            if grub_cfg.is_file():
+                grub_text = grub_cfg.read_text(encoding="utf-8", errors="replace")
+                for kernel in kernels:
+                    if f"vmlinuz-{kernel}" not in grub_text:
+                        problems.append(
+                            f"GRUB configuration has no entry for kernel {kernel}: boot/grub/grub.cfg"
+                        )
+        # Capability services (generalizes the Bluetooth gate below):
+        # when the plan's service unit was installed, its enablement
+        # symlink must exist. Absent unit = capability not installed.
+        for service in plan.get("services", []):
+            if (root / f"usr/lib/systemd/system/{service}").is_file():
+                wants = root / f"etc/systemd/system/multi-user.target.wants/{service}"
+                if not wants.exists():
+                    problems.append(
+                        f"{service} installed but not enabled: "
+                        f"etc/systemd/system/multi-user.target.wants/{service}"
+                    )
 
     os_release = root / "etc/os-release"
     if not os_release.is_file() or "ID=" not in os_release.read_text(
@@ -57,8 +128,14 @@ def verify_install(root: Path) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", required=True, help="Installed target root")
+    parser.add_argument("--plan", type=Path, help="installation plan JSON (default: <root>/usr/lib/hornero/installation-plan.json if present)")
     args = parser.parse_args()
-    problems = verify_install(Path(args.root))
+    plan = None
+    if args.plan:
+        import json
+
+        plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    problems = verify_install(Path(args.root), plan=plan)
     for problem in problems:
         print(f"verify-install: {problem}", file=sys.stderr)
     if problems:

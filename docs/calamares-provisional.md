@@ -146,3 +146,58 @@ image repository exists. See the [image build guide](../image/README.md).
 Follow the [installation stages](install-stages.md),
 [known installer issues](https://github.com/HorneroOS/installer/issues), and
 [Calamares deployment documentation](https://calamares.codeberg.page/docs/deploy-configuration/).
+
+## Composable selection model (contract, not yet wired)
+
+The Recommended path is unchanged: accept the defaults on every page
+(Desktop/Hyprland, `linux`, GRUB, default capabilities). An Advanced
+selection is the same pages with non-default picks — edition preset,
+Studio specializations, capabilities, kernels (multi-select with one
+primary), and a bootloader constrained by the firmware the installer
+booted with. There is no separate wizard.
+
+The canonical `HorneroOS/hornero` catalogue is the only source of
+package lists. `scripts/installation_plan.py` validates a selection
+against catalogue `kernels:` / `bootloaders:` / `capabilities:` maps
+and emits a deterministic plan (`schemaVersion: 2`): packages in
+primary-kernel-first order, services, ESP size, and warnings.
+`scripts/render-installer-catalogue.py` renders
+`packagechooser-kernel.conf`, `packagechooser-bootloader.conf`, and
+`packagechooser-capabilities.conf` only when the pinned catalogue
+ships those maps; otherwise the current single chooser is rendered
+byte-identically and no list is invented in this repository.
+Capability `bluetooth` reuses the existing `bluetooth.service` name;
+its packages still come from the catalogue, never from here.
+
+Never offer an unbootable combination:
+
+| Bootloader | UEFI | BIOS |
+| --- | --- | --- |
+| GRUB | yes | yes |
+| systemd-boot | yes | no — choose GRUB or reboot in UEFI mode |
+
+ESP size is computed, not guessed:
+`espRecommendedMiB = espBaseMiB + perKernelMiB * (kernels - 1)`
+from the catalogue bootloader entry (GRUB single-kernel 512 MiB,
+systemd-boot single 1024 MiB, dual-kernel systemd-boot 1280 MiB with
+the catalogue values). LUKS stays `luks1` with the ESP unencrypted at
+`/boot`, no `luksbootkeyfile`, and swap stays `none` (no `openswap`
+hook) regardless of the selection.
+
+`image/calamares/verify-install.py` already verifies a plan when one
+is present at `/usr/lib/hornero/installation-plan.json` in the target
+(or via `--plan`): every installed kernel has `vmlinuz-<kernel>` and
+`initramfs-<kernel>.img`, GRUB has an entry per kernel or
+systemd-boot has `loader.conf` plus an entry per kernel, and every
+plan service whose unit was installed is enabled. Without a plan the
+legacy GRUB/`linux` checks are unchanged.
+
+Unresolved runtime pieces, with reasons: instanced packagechooser
+pages, the `resolve-installation.py` Calamares job, `efiBootLoaderVar`
+wiring, summary rendering of the plan, and systemd-boot/dual-kernel
+boots are not wired until (1) the pinned catalogue ships the maps
+above, (2) Calamares 3.4.3 GlobalStorage keys for instanced choosers
+are verified, and (3) VM rows pass. Limine is not offered: no audited
+maintained Calamares support exists. Checkbox multi-select needs a
+QML/C++ viewmodule and is deferred to the Panda Foss installer, which
+will consume the same catalogue, resolver, and plan JSON.

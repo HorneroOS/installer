@@ -137,8 +137,33 @@ def main() -> int:
     assert parsed["partition"]["initialPartitioningChoice"] == "none"
     assert parsed["partition"]["createHybridBootloaderLayout"] is True
     assert parsed["partition"]["enableLuksAutomatedPartitioning"] is True
-    assert parsed["bootloader"]["efiBootLoader"] == "grub"
+    # Composable flow: without rendered kernel/bootloader choosers the
+    # pinned catalogue has no such maps and the current GRUB default is
+    # the only offered bootloader. Once the renderer emits a bootloader
+    # chooser, bootloader.conf must delegate via efiBootLoaderVar.
+    if (modules / "packagechooser-bootloader.conf").is_file():
+        assert parsed["bootloader"].get("efiBootLoaderVar") == "packagechooser_bootloader", (
+            "bootloader chooser rendered but bootloader.conf does not delegate to it"
+        )
+        bootloader_chooser = load_yaml(modules / "packagechooser-bootloader.conf")
+        assert bootloader_chooser["default"] in {
+            item["id"] for item in bootloader_chooser["items"]
+        }
+        kernel_chooser = load_yaml(modules / "packagechooser-kernel.conf")
+        assert kernel_chooser["items"], "kernel chooser must offer catalogue kernels"
+        assert all(item.get("packages") for item in kernel_chooser["items"])
+    else:
+        assert parsed["bootloader"]["efiBootLoader"] == "grub"
     assert parsed["bootloader"]["installHybridGRUB"] is False
+    # LUKS/openswap invariants must survive any composable selection.
+    assert parsed["partition"]["luksGeneration"] == "luks1"
+    assert parsed["partition"]["userSwapChoices"] == ["none"]
+    assert (ROOT / "scripts/installation_plan.py").is_file(), (
+        "composable installation-plan contract module missing"
+    )
+    assert (CALAMARES / "resolve-installation.py").is_file(), (
+        "composable resolve-installation contract missing"
+    )
     assert parsed["packages"]["backend"] == "pacman"
     assert parsed["packages"]["update_system"] is False
     assert parsed["packages"]["pacman"]["num_retries"] >= 8
