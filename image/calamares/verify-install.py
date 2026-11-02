@@ -28,6 +28,20 @@ def _load_plan(root: Path, plan: dict | None) -> dict | None:
     return None
 
 
+def _service_enabled(root: Path, service: str) -> bool:
+    """True when `systemctl enable <service>` left its wants symlink.
+
+    The link lands in the `.target.wants` directory named by the
+    unit's own [Install] WantedBy — bluetooth.service, for example,
+    enables under `bluetooth.target.wants`, not
+    `multi-user.target.wants`. Accept any target's wants dir.
+    """
+    wants_root = root / "etc/systemd/system"
+    if not wants_root.is_dir():
+        return False
+    return any(wants_root.glob(f"*.target.wants/{service}"))
+
+
 def verify_install(root: Path, plan: dict | None = None) -> list[str]:
     problems: list[str] = []
     plan = _load_plan(root, plan)
@@ -47,14 +61,10 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
         # mandatory — pass when bluez absent, fail only if its unit
         # exists but the enablement symlink is missing.
         if (root / "usr/lib/systemd/system/bluetooth.service").is_file():
-            wants = (
-                root
-                / "etc/systemd/system/multi-user.target.wants/bluetooth.service"
-            )
-            if not wants.exists():
+            if not _service_enabled(root, "bluetooth.service"):
                 problems.append(
                     "bluetooth.service installed but not enabled: "
-                    "etc/systemd/system/multi-user.target.wants/bluetooth.service"
+                    "etc/systemd/system/*.target.wants/bluetooth.service"
                 )
     else:
         selection = plan.get("selection", {})
@@ -110,11 +120,10 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
         # symlink must exist. Absent unit = capability not installed.
         for service in plan.get("services", []):
             if (root / f"usr/lib/systemd/system/{service}").is_file():
-                wants = root / f"etc/systemd/system/multi-user.target.wants/{service}"
-                if not wants.exists():
+                if not _service_enabled(root, service):
                     problems.append(
                         f"{service} installed but not enabled: "
-                        f"etc/systemd/system/multi-user.target.wants/{service}"
+                        f"etc/systemd/system/*.target.wants/{service}"
                     )
 
     os_release = root / "etc/os-release"
