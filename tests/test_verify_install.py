@@ -81,6 +81,8 @@ def _plan_target(tmp_path: Path) -> Path:
     root = _complete_target(tmp_path)
     (root / "boot/vmlinuz-linux-lts").write_bytes(b"kernel")
     (root / "boot/initramfs-linux-lts.img").write_bytes(b"initramfs")
+    (root / "boot/initramfs-linux-fallback.img").write_bytes(b"initramfs")
+    (root / "boot/initramfs-linux-lts-fallback.img").write_bytes(b"initramfs")
     entries = root / "boot/loader/entries"
     entries.mkdir(parents=True)
     (root / "boot/loader/loader.conf").write_text("default linux\n", encoding="utf-8")
@@ -91,6 +93,13 @@ def _plan_target(tmp_path: Path) -> Path:
 
 def test_plan_systemd_boot_dual_kernel_passes(tmp_path):
     assert mod.verify_install(_plan_target(tmp_path), plan=PLAN) == []
+
+
+def test_plan_missing_fallback_initramfs_fails(tmp_path):
+    root = _plan_target(tmp_path)
+    (root / "boot/initramfs-linux-lts-fallback.img").unlink()
+    problems = mod.verify_install(root, plan=PLAN)
+    assert any("fallback initramfs (linux-lts)" in p for p in problems)
 
 
 def test_plan_missing_second_kernel_fails(tmp_path):

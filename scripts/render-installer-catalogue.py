@@ -413,9 +413,7 @@ def render_composable_choosers(output_dir: Path, catalogue: dict) -> list[str]:
     if maps["capabilities"]:
         capability_items = []
         for capability_id, entry in maps["capabilities"].items():
-            packages: list[str] = []
-            if entry.get("packageSet"):
-                packages = plan_module._package_set_packages(catalogue, entry["packageSet"])
+            packages = plan_module.entry_packages(catalogue, entry)
             capability_items.append(
                 {
                     "id": capability_id,

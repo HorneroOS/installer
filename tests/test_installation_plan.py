@@ -139,3 +139,46 @@ def test_renderer_with_maps_renders_choosers_from_catalogue_only(tmp_path):
     caps = yaml.safe_load((tmp_path / "packagechooser-capabilities.conf").read_text(encoding="utf-8"))
     bt = next(i for i in caps["items"] if i["id"] == "bluetooth")
     assert bt["packages"] == ["bluez", "bluez-utils"]
+
+
+# --- Canonical-catalogue shape contract ---------------------------------
+# The REAL HorneroOS catalogue declares direct `packages:` lists on
+# kernels/bootloaders/capabilities (no packageSet anywhere). The
+# synthetic fixture above must not mask a schema drift: this fixture
+# mirrors editions/catalogue.yaml in HorneroOS/hornero exactly.
+CANONICAL_SHAPE = {
+    "kernels": {
+        "linux": {"packages": ["linux"], "headers": "linux-headers", "default": True},
+        "linux-lts": {"packages": ["linux-lts"], "headers": "linux-lts-headers"},
+    },
+    "bootloaders": {
+        "grub": {"packages": ["grub", "efibootmgr"], "firmwares": ["uefi", "bios"],
+                 "espBaseMiB": 512, "perKernelMiB": 256, "default": True},
+        "systemd-boot": {"packages": [], "firmwares": ["uefi"],
+                         "espBaseMiB": 1024, "perKernelMiB": 256},
+    },
+    "capabilities": {
+        "bluetooth": {"packages": ["bluez", "bluez-utils"],
+                      "services": ["bluetooth.service"],
+                      "appliesTo": ["desktop", "studio", "gaming"]},
+    },
+}
+
+
+def test_canonical_direct_packages_shape_emits_capability_and_bootloader():
+    plan = plan_mod.build_plan(
+        CANONICAL_SHAPE,
+        _selection(kernels=["linux", "linux-lts"], primaryKernel="linux",
+                   capabilities=["bluetooth"]),
+    )
+    for expected in ("bluez", "bluez-utils", "grub", "efibootmgr",
+                     "linux", "linux-headers", "linux-lts", "linux-lts-headers"):
+        assert expected in plan["packages"], plan["packages"]
+    assert plan["services"] == ["bluetooth.service"]
+
+
+def test_renderer_canonical_shape_capability_packages_not_empty(tmp_path):
+    renderer.render_composable_choosers(tmp_path, CANONICAL_SHAPE)
+    conf = yaml.safe_load((tmp_path / "packagechooser-capabilities.conf").read_text())
+    items = {item["id"]: item for item in conf["items"]}
+    assert items["bluetooth"]["packages"] == ["bluez", "bluez-utils"]

@@ -29,6 +29,21 @@ def esp_recommended_mib(bootloader_entry: dict, kernel_count: int) -> int:
     return base + per_kernel * (kernel_count - 1)
 
 
+def entry_packages(catalogue: dict, entry: dict) -> list[str]:
+    """Packages for a kernel/bootloader/capability catalogue entry.
+
+    The canonical catalogue declares direct ``packages:`` lists on these
+    entries. A legacy ``packageSet:`` reference is also honoured so both
+    shapes resolve to the same list — one schema, never silently empty.
+    """
+    packages = list(entry.get("packages", []))
+    if entry.get("packageSet"):
+        for package in _package_set_packages(catalogue, entry["packageSet"]):
+            if package not in packages:
+                packages.append(package)
+    return packages
+
+
 def _package_set_packages(catalogue: dict, set_id: str) -> list[str]:
     sets = catalogue.get("packageSets", {})
     # Bootloader/capability entries name a set as "bootloader:grub" or
@@ -150,16 +165,14 @@ def build_plan(catalogue: dict, selection: dict) -> dict:
 
     bootloader = selection["bootloader"]
     bootloader_entry = bootloaders_map[bootloader]
-    if bootloader_entry.get("packageSet"):
-        for package in _package_set_packages(catalogue, bootloader_entry["packageSet"]):
-            add(package)
+    for package in entry_packages(catalogue, bootloader_entry):
+        add(package)
 
     services: list[str] = []
     for capability in selection.get("capabilities") or []:
         entry = capabilities_map[capability]
-        if entry.get("packageSet"):
-            for package in _package_set_packages(catalogue, entry["packageSet"]):
-                add(package)
+        for package in entry_packages(catalogue, entry):
+            add(package)
         for service in entry.get("services", []):
             if service not in services:
                 services.append(service)

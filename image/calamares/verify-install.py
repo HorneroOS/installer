@@ -47,6 +47,24 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
         for kernel in kernels:
             require_file(f"boot/vmlinuz-{kernel}", f"kernel image ({kernel})")
             require_file(f"boot/initramfs-{kernel}.img", f"initramfs ({kernel})")
+            require_file(
+                f"boot/initramfs-{kernel}-fallback.img",
+                f"fallback initramfs ({kernel})",
+            )
+        # ESP capacity: the plan's espRecommendedMiB must fit the
+        # filesystem that holds /boot (the ESP on UEFI installs). A
+        # too-small ESP strands kernel updates; fail before success.
+        esp_recommended = plan.get("espRecommendedMiB")
+        if esp_recommended:
+            import shutil
+
+            boot_total_mib = shutil.disk_usage(root / "boot").total // (1024 * 1024)
+            if boot_total_mib < int(esp_recommended):
+                problems.append(
+                    f"boot filesystem too small for the selected kernels: "
+                    f"{boot_total_mib} MiB available, plan recommends "
+                    f"{esp_recommended} MiB (espRecommendedMiB)"
+                )
         bootloader = selection.get("bootloader", "grub")
         if bootloader == "systemd-boot":
             require_file("boot/loader/loader.conf", "systemd-boot loader configuration")
