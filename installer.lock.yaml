@@ -31,17 +31,17 @@ aur:
       version: 2.3.0-3
       revision: df5b264003f0d39ba75f42970074ff2465ed527c
     hornero-config:
-      version: 0.3.15-1
-      revision: c6a96025492b369846e9ee95633b0db9e2d036c3
+      version: 0.3.17-1
+      revision: f3d7ae3ae020a322597b5e4b74f4421983e41700
     horneroctl-bin:
-      version: 0.2.0_preview37-1
-      revision: 7092f3826967561ac6abe86af6bd7082a88d6e92
+      version: 0.2.0_preview38-1
+      revision: c2b68e339399cfadfd26e567fbc3331962ac14b2
     libcava:
       version: 1.0.0-1
       revision: 39403443c8208f5d9adaaed7c8347c439efe52cf
     hornero-shell:
-      version: 1.2.56-1
-      revision: 3fff4661c5cd284d48e7bbe7dd8c4bcfbcb20afb
+      version: 1.2.57-1
+      revision: 283b59702782895d425e29214c34e36b91459df8
     hornero-greeter-media-base:
       version: 1.0.0-2
       revision: c0a14c163d1e7ba6ded53fa6a3cf0d05903c3c27
