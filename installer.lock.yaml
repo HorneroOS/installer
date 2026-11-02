@@ -1,7 +1,7 @@
 apiVersion: hornero.os/installer-lock/v1
 product:
   repository: https://github.com/HorneroOS/hornero.git
-  revision: ebf5292a41f2a14348a1ac4c5b5aa145187eaed1
+  revision: fa91790b4ef1fa000b5cdefb819655b000231d73
   catalogueSha256: 6453e62dc165b3d39afe4f1f7823a9abd4abc274b1c07a7ece9d8c8f71e78c24
   resolverSha256: 6f25c36133df60eac7f468867d07a1dc389a9601a0f07bcb07b7f5097b4d2d7c
 arch:
@@ -34,14 +34,14 @@ aur:
       version: 0.3.17-1
       revision: f3d7ae3ae020a322597b5e4b74f4421983e41700
     horneroctl-bin:
-      version: 0.2.0_preview38-1
-      revision: c2b68e339399cfadfd26e567fbc3331962ac14b2
+      version: 0.2.0_preview39-1
+      revision: dc7b6150623b41600e0feb42882cd79d9bbee9b4
     libcava:
       version: 1.0.0-1
       revision: 39403443c8208f5d9adaaed7c8347c439efe52cf
     hornero-shell:
-      version: 1.2.57-1
-      revision: 283b59702782895d425e29214c34e36b91459df8
+      version: 1.2.58-1
+      revision: 5c52aa63e03506f1878fe97b8191d8bf44788325
     hornero-greeter-media-base:
       version: 1.0.0-2
       revision: c0a14c163d1e7ba6ded53fa6a3cf0d05903c3c27
