@@ -89,6 +89,8 @@ cp -a "$ROOT/image/calamares/modules/." "$profile/calamares/modules/"
 cp -a "$ROOT/image/calamares/branding/." "$profile/calamares/branding/"
 install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"
+install -Dm755 "$ROOT/image/calamares/configure-greeter-session.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/configure-greeter-session.py"
 install -Dm755 "$ROOT/image/calamares/configure-os-identity.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-os-identity.py"
 install -Dm755 "$ROOT/image/calamares/verify-install.py" \
