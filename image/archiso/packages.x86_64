@@ -17,6 +17,8 @@ linux-firmware
 mkinitcpio
 mkinitcpio-archiso
 networkmanager
+bluez
+bluez-utils
 ntfs-3g
 os-prober
 parted

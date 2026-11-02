@@ -42,6 +42,20 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
         require_file("boot/grub/grub.cfg", "GRUB configuration")
         require_file("boot/vmlinuz-linux", "kernel image")
         require_file("boot/initramfs-linux.img", "initramfs")
+        # Bluetooth gate (legacy/no-plan only; the plan path below
+        # generalizes this via plan["services"]): enabled, not
+        # mandatory — pass when bluez absent, fail only if its unit
+        # exists but the enablement symlink is missing.
+        if (root / "usr/lib/systemd/system/bluetooth.service").is_file():
+            wants = (
+                root
+                / "etc/systemd/system/multi-user.target.wants/bluetooth.service"
+            )
+            if not wants.exists():
+                problems.append(
+                    "bluetooth.service installed but not enabled: "
+                    "etc/systemd/system/multi-user.target.wants/bluetooth.service"
+                )
     else:
         selection = plan.get("selection", {})
         kernels = selection.get("kernels") or ["linux"]
@@ -91,7 +105,7 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
                         problems.append(
                             f"GRUB configuration has no entry for kernel {kernel}: boot/grub/grub.cfg"
                         )
-        # Capability services (generalizes the Bluetooth gate below):
+        # Capability services (generalizes the legacy Bluetooth gate):
         # when the plan's service unit was installed, its enablement
         # symlink must exist. Absent unit = capability not installed.
         for service in plan.get("services", []):
