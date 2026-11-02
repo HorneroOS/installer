@@ -76,6 +76,61 @@ screenshot; the media lock records the capture's website commit and hashes.
   removes repository configuration after package installation succeeds or
   fails; VM acceptance still has to verify both paths.
 
+## Bluetooth
+
+Installed targets enable `bluetooth.service` through the existing
+Calamares `services-systemd` module
+(`image/calamares/modules/services-systemd.conf`). It is
+`mandatory: false`: a Bluetooth-less VM or server install logs the
+failure and continues, unlike the mandatory NetworkManager and SDDM
+units. Enabling the service does not make the adapter discoverable or
+pairable; pairing policy, the pairing agent and power persistence are
+owned by the HorneroOS shell and config workstreams, not the installer.
+`verify-install.py` fails the install only when bluez actually
+installed its unit but the enablement symlink is missing.
+
+The live session is the real HorneroOS Desktop, so it carries the same
+stack: `bluez` and `bluez-utils` in `image/archiso/packages.x86_64`
+and `bluetooth.service` enabled through
+`airootfs/etc/systemd/system/multi-user.target.wants/`. The live
+session gains no pairing privileges beyond the installed system.
+
+Packages and firmware for installed targets are not installer-owned.
+`linux-firmware`, which carries the Bluetooth adapter firmware, is
+already in every rendered composition and in the live package list;
+no per-vendor firmware package is needed on Arch. The installed
+`bluez`/`bluez-utils` packages must arrive through the existing
+catalogue mechanism, in this order:
+
+1. `HorneroOS/hornero` adds `bluez` and `bluez-utils` (with Arch
+   provenance entries) to the `desktop` package set in
+   `editions/catalogue.yaml`. Studio and Gaming extend Desktop, so all
+   three editions inherit them.
+2. This repository bumps the product revision in
+   `installer.lock.yaml` to that catalogue commit and re-renders with
+   `scripts/render-installer-catalogue.py`, committing the resulting
+   `image/calamares/modules/compositions.json` and
+   `packagechooser.conf` diff. Never hand-edit those generated files.
+3. `scripts/check-installer.py` then requires either every
+   composition or none to carry `bluez`/`bluez-utils`, and
+   `scripts/check-installed-composition.py` fails an installed system
+   that is missing resolver-selected packages.
+
+Existing Preview24/29 installations are not migrated by this
+repository: the installer owns fresh installs only and has no updater,
+preset or migration mechanism. The hand-off is exact: the
+`HorneroOS/hornero` profile packages
+(`hornero-profile-desktop-*`, `hornero-profile-studio-*`,
+`hornero-profile-gaming-*`) gain `bluez`/`bluez-utils` dependencies so
+`horneroctl package upgrade` pulls them, and `HorneroOS/config` ships
+the BlueZ configuration and systemd preset that enables
+`bluetooth.service` on upgrade. Paired devices and user preferences
+live under `/var/lib/bluetooth` and user configuration; neither this
+installer nor that migration may delete or reset them. Until those two
+changes ship, Preview24/29 systems receive Bluetooth only by
+reinstalling or by manually installing `bluez`/`bluez-utils` and
+running `systemctl enable --now bluetooth.service`.
+
 ## Current limits
 
 R11 supersedes the 2026-10-23 build described below. Its exact artifact

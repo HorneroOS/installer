@@ -360,6 +360,46 @@ def main() -> int:
     assert not any(name.startswith("xfce") or name == "xfconf" for name in live_packages), (
         "the live session is HorneroOS Desktop (Hyprland), not XFCE"
     )
+    # Bluetooth: enabled on installed targets, never mandatory (a
+    # Bluetooth-less VM or server install must not fail), and present
+    # in the live session, which is the real HorneroOS Desktop.
+    bt_units = [
+        unit
+        for unit in parsed["services-systemd"]["units"]
+        if unit.get("name") == "bluetooth.service"
+    ]
+    assert bt_units == [
+        {"name": "bluetooth.service", "action": "enable", "mandatory": False}
+    ], "bluetooth.service must be enabled with mandatory: false"
+    assert {"bluez", "bluez-utils"} <= live_packages, (
+        "the live Desktop needs bluez/bluez-utils for its Bluetooth pane"
+    )
+    live_bt_link = (
+        archiso
+        / "airootfs/etc/systemd/system/multi-user.target.wants/bluetooth.service"
+    )
+    assert live_bt_link.is_symlink() and live_bt_link.readlink().as_posix() == (
+        "/usr/lib/systemd/system/bluetooth.service"
+    ), "the live session must enable bluetooth.service"
+    # Firmware: linux-firmware (which carries Bluetooth adapter
+    # firmware) is already in every composition and in the live image.
+    assert all(
+        "linux-firmware" in option["packages"]
+        for option in compositions["options"]
+    ), "every composition must carry linux-firmware"
+    # Installed bluez/bluez-utils come from the pinned HorneroOS/hornero
+    # catalogue (desktop set), not an installer-owned list. Until the
+    # catalogue hand-off in docs/calamares-provisional.md lands and the
+    # lock is re-rendered, compositions legitimately lack them; once
+    # any option carries them, every option must (Desktop is the base
+    # of Studio and Gaming).
+    bt_options = [
+        {"bluez", "bluez-utils"} <= set(option["packages"])
+        for option in compositions["options"]
+    ]
+    assert all(bt_options) or not any(bt_options), (
+        "bluez/bluez-utils must reach every composition or none yet"
+    )
     live_session = (archiso / "airootfs/etc/sddm.conf.d/10-hornero-live.conf").read_text(encoding="utf-8")
     assert "Session=hyprland.desktop" in live_session
     unpackfs = load_yaml(config_root / "modules/unpackfs.conf")
