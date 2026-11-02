@@ -200,11 +200,12 @@ def main() -> int:
     )
     assert all(item["edition"] not in {"agents", "server"} for item in compositions["options"])
     # Studio is a published Preview edition: its base choices belong to
-    # the release render. Only specialization choices stay candidate-only.
+    # the release render. Only specialization choices stay candidate-only,
+    # and those keep their explicit candidate "planned" maturity.
     assert all(
         item["maturity"] == "preview"
         for item in compositions["options"]
-        if item["edition"] == "studio"
+        if item["edition"] == "studio" and not item.get("candidate")
     )
     # Gaming is a published Preview edition: its base choices belong
     # to the release render with preview maturity.
