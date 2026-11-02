@@ -1,5 +1,5 @@
 {
-  "productRevision": "458302bc27bbb0050b8c3e107785100634247bfc",
+  "productRevision": "ebf5292a41f2a14348a1ac4c5b5aa145187eaed1",
   "options": [
     {
       "id": "desktop-hyprland",
@@ -43,6 +43,8 @@
         "wireplumber",
         "hyprland",
         "xdg-desktop-portal-hyprland",
+        "bluez",
+        "bluez-utils",
         "hornero-profile-desktop-hyprland"
       ],
       "profilePackage": "hornero-profile-desktop-hyprland",
@@ -95,7 +97,9 @@
           "pipewire-pulse",
           "wireplumber",
           "hyprland",
-          "xdg-desktop-portal-hyprland"
+          "xdg-desktop-portal-hyprland",
+          "bluez",
+          "bluez-utils"
         ],
         "optionalPackages": [],
         "packageProvenance": {
@@ -210,6 +214,8 @@
         "xwayland-satellite",
         "xdg-desktop-portal-gtk",
         "xdg-desktop-portal-gnome",
+        "bluez",
+        "bluez-utils",
         "hornero-profile-desktop-niri"
       ],
       "profilePackage": "hornero-profile-desktop-niri",
@@ -264,7 +270,9 @@
           "niri",
           "xwayland-satellite",
           "xdg-desktop-portal-gtk",
-          "xdg-desktop-portal-gnome"
+          "xdg-desktop-portal-gnome",
+          "bluez",
+          "bluez-utils"
         ],
         "optionalPackages": [],
         "packageProvenance": {
@@ -386,6 +394,8 @@
         "krita",
         "hyprland",
         "xdg-desktop-portal-hyprland",
+        "bluez",
+        "bluez-utils",
         "hornero-profile-studio-hyprland"
       ],
       "profilePackage": "hornero-profile-studio-hyprland",
@@ -448,7 +458,9 @@
           "blender",
           "krita",
           "hyprland",
-          "xdg-desktop-portal-hyprland"
+          "xdg-desktop-portal-hyprland",
+          "bluez",
+          "bluez-utils"
         ],
         "optionalPackages": [],
         "packageProvenance": {
@@ -784,6 +796,8 @@
         "xwayland-satellite",
         "xdg-desktop-portal-gtk",
         "xdg-desktop-portal-gnome",
+        "bluez",
+        "bluez-utils",
         "hornero-profile-studio-niri"
       ],
       "profilePackage": "hornero-profile-studio-niri",
@@ -848,7 +862,9 @@
           "niri",
           "xwayland-satellite",
           "xdg-desktop-portal-gtk",
-          "xdg-desktop-portal-gnome"
+          "xdg-desktop-portal-gnome",
+          "bluez",
+          "bluez-utils"
         ],
         "optionalPackages": [],
         "packageProvenance": {
@@ -1183,6 +1199,8 @@
         "lib32-mangohud",
         "hyprland",
         "xdg-desktop-portal-hyprland",
+        "bluez",
+        "bluez-utils",
         "hornero-profile-gaming-hyprland"
       ],
       "profilePackage": "hornero-profile-gaming-hyprland",
@@ -1246,7 +1264,9 @@
           "mangohud",
           "lib32-mangohud",
           "hyprland",
-          "xdg-desktop-portal-hyprland"
+          "xdg-desktop-portal-hyprland",
+          "bluez",
+          "bluez-utils"
         ],
         "optionalPackages": [],
         "packageProvenance": {
@@ -1432,6 +1452,8 @@
         "xwayland-satellite",
         "xdg-desktop-portal-gtk",
         "xdg-desktop-portal-gnome",
+        "bluez",
+        "bluez-utils",
         "hornero-profile-gaming-niri"
       ],
       "profilePackage": "hornero-profile-gaming-niri",
@@ -1497,7 +1519,9 @@
           "niri",
           "xwayland-satellite",
           "xdg-desktop-portal-gtk",
-          "xdg-desktop-portal-gnome"
+          "xdg-desktop-portal-gnome",
+          "bluez",
+          "bluez-utils"
         ],
         "optionalPackages": [],
         "packageProvenance": {
