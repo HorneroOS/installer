@@ -447,6 +447,7 @@ def main() -> int:
     parser.add_argument("--profile-packages-dir", type=Path, help="also render one profile metadata package per install choice")
     parser.add_argument("--candidate-studio", action="store_true", help="also render planned Studio specialization choices for a candidate/testing ISO (never for a release build)")
     parser.add_argument("--candidate-gaming", action="store_true", help="also render planned Gaming specialization choices for a candidate/testing ISO (never for a release build)")
+    parser.add_argument("--composable-choosers", action="store_true", help="also render kernel/bootloader/capability choosers from the catalogue maps (only once settings.conf wires them; default off so shipped modules stay inert-free)")
     args = parser.parse_args()
     lock = yaml.safe_load(LOCK_PATH.read_text(encoding="utf-8"))
     root = load_product_root(lock, args.product_source, args.cache_dir.expanduser().absolute())
@@ -482,11 +483,17 @@ def main() -> int:
         })
     args.output.parent.mkdir(parents=True, exist_ok=True)
     catalogue_doc = yaml.safe_load((root / "editions" / "catalogue.yaml").read_text(encoding="utf-8"))
-    composable_files = render_composable_choosers(args.output.parent, catalogue_doc)
-    if composable_files:
-        print(f"rendered composable choosers: {', '.join(composable_files)}")
+    if args.composable_choosers:
+        composable_files = render_composable_choosers(args.output.parent, catalogue_doc)
+        if composable_files:
+            print(f"rendered composable choosers: {', '.join(composable_files)}")
+        else:
+            print("pinned catalogue has no kernels/bootloaders maps; composable choosers not rendered")
     else:
-        print("pinned catalogue has no kernels/bootloaders maps; composable choosers not rendered")
+        # Rendered chooser files without settings.conf wiring would be
+        # inert in the ISO and fail check-installer; they are emitted
+        # only by the wiring change that also delegates bootloader.conf.
+        print("composable choosers not rendered (pass --composable-choosers with the settings wiring)")
     args.output.write_text(yaml.safe_dump(rendered, sort_keys=False, allow_unicode=True), encoding="utf-8")
     provenance = args.output.with_name("compositions.json")
     provenance.write_text(json.dumps({"productRevision": lock["product"]["revision"], "options": options}, indent=2) + "\n", encoding="utf-8")
