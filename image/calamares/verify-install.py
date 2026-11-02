@@ -12,6 +12,9 @@ fails the installation instead of presenting a false success.
 from __future__ import annotations
 
 import argparse
+import json
+import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -21,8 +24,6 @@ def _load_plan(root: Path, plan: dict | None) -> dict | None:
         return plan
     plan_path = root / "usr/lib/hornero/installation-plan.json"
     if plan_path.is_file():
-        import json
-
         return json.loads(plan_path.read_text(encoding="utf-8"))
     return None
 
@@ -56,9 +57,12 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
         # too-small ESP strands kernel updates; fail before success.
         esp_recommended = plan.get("espRecommendedMiB")
         if esp_recommended:
-            import shutil
-
-            boot_total_mib = shutil.disk_usage(root / "boot").total // (1024 * 1024)
+            boot_dir = root / "boot"
+            if not boot_dir.is_dir():
+                problems.append("missing boot directory: boot")
+                boot_total_mib = 0
+            else:
+                boot_total_mib = shutil.disk_usage(boot_dir).total // (1024 * 1024)
             if boot_total_mib < int(esp_recommended):
                 problems.append(
                     f"boot filesystem too small for the selected kernels: "
@@ -73,7 +77,7 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
                 entry.read_text(encoding="utf-8", errors="replace") for entry in entries
             )
             for kernel in kernels:
-                if f"vmlinuz-{kernel}" not in entry_text:
+                if not re.search(rf"vmlinuz-{re.escape(kernel)}(?![-\w])", entry_text):
                     problems.append(
                         f"no systemd-boot entry for kernel {kernel}: boot/loader/entries/*.conf"
                     )
@@ -83,7 +87,7 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
             if grub_cfg.is_file():
                 grub_text = grub_cfg.read_text(encoding="utf-8", errors="replace")
                 for kernel in kernels:
-                    if f"vmlinuz-{kernel}" not in grub_text:
+                    if not re.search(rf"vmlinuz-{re.escape(kernel)}(?![-\w])", grub_text):
                         problems.append(
                             f"GRUB configuration has no entry for kernel {kernel}: boot/grub/grub.cfg"
                         )
@@ -132,8 +136,6 @@ def main() -> int:
     args = parser.parse_args()
     plan = None
     if args.plan:
-        import json
-
         plan = json.loads(args.plan.read_text(encoding="utf-8"))
     problems = verify_install(Path(args.root), plan=plan)
     for problem in problems:

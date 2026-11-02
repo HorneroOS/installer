@@ -123,3 +123,21 @@ def test_plan_capability_service_not_enabled_fails(tmp_path):
     unit.write_text("[Unit]\n", encoding="utf-8")
     problems = mod.verify_install(root, plan=PLAN)
     assert any("bluetooth.service installed but not enabled" in p for p in problems)
+
+
+def test_plan_kernel_entry_prefix_does_not_false_pass(tmp_path):
+    # vmlinuz-linux must not be satisfied by a vmlinuz-linux-lts entry.
+    root = _plan_target(tmp_path)
+    entries = root / "boot/loader/entries"
+    (entries / "linux.conf").write_text("linux /vmlinuz-linux-lts\n", encoding="utf-8")
+    problems = mod.verify_install(root, plan=PLAN)
+    assert any("no systemd-boot entry for kernel linux:" in p for p in problems)
+
+
+def test_plan_missing_boot_dir_reports_instead_of_traceback(tmp_path):
+    root = _plan_target(tmp_path)
+    import shutil as _shutil
+
+    _shutil.rmtree(root / "boot")
+    problems = mod.verify_install(root, plan=PLAN)
+    assert any("missing boot directory" in p for p in problems)
