@@ -86,6 +86,37 @@ def test_cleanup_is_configured_for_package_failure_and_cancellation() -> None:
     assert runner.index("/usr/bin/calamares -D6") < runner.index("cleanup-calamares-targets.py")
 
 
+def test_emergency_cleanup_covers_unpackfs_and_initcpio_failures() -> None:
+    """Failure before/after the package stage must still unmount the target.
+
+    Regression for P0-04: the emergency shellprocess cleanups only guard the
+    package stage. A failure in ``unpackfs`` (before them) or in ``initcpio``
+    (initramfs generation, after ``shellprocess@cleanup`` already ran in
+    sequence order) left the target mounted in-session because the final
+    ``umount`` module had no config and therefore defaulted to
+    ``emergency: false``; only the post-exit runner cleaned up, and only for
+    targets still carrying the temporary pacman includes.
+    """
+    settings = yaml.safe_load(
+        (ROOT / "image/calamares/settings.conf").read_text(encoding="utf-8")
+    )
+    modules = settings["sequence"][1]["exec"]
+
+    # Both failure-prone stages run before the final umount step.
+    for stage in ("unpackfs", "initcpio"):
+        assert stage in modules
+        assert modules.index(stage) < modules.index("umount")
+    assert modules[-1] == "umount"
+    # initcpio runs after the in-sequence package cleanup, so that cleanup
+    # alone cannot cover an initramfs failure; umount must be emergency.
+    assert modules.index("shellprocess@cleanup") < modules.index("initcpio")
+
+    umount = yaml.safe_load(
+        (ROOT / "image/calamares/modules/umount.conf").read_text(encoding="utf-8")
+    )
+    assert umount["emergency"] is True
+
+
 def test_post_exit_cleanup_restores_target_after_package_failure(tmp_path: Path) -> None:
     target = make_calamares_target(tmp_path)
     package_cleanup = load_module("cleanup_package_source", CLEANUP_PACKAGE_SOURCE)
