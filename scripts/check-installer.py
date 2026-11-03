@@ -544,6 +544,7 @@ def main() -> int:
             fake_target / "var/log",
             fake_target / "home",
             fake_target / "boot",
+            fake_target / ".snapshots",
             fake_target,
         ]
         assert "hornero-installer" not in (fake_target / "etc/pacman.conf").read_text(encoding="utf-8")

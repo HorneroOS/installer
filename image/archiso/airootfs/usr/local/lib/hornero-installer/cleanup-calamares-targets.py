@@ -32,6 +32,7 @@ TARGET_MOUNTS = (
     "var/log",
     "home",
     "boot",
+    ".snapshots",
     ".",
 )
 
