@@ -58,6 +58,11 @@ def main() -> int:
     assert exec_modules.index("packages") < exec_modules.index("shellprocess@resolver-cleanup")
     assert exec_modules.index("shellprocess@resolver-cleanup") < exec_modules.index("shellprocess@cleanup")
     assert exec_modules.index("users") < exec_modules.index("shellprocess@user-defaults")
+    # Recovery factory config needs fstab + packages done, and must
+    # precede services-systemd so snapper timers enable against a
+    # written config (hornero#179).
+    assert exec_modules.index("packages") < exec_modules.index("shellprocess@recovery")
+    assert exec_modules.index("shellprocess@recovery") < exec_modules.index("services-systemd")
     assert exec_modules.index("initcpiocfg") < exec_modules.index("initcpio")
     assert exec_modules.index("initcpio") < exec_modules.index("grubcfg")
     assert exec_modules.index("grubcfg") < exec_modules.index("bootloader")
@@ -273,6 +278,8 @@ def main() -> int:
     iso_builder = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
     assert 'install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py"' in iso_builder
     assert '"$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"' in iso_builder
+    assert 'install -Dm755 "$ROOT/image/calamares/configure-recovery.py"' in iso_builder
+    assert '"$profile/airootfs/usr/lib/hornero-installer/configure-recovery.py"' in iso_builder
     assert 'python3 "$product/scripts/resolve-edition.py"' not in iso_builder, (
         "the product resolver must only run after the catalogue renderer verifies its locked hash"
     )
@@ -371,6 +378,18 @@ def main() -> int:
     assert bt_units == [
         {"name": "bluetooth.service", "action": "enable", "mandatory": False}
     ], "bluetooth.service must be enabled with mandatory: false"
+    # Snapshots capability units exist only when the opt-in capability
+    # installed them; enabling must never fail a default install.
+    for unit_name in ("snapper-timeline.timer", "snapper-cleanup.timer", "grub-btrfsd.service"):
+        units = [
+            unit
+            for unit in parsed["services-systemd"]["units"]
+            if unit.get("name") == unit_name
+        ]
+        assert units == [
+            {"name": unit_name, "action": "enable", "mandatory": False}
+        ], f"{unit_name} must be enabled with mandatory: false"
+    assert parsed["shellprocess-recovery"]["dontChroot"] is True
     assert {"bluez", "bluez-utils"} <= live_packages, (
         "the live Desktop needs bluez/bluez-utils for its Bluetooth pane"
     )
