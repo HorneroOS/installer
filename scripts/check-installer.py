@@ -74,6 +74,32 @@ def main() -> int:
     assert settings["prompt-install"] is True
     assert settings["dont-chroot"] is False
 
+    # Every `module@instance` used in the sequence must be declared in
+    # `instances:` with an existing config file. Without a declaration
+    # Calamares silently falls back to its bundled example config (the
+    # `/usr/local/bin/slowloris` placeholder), which fails the install
+    # mid-exec; this is how the recovery step broke the candidate ISO.
+    instances = {
+        (entry["module"], entry["id"]): entry["config"]
+        for entry in settings.get("instances", [])
+    }
+    sequenced = [
+        step
+        for phase in phases
+        for step in next(iter(phase.values()))
+    ]
+    for step in sequenced:
+        if "@" not in step:
+            continue
+        module, instance = step.split("@", 1)
+        assert (module, instance) in instances, (
+            f"sequence step {step!r} has no matching instances: entry"
+        )
+        config_name = instances[(module, instance)]
+        assert (config_root / "modules" / config_name).is_file(), (
+            f"instances: config {config_name!r} for {step!r} does not exist"
+        )
+
     modules = config_root / "modules"
     configs = sorted(modules.glob("*.conf"))
     assert len(configs) >= 10, "expected the core target-system modules to be configured"
