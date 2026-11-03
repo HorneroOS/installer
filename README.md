@@ -24,15 +24,13 @@ official path. This repository's Calamares implementation bridges current
 product testing and remains provisional until Panda's version is ready to
 publish and passes acceptance. Its intended path is a booted live image, a
 human-reviewed disk layout and a Calamares net-install into the selected target.
-The published v0.2.0-preview22 ISO passed the VM installation matrix
-(Desktop and Studio, UEFI and legacy BIOS, encrypted and unencrypted;
-composition carried from preview21, cancel-cleanup retested end to end).
-That is virtual-machine evidence only: no physical-hardware validation
-has been performed, the installer's own R11 record still lists UEFI
-first login as pending and installed package parity as unverified, and
-has been performed, the installer's own R11 record still lists UEFI
-first login as pending and installed package parity as unverified, and
-the acceptance matrix for physical hardware remains open. Never run
+The published v0.2.0-preview30 ISO passed disposable-VM installation
+validation (Desktop, Studio and Gaming, UEFI, unencrypted, including
+Desktop first-try login); the UEFI/BIOS encrypted/unencrypted matrix
+was executed on earlier previews and is carried forward for unchanged
+areas. That is virtual-machine evidence only: no physical-hardware
+validation has been performed, and installed-composition parity and
+booted-ISO package-failure cleanup remain unverified (see installer#11). Never run
 preview media against a system that
 contains data you have not backed up. See the
 [R11 validation record](docs/r11-validation.md).
@@ -46,10 +44,10 @@ and planned editions remain hidden.
 
 ## Try the Preview ISO
 
-Download and verify the signed v0.2.0-preview22 ISO from the
+Download and verify the signed v0.2.0-preview30 ISO from the
 [HorneroOS website install page](https://www.horneroos.com/install) or
-the [v0.2.0-preview22 release](https://github.com/HorneroOS/hornero/releases/tag/v0.2.0-preview22).
-It installs Desktop or Studio Preview and was validated in virtual
+the [v0.2.0-preview30 release](https://github.com/HorneroOS/hornero/releases/tag/v0.2.0-preview30).
+It installs Desktop, Studio or Gaming Preview and was validated in virtual
 machines only; no physical-hardware validation has been performed.
 Report installation problems in this repository's issue chooser.
 
