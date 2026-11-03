@@ -41,7 +41,7 @@ aur:
       revision: 39403443c8208f5d9adaaed7c8347c439efe52cf
     hornero-shell:
       version: 1.2.60-1
-      revision: b75bbddf8c6d9167dc2fd1b45383c44176f4917d
+      revision: bc644896e8c8bf5b52652533a6ebfdec4434ef0d
     hornero-greeter-media-base:
       version: 1.0.0-2
       revision: c0a14c163d1e7ba6ded53fa6a3cf0d05903c3c27
