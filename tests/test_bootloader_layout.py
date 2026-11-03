@@ -96,3 +96,16 @@ def test_package_builder_syncs_to_locked_arch_snapshot_before_building() -> None
 
     assert snapshot_sync < first_aur_clone < first_package_build
     assert pacman_conf_export < package_builder_call
+
+
+def test_btrfs_layout_includes_snapshots_store() -> None:
+    """hornero#179: fresh installs get the top-level /@snapshots store
+    mounted at /.snapshots so a future snapper backend has somewhere
+    correct to write (root snapshots must not nest)."""
+    import yaml
+
+    mount = yaml.safe_load((ROOT / "image/calamares/modules/mount.conf").read_text(encoding="utf-8"))
+    by_mount = {item["mountPoint"]: item["subvolume"] for item in mount["btrfsSubvolumes"]}
+    assert by_mount["/.snapshots"] == "/@snapshots"
+    assert by_mount["/"] == "/@"
+    assert by_mount["/home"] == "/@home"
