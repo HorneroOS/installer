@@ -77,6 +77,40 @@ def unmount_recursive(mountpoint: Path) -> None:
     raise RuntimeError(f"unmount -R {mountpoint}: {result.stderr.strip()}")
 
 
+def _run_quiet(argv: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(argv, check=False, capture_output=True, text=True)
+
+
+def deactivate_target_devices(target: Path, runner: Callable[[list[str]], subprocess.CompletedProcess[str]] = _run_quiet) -> list[str]:
+    """Turn off swap and close LUKS mappings that belong to this target.
+
+    Calamares can leave the target swap active and its LUKS mapping open
+    on the cancel/failure path; unmounting alone then leaks both and the
+    partition stays busy for a retry. Discovery is read-only and scoped
+    to this target: swap entries must live under the target, and mapper
+    devices must be mounted under it. Failures are reported, never
+    forced: a mapping still in use stays open and visible in the error.
+    """
+    failures: list[str] = []
+    swaps = runner(["/usr/bin/swapon", "--show=NAME", "--noheadings"])
+    if swaps.returncode == 0:
+        for name in swaps.stdout.split():
+            if name.startswith(f"{target}/"):
+                result = runner(["/usr/bin/swapoff", name])
+                if result.returncode != 0:
+                    failures.append(f"swapoff {name}: {result.stderr.strip()}")
+    mounts = runner(["/usr/bin/findmnt", "-R", "-r", "-n", "-o", "SOURCE", str(target)])
+    if mounts.returncode == 0:
+        mappers = sorted({s.strip() for s in mounts.stdout.splitlines() if s.strip().startswith("/dev/mapper/")})
+        for source in mappers:
+            name = source.removeprefix("/dev/mapper/")
+            result = runner(["/usr/bin/cryptsetup", "close", name])
+            err = result.stderr.lower()
+            if result.returncode != 0 and "not active" not in err and "no such device" not in err:
+                failures.append(f"cryptsetup close {name}: {result.stderr.strip()}")
+    return failures
+
+
 def safe_target(pacman_conf: Path, temp_root: Path, owner_uid: int) -> Path | None:
     """Accept only root-owned Calamares targets directly below the temp root."""
     if pacman_conf.is_symlink() or pacman_conf.name != "pacman.conf":
@@ -107,6 +141,7 @@ def cleanup_targets(
     unmount: Callable[[Path], None],
     *,
     unmount_recursive: Callable[[Path], None] | None = None,
+    deactivate_devices: Callable[[Path], list[str]] | None = None,
     temp_root: Path = Path("/tmp"),
     owner_uid: int = 0,
 ) -> tuple[list[str], list[Path]]:
@@ -121,19 +156,24 @@ def cleanup_targets(
         except (OSError, ValueError) as error:
             failures.append(f"{pacman_conf}: {error}")
             continue
-        if not any(include in content.splitlines() for include in TEMP_INCLUDES):
-            continue
+        marked = any(include in content.splitlines() for include in TEMP_INCLUDES)
 
+        # Unmounting is unconditional for a verified Calamares target: a
+        # cancel before the packages step (or after its cleanup) leaves no
+        # include marker yet can still leak mounts, swap and LUKS mappings
+        # (installer#31 class). Only the pacman.conf restore stays gated
+        # on the marker, because it rewrites a user-visible file.
         target_failures: list[str] = []
         for relative in RESOLVER_MOUNTS:
             try:
                 unmount(target / relative)
             except RuntimeError as error:
                 target_failures.append(str(error))
-        try:
-            cleanup_module.cleanup(target)
-        except (OSError, ValueError, RuntimeError) as error:
-            target_failures.append(f"restore pacman config: {error}")
+        if marked:
+            try:
+                cleanup_module.cleanup(target)
+            except (OSError, ValueError, RuntimeError) as error:
+                target_failures.append(f"restore pacman config: {error}")
         for relative in TARGET_MOUNTS:
             try:
                 unmount(target / relative)
@@ -150,10 +190,14 @@ def cleanup_targets(
                 target_failures = [
                     failure
                     for failure in target_failures
-                    if failure.startswith("restore pacman config:")
+                    if failure.startswith(("restore pacman config:", "swapoff ", "cryptsetup close "))
                 ]
             except RuntimeError as error:
                 target_failures.append(str(error))
+        if deactivate_devices is not None:
+            # After the unmounts: swap files and LUKS mappings under the
+            # target would otherwise keep the install disk busy.
+            target_failures.extend(deactivate_devices(target))
         if target_failures:
             failures.extend(f"{pacman_conf}: {error}" for error in target_failures)
         else:
@@ -169,6 +213,7 @@ def main() -> int:
             cleanup_module,
             unmount_bind,
             unmount_recursive=unmount_recursive,
+            deactivate_devices=deactivate_target_devices,
             temp_root=Path("/tmp"),
             owner_uid=os.geteuid(),
         )

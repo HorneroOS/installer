@@ -244,3 +244,25 @@ def test_preflight_payload_detects_missing_and_present_sources(tmp_path: Path) -
     payload.write_bytes(b"squashfs")
     assert module.missing_sources(conf, tmp_path) == []
     assert module.missing_sources(tmp_path / "absent.conf", tmp_path)
+
+
+def test_shellprocess_timeouts_survive_host_load() -> None:
+    """Preview31 lost a Gaming install to a 15s cleanup timeout under host
+    load. Local file-op modules get 120s; only bind mounts stay short."""
+    import yaml
+
+    modules = ROOT / "image/calamares/modules"
+    expected_min = {
+        "shellprocess-cleanup": 120,
+        "shellprocess-preflight": 120,
+        "shellprocess-verify": 120,
+        "shellprocess-greeter-session": 120,
+        "shellprocess-initcpio-encrypt": 120,
+        "shellprocess-os-identity": 120,
+        "shellprocess-user-defaults": 120,
+        "shellprocess-resolver": 30,
+        "shellprocess-resolver-cleanup": 30,
+    }
+    for name, minimum in expected_min.items():
+        conf = yaml.safe_load((modules / f"{name}.conf").read_text(encoding="utf-8"))
+        assert conf["timeout"] >= minimum, f"{name} timeout {conf['timeout']} < {minimum}"
