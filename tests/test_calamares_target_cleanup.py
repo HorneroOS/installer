@@ -108,45 +108,103 @@ def test_unmarked_target_unmounts_without_pacman_restore(tmp_path: Path) -> None
     assert cleanup_module.cleaned == []  # restore stayed gated
 
 
-def test_deactivate_devices_scoped_to_target(tmp_path: Path) -> None:
+class _Result:
+    def __init__(self, returncode=0, stdout="", stderr=""):
+        self.returncode, self.stdout, self.stderr = returncode, stdout, stderr
+
+
+def test_discover_devices_scoped_to_target(tmp_path: Path) -> None:
+    target = tmp_path / "calamares-root-x"
+
+    def runner(argv):
+        if argv[0].endswith("swapon"):
+            return _Result(stdout=f"{target}/swapfile\n/swap_live\n")
+        if argv[0].endswith("findmnt"):
+            return _Result(stdout="/dev/mapper/cryptroot[/@]\n/dev/sda2\n")
+        return _Result()
+
+    swaps, mappers = cleanup_targets_mod.discover_target_devices(target, runner)
+
+    assert swaps == [f"{target}/swapfile"]
+    # Btrfs suffix from findmnt must be stripped before cryptsetup close.
+    assert mappers == ["cryptroot"]
+    assert cleanup_targets_mod._mapper_name("/dev/mapper/cryptroot[/@]") == "cryptroot"
+    assert cleanup_targets_mod._mapper_name("/dev/mapper/plain") == "plain"
+
+
+def test_deactivate_devices_closes_discovered(tmp_path: Path) -> None:
     target = tmp_path / "calamares-root-x"
     commands: list[list[str]] = []
 
-    class Result:
-        def __init__(self, returncode=0, stdout="", stderr=""):
-            self.returncode, self.stdout, self.stderr = returncode, stdout, stderr
-
     def runner(argv):
         commands.append(argv)
-        if argv[0].endswith("swapon"):
-            return Result(stdout=f"{target}/swapfile\n/swap_live\n")
-        if argv[0].endswith("findmnt"):
-            return Result(stdout="/dev/mapper/cryptroot\n/dev/sda2\n")
-        return Result()
+        return _Result()
 
-    failures = cleanup_targets_mod.deactivate_target_devices(target, runner)
+    failures = cleanup_targets_mod.deactivate_target_devices(
+        target, [f"{target}/swapfile"], ["cryptroot"], runner
+    )
 
     assert failures == []
     assert ["/usr/bin/swapoff", f"{target}/swapfile"] in commands
-    assert not any("/swap_live" in str(argv) for argv in commands if argv[0].endswith("swapoff"))
     assert ["/usr/bin/cryptsetup", "close", "cryptroot"] in commands
 
 
 def test_deactivate_devices_reports_busy_mapper(tmp_path: Path) -> None:
     target = tmp_path / "calamares-root-x"
 
-    class Result:
-        def __init__(self, returncode=0, stdout="", stderr=""):
-            self.returncode, self.stdout, self.stderr = returncode, stdout, stderr
-
     def runner(argv):
-        if argv[0].endswith("findmnt"):
-            return Result(stdout="/dev/mapper/cryptroot\n")
         if argv[0].endswith("cryptsetup"):
-            return Result(returncode=1, stderr="Device cryptroot is still in use.")
-        return Result()
+            return _Result(returncode=1, stderr="Device cryptroot is still in use.")
+        return _Result()
 
-    failures = cleanup_targets_mod.deactivate_target_devices(target, runner)
+    failures = cleanup_targets_mod.deactivate_target_devices(target, [], ["cryptroot"], runner)
 
     assert len(failures) == 1
     assert "cryptsetup close cryptroot" in failures[0]
+
+
+def test_cleanup_discovers_before_unmount(tmp_path: Path) -> None:
+    """findmnt evidence vanishes with the unmounts: discovery must run
+    first and its lists must reach deactivation after the unmounts."""
+    target = _make_target(tmp_path)
+    order: list[tuple] = []
+
+    def fake_unmount(mountpoint: Path) -> None:
+        order.append(("unmount", mountpoint))
+
+    def fake_discover(found: Path):
+        order.append(("discover", found))
+        return (["swap-under-target"], ["cryptroot"])
+
+    def fake_deactivate(found: Path, swaps, mappers):
+        order.append(("deactivate", found, swaps, mappers))
+        return []
+
+    failures, cleaned = cleanup_targets_mod.cleanup_targets(
+        [target / "etc/pacman.conf"],
+        _CleanupModule(),
+        fake_unmount,
+        unmount_recursive=lambda mountpoint: None,
+        discover_devices=fake_discover,
+        deactivate_devices=fake_deactivate,
+        temp_root=tmp_path,
+        owner_uid=target.lstat().st_uid,
+    )
+
+    assert failures == [] and cleaned == [target]
+    kinds = [entry[0] for entry in order]
+    assert kinds[0] == "discover" and kinds[-1] == "deactivate"
+    assert "unmount" in kinds[1:-1]
+    assert order[-1][2:] == (["swap-under-target"], ["cryptroot"])
+
+
+def test_run_quiet_reports_timeout_as_failure() -> None:
+    """A stalled device command must not hang post-exit cleanup."""
+    assert cleanup_targets_mod._run_quiet(["/usr/bin/true"]).returncode == 0
+    original = cleanup_targets_mod.DEVICE_COMMAND_TIMEOUT
+    cleanup_targets_mod.DEVICE_COMMAND_TIMEOUT = 0
+    try:
+        slow = cleanup_targets_mod._run_quiet(["/usr/bin/sleep", "5"])
+    finally:
+        cleanup_targets_mod.DEVICE_COMMAND_TIMEOUT = original
+    assert slow.returncode == -1 and "timed out" in slow.stderr

@@ -77,37 +77,63 @@ def unmount_recursive(mountpoint: Path) -> None:
     raise RuntimeError(f"unmount -R {mountpoint}: {result.stderr.strip()}")
 
 
+DEVICE_COMMAND_TIMEOUT = 30
+
+
 def _run_quiet(argv: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(argv, check=False, capture_output=True, text=True)
+    """Run one device command with a hard timeout.
 
-
-def deactivate_target_devices(target: Path, runner: Callable[[list[str]], subprocess.CompletedProcess[str]] = _run_quiet) -> list[str]:
-    """Turn off swap and close LUKS mappings that belong to this target.
-
-    Calamares can leave the target swap active and its LUKS mapping open
-    on the cancel/failure path; unmounting alone then leaks both and the
-    partition stays busy for a retry. Discovery is read-only and scoped
-    to this target: swap entries must live under the target, and mapper
-    devices must be mounted under it. Failures are reported, never
-    forced: a mapping still in use stays open and visible in the error.
+    Post-exit cleanup must never hang the runner on a stalled
+    swapoff/cryptsetup: a timeout is reported as a failure result
+    (returncode -1), not raised.
     """
-    failures: list[str] = []
-    swaps = runner(["/usr/bin/swapon", "--show=NAME", "--noheadings"])
-    if swaps.returncode == 0:
-        for name in swaps.stdout.split():
-            if name.startswith(f"{target}/"):
-                result = runner(["/usr/bin/swapoff", name])
-                if result.returncode != 0:
-                    failures.append(f"swapoff {name}: {result.stderr.strip()}")
+    try:
+        return subprocess.run(argv, check=False, capture_output=True, text=True, timeout=DEVICE_COMMAND_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(argv, -1, "", f"timed out after {DEVICE_COMMAND_TIMEOUT}s")
+
+
+def _mapper_name(source: str) -> str:
+    """'/dev/mapper/cryptroot[/@]' (btrfs subvolume mount) -> 'cryptroot'."""
+    return source.removeprefix("/dev/mapper/").split("[", 1)[0]
+
+
+def discover_target_devices(target: Path, runner: Callable[[list[str]], subprocess.CompletedProcess[str]] = _run_quiet) -> tuple[list[str], list[str]]:
+    """Read-only discovery of swap and LUKS mappings owned by this target.
+
+    MUST run before unmounting: once the target mounts are gone,
+    findmnt can no longer attribute a mapper to the target and the
+    close would silently never happen. Swap entries must live under
+    the target; mapper devices must be mounted under it.
+    """
+    swaps: list[str] = []
+    result = runner(["/usr/bin/swapon", "--show=NAME", "--noheadings"])
+    if result.returncode == 0:
+        swaps = [name for name in result.stdout.split() if name.startswith(f"{target}/")]
+    mappers: list[str] = []
     mounts = runner(["/usr/bin/findmnt", "-R", "-r", "-n", "-o", "SOURCE", str(target)])
     if mounts.returncode == 0:
-        mappers = sorted({s.strip() for s in mounts.stdout.splitlines() if s.strip().startswith("/dev/mapper/")})
-        for source in mappers:
-            name = source.removeprefix("/dev/mapper/")
-            result = runner(["/usr/bin/cryptsetup", "close", name])
-            err = result.stderr.lower()
-            if result.returncode != 0 and "not active" not in err and "no such device" not in err:
-                failures.append(f"cryptsetup close {name}: {result.stderr.strip()}")
+        mappers = sorted({_mapper_name(s.strip()) for s in mounts.stdout.splitlines() if s.strip().startswith("/dev/mapper/")})
+    return swaps, mappers
+
+
+def deactivate_target_devices(target: Path, swaps: list[str], mappers: list[str], runner: Callable[[list[str]], subprocess.CompletedProcess[str]] = _run_quiet) -> list[str]:
+    """Turn off previously discovered swap and close LUKS mappings.
+
+    Takes the lists from discover_target_devices (captured before the
+    unmounts). Failures are reported, never forced: a mapping still in
+    use stays open and visible in the error.
+    """
+    failures: list[str] = []
+    for name in swaps:
+        result = runner(["/usr/bin/swapoff", name])
+        if result.returncode != 0:
+            failures.append(f"swapoff {name}: {result.stderr.strip()}")
+    for name in mappers:
+        result = runner(["/usr/bin/cryptsetup", "close", name])
+        err = result.stderr.lower()
+        if result.returncode != 0 and "not active" not in err and "no such device" not in err:
+            failures.append(f"cryptsetup close {name}: {result.stderr.strip()}")
     return failures
 
 
@@ -141,7 +167,8 @@ def cleanup_targets(
     unmount: Callable[[Path], None],
     *,
     unmount_recursive: Callable[[Path], None] | None = None,
-    deactivate_devices: Callable[[Path], list[str]] | None = None,
+    discover_devices: Callable[[Path], tuple[list[str], list[str]]] | None = None,
+    deactivate_devices: Callable[[Path, list[str], list[str]], list[str]] | None = None,
     temp_root: Path = Path("/tmp"),
     owner_uid: int = 0,
 ) -> tuple[list[str], list[Path]]:
@@ -157,6 +184,9 @@ def cleanup_targets(
             failures.append(f"{pacman_conf}: {error}")
             continue
         marked = any(include in content.splitlines() for include in TEMP_INCLUDES)
+        # Discover swap/LUKS ownership NOW: after the unmounts below,
+        # findmnt can no longer attribute mapper devices to this target.
+        discovered = discover_devices(target) if discover_devices is not None else ([], [])
 
         # Unmounting is unconditional for a verified Calamares target: a
         # cancel before the packages step (or after its cleanup) leaves no
@@ -197,7 +227,7 @@ def cleanup_targets(
         if deactivate_devices is not None:
             # After the unmounts: swap files and LUKS mappings under the
             # target would otherwise keep the install disk busy.
-            target_failures.extend(deactivate_devices(target))
+            target_failures.extend(deactivate_devices(target, *discovered))
         if target_failures:
             failures.extend(f"{pacman_conf}: {error}" for error in target_failures)
         else:
@@ -213,6 +243,7 @@ def main() -> int:
             cleanup_module,
             unmount_bind,
             unmount_recursive=unmount_recursive,
+            discover_devices=discover_target_devices,
             deactivate_devices=deactivate_target_devices,
             temp_root=Path("/tmp"),
             owner_uid=os.geteuid(),
