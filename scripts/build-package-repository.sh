@@ -133,6 +133,9 @@ fi
 if [[ "${HORNEROS_INSTALLER_CANDIDATE_GAMING:-0}" == "1" ]]; then
   candidate_args+=(--candidate-gaming)
 fi
+if [[ "${HORNEROS_INSTALLER_CANDIDATE_RECOVERY:-0}" == "1" ]]; then
+  candidate_args+=(--candidate-recovery)
+fi
 python3 "$ROOT/scripts/render-installer-catalogue.py" \
   --product-source "$product_source" \
   --cache-dir "$work/profile-cache" \
