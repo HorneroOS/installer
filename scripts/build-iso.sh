@@ -120,11 +120,11 @@ fi
 candidate_args=()
 if [[ "${HORNEROS_INSTALLER_CANDIDATE_STUDIO:-0}" == "1" ]]; then
   candidate_args+=(--candidate-studio)
-  echo "Candidate build: planned Studio specialization choices are included (testing only)."
+  echo "Candidate build: Studio specialization candidate choices are included (testing only)."
 fi
 if [[ "${HORNEROS_INSTALLER_CANDIDATE_GAMING:-0}" == "1" ]]; then
   candidate_args+=(--candidate-gaming)
-  echo "Candidate build: planned Gaming specialization choices are included (testing only)."
+  echo "Candidate build: Gaming specialization candidate choices are included (testing only)."
 fi
 python3 "$ROOT/scripts/render-installer-catalogue.py" \
   --product-source "$product" \

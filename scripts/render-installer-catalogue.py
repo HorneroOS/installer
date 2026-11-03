@@ -159,8 +159,9 @@ def gaming_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
 def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list[str]) -> list[dict]:
     """Studio choices for a candidate/testing ISO build.
 
-    Studio stays `planned` in the canonical catalogue; these items only
-    exist when the builder explicitly opts into a candidate build. Each
+    Studio is a `preview` edition in the canonical catalogue; these
+    candidate-only specialization items only exist when the builder
+    explicitly opts into a candidate build. Each
     specialization resolves through the canonical resolver: proprietary
     applications are never installed by group selection (they are
     recorded as post-install opt-ins), and reference-only applications
@@ -181,7 +182,7 @@ def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
         opt_ins = selection["proprietaryOptInRequired"]
         description = (
             f"Creative workstation based on HorneroOS Desktop. Specialization: {spec['title']}. "
-            "Planned edition — candidate testing only, not a supported release."
+            "Preview edition — candidate testing only, not a supported release."
         )
         if opt_ins:
             titles = [catalogue["studioApplications"][app]["title"] for app in opt_ins]
@@ -191,14 +192,14 @@ def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
             )
         result.append({
             "id": f"studio-hyprland-{spec_id}",
-            "name": f"HorneroOS Studio — {spec['title']} (Planned candidate)",
+            "name": f"HorneroOS Studio — {spec['title']} (Preview candidate)",
             "description": description,
             "packages": [*packages, profile_package],
             "profilePackage": profile_package,
             "profile": profile,
             "edition": "studio",
             "compositor": "hyprland",
-            "maturity": "planned",
+            "maturity": catalogue["editions"]["studio"]["maturity"],
             "compositorMaturity": catalogue["compositors"]["hyprland"]["maturity"],
             "isDefault": False,
             "candidate": True,
@@ -445,8 +446,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=OUTPUT)
     parser.add_argument("--cache-dir", type=Path, default=Path.home() / ".cache" / "hornero-installer")
     parser.add_argument("--profile-packages-dir", type=Path, help="also render one profile metadata package per install choice")
-    parser.add_argument("--candidate-studio", action="store_true", help="also render planned Studio specialization choices for a candidate/testing ISO (never for a release build)")
-    parser.add_argument("--candidate-gaming", action="store_true", help="also render planned Gaming specialization choices for a candidate/testing ISO (never for a release build)")
+    parser.add_argument("--candidate-studio", action="store_true", help="also render Studio specialization candidate choices for a candidate/testing ISO (never for a release build)")
+    parser.add_argument("--candidate-gaming", action="store_true", help="also render Gaming specialization candidate choices for a candidate/testing ISO (never for a release build)")
     parser.add_argument("--composable-choosers", action="store_true", help="also render kernel/bootloader/capability choosers from the catalogue maps (only once settings.conf wires them; default off so shipped modules stay inert-free)")
     args = parser.parse_args()
     lock = yaml.safe_load(LOCK_PATH.read_text(encoding="utf-8"))

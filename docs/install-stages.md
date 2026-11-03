@@ -3,9 +3,10 @@
 The provisional installer uses Calamares. This map describes the modules in
 `image/calamares/settings.conf` and the data each stage is expected to own. It
 is not a claim that every recovery and preflight behavior is complete. The
-published v0.2.0-preview22 ISO completed its VM installation matrix in
-disposable UEFI and legacy-BIOS VMs (Desktop and Studio, encrypted and
-unencrypted), and the installed systems unlocked their encrypted roots.
+published v0.2.0-preview30 ISO passed disposable-VM installation
+validation (Desktop, Studio and Gaming, UEFI, unencrypted); the
+UEFI/BIOS encrypted/unencrypted matrix was executed on earlier
+previews and is carried forward for unchanged areas.
 The R11 record behind it reached an authenticated desktop on BIOS; on
 UEFI it reached the installed login screen, but authentication remains
 unverified there. Installed package/profile parity and cleanup after a
@@ -34,7 +35,7 @@ and [acceptance issue #11](https://github.com/HorneroOS/installer/issues/11).
    `shellprocess@cleanup` removes the temporary package repository configuration
    and restores Arch mirrors. Both cleanup jobs also run after package failure;
    VM acceptance verifies their behavior on success and on cancellation
-   (preview22, end to end). A simulated package-install failure remains
+   (preview30, end to end). A simulated package-install failure remains
    unverified, as the gate list below records.
 5. **User and services** — `users` creates the named account, then
    `shellprocess@user-defaults` seeds Exo's package-provided terminal helper

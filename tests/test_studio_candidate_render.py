@@ -42,9 +42,9 @@ def test_candidate_choices_cover_all_specializations_without_proprietary_package
     studio = [choice for choice in options if choice["id"].startswith("studio-hyprland-")]
     assert len(studio) == 10
     for choice in studio:
-        assert choice["maturity"] == "planned"
+        assert choice["maturity"] == "preview"
         assert choice["candidate"] is True
-        assert "Planned edition" in choice["description"]
+        assert "Preview edition" in choice["description"]
         # Proprietary payloads are never installed by group selection
         # (canonical opt-in list: reaper, penpot — horneroctl studio).
         assert "reaper" not in choice["packages"]

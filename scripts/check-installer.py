@@ -194,7 +194,7 @@ def main() -> int:
                 assert option["edition"] == "gaming"
                 assert option["profile"]["gamingSelection"]["specializations"]
     if candidate_studio:
-        # Candidate/testing render: planned Studio specialization choices
+        # Candidate/testing render: Studio specialization candidate choices
         # may appear only with explicit candidate invariants. The default
         # (release) render must never contain them.
         studio_ids = {item_id for item_id in item_ids if item_id.startswith("studio-hyprland-")}
@@ -203,7 +203,7 @@ def main() -> int:
         for item in chooser["items"]:
             if item["id"].startswith("studio-hyprland-"):
                 assert "reaper" not in item["packages"], "proprietary payloads need explicit opt-in"
-                assert "Planned" in item["description"]
+                assert "Preview" in item["description"]
         for option in compositions["options"]:
             if option["id"].startswith("studio-hyprland-"):
                 assert option["edition"] == "studio"
@@ -226,7 +226,7 @@ def main() -> int:
     assert all(item["edition"] not in {"agents", "server"} for item in compositions["options"])
     # Studio is a published Preview edition: its base choices belong to
     # the release render. Only specialization choices stay candidate-only,
-    # and those keep their explicit candidate "planned" maturity.
+    # and those keep their candidate flag with the catalogue maturity.
     assert all(
         item["maturity"] == "preview"
         for item in compositions["options"]
