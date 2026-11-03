@@ -97,6 +97,8 @@ install -Dm755 "$ROOT/image/calamares/verify-install.py" \
   "$profile/airootfs/usr/lib/hornero-installer/verify-install.py"
 install -Dm755 "$ROOT/image/calamares/configure-initcpio-encrypt.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-initcpio-encrypt.py"
+install -Dm755 "$ROOT/image/calamares/configure-recovery.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/configure-recovery.py"
 install -Dm644 "$ROOT/image/calamares/hornero-installer-repo.conf" \
   "$profile/airootfs/etc/pacman.d/hornero-installer.conf"
 if [[ -n "$product_source" ]]; then
