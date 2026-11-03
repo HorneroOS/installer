@@ -182,7 +182,7 @@ def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
         opt_ins = selection["proprietaryOptInRequired"]
         description = (
             f"Creative workstation based on HorneroOS Desktop. Specialization: {spec['title']}. "
-            "Planned edition — candidate testing only, not a supported release."
+            "Preview edition — candidate testing only, not a supported release."
         )
         if opt_ins:
             titles = [catalogue["studioApplications"][app]["title"] for app in opt_ins]
@@ -192,14 +192,14 @@ def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
             )
         result.append({
             "id": f"studio-hyprland-{spec_id}",
-            "name": f"HorneroOS Studio — {spec['title']} (Planned candidate)",
+            "name": f"HorneroOS Studio — {spec['title']} (Preview candidate)",
             "description": description,
             "packages": [*packages, profile_package],
             "profilePackage": profile_package,
             "profile": profile,
             "edition": "studio",
             "compositor": "hyprland",
-            "maturity": "planned",
+            "maturity": catalogue["editions"]["studio"]["maturity"],
             "compositorMaturity": catalogue["compositors"]["hyprland"]["maturity"],
             "isDefault": False,
             "candidate": True,
