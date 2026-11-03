@@ -186,6 +186,7 @@ def main() -> int:
     assert len(item_ids) == len(set(item_ids))
     candidate_studio = any(item_id.startswith("studio-hyprland-") for item_id in item_ids)
     candidate_gaming = any(item_id.startswith("gaming-hyprland-") for item_id in item_ids)
+    candidate_recovery = "desktop-hyprland-recovery" in item_ids
     if candidate_gaming:
         gaming_ids = {item_id for item_id in item_ids if item_id.startswith("gaming-hyprland-")}
         assert len(gaming_ids) == 6, "candidate render must expose the six canonical Gaming profiles"
@@ -213,7 +214,21 @@ def main() -> int:
             if option["id"].startswith("studio-hyprland-"):
                 assert option["edition"] == "studio"
                 assert option["profile"]["studioSelection"]["specializations"]
-    elif not candidate_gaming:
+    if candidate_recovery:
+        # Candidate/testing render: the recovery choice may appear only
+        # with the full canonical snapper stack and honest copy. The
+        # default (release) render must never contain it.
+        recovery_items = [item for item in chooser["items"] if item["id"] == "desktop-hyprland-recovery"]
+        assert len(recovery_items) == 1
+        assert {"snapper", "snap-pac", "grub-btrfs"} <= set(recovery_items[0]["packages"])
+        assert "not proven" in recovery_items[0]["description"]
+        assert "candidate" in recovery_items[0]["description"]
+        for option in compositions["options"]:
+            if option["id"] == "desktop-hyprland-recovery":
+                assert option["candidate"] is True
+                assert option["capabilities"] == ["snapshots"]
+                assert option["profile"]["recoverySelection"]["capabilities"] == ["snapshots"]
+    elif not candidate_gaming and not candidate_studio:
         # Release render: Desktop plus Studio and Gaming Preview
         # choices. Specialization choices stay candidate-only (above).
         assert set(item_ids) == {

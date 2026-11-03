@@ -102,6 +102,64 @@ def resolve_gaming_selection(root: Path, specialization: str) -> dict:
     return json.loads(subprocess.check_output(command, text=True))
 
 
+def resolve_recovery_selection(root: Path) -> dict:
+    command = ["python3", str(root / "scripts" / "resolve-edition.py"), "desktop",
+               "--compositor", "hyprland", "--installation",
+               "--capability", "snapshots"]
+    return json.loads(subprocess.check_output(command, text=True))
+
+
+def recovery_candidate_choices(root: Path, catalogue: dict, desktop_choice: dict) -> list[dict]:
+    """Recovery choice for a candidate/testing ISO build.
+
+    Desktop (Hyprland) plus the opt-in `snapshots` capability
+    (snapper, snap-pac, grub-btrfs), resolved through the canonical
+    installation resolver - never an installer-owned package list.
+    The choice exists so the disposable-VM restore proof in
+    docs/SNAPSHOT_BACKEND_CONTRACT.md (HorneroOS/hornero#179) can
+    run against a real candidate install. It must never reach a
+    release render, and its copy must never claim proven rollback:
+    until that VM proof passes, HorneroOS reports no OS snapshot
+    backend. Meaningful only on a Btrfs target with the top-level
+    /.snapshots store; the installer factory step stays a no-op
+    otherwise.
+    """
+    plan = resolve_recovery_selection(root)
+    desktop_packages = [pkg for pkg in desktop_choice["packages"] if pkg != desktop_choice["profilePackage"]]
+    packages = list(desktop_packages)
+    for package in plan["packages"]:
+        if package not in packages:
+            packages.append(package)
+    profile_package = "hornero-profile-desktop-hyprland-recovery"
+    profile = dict(desktop_choice["profile"])
+    profile["recoverySelection"] = {
+        "capabilities": ["snapshots"],
+        "services": plan.get("services", []),
+        "selection": plan.get("selection", {}),
+    }
+    return [{
+        "id": "desktop-hyprland-recovery",
+        "name": "HorneroOS Desktop — Recovery candidate (Btrfs snapshots)",
+        "description": (
+            "Desktop based on HorneroOS Desktop with the opt-in Btrfs snapshot "
+            "stack (snapper) for recovery testing. Preview edition — candidate "
+            "testing only, not a supported release. Requires a Btrfs target; "
+            "system rollback is not proven yet and is not claimed by choosing "
+            "this profile."
+        ),
+        "packages": [*packages, profile_package],
+        "profilePackage": profile_package,
+        "profile": profile,
+        "edition": "desktop",
+        "compositor": "hyprland",
+        "maturity": desktop_choice["maturity"],
+        "compositorMaturity": desktop_choice["compositorMaturity"],
+        "isDefault": False,
+        "candidate": True,
+        "capabilities": ["snapshots"],
+    }]
+
+
 def gaming_candidate_choices(root: Path, catalogue: dict, desktop_packages: list[str]) -> list[dict]:
     """Gaming specialization choices for a candidate/testing ISO build.
 
@@ -208,7 +266,7 @@ def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
     return result
 
 
-def choices(root: Path, candidate_studio: bool = False, candidate_gaming: bool = False) -> list[dict]:
+def choices(root: Path, candidate_studio: bool = False, candidate_gaming: bool = False, candidate_recovery: bool = False) -> list[dict]:
     catalogue = yaml.safe_load((root / "editions" / "catalogue.yaml").read_text(encoding="utf-8"))
     result = []
     for edition_id, edition in catalogue["editions"].items():
@@ -246,7 +304,7 @@ def choices(root: Path, candidate_studio: bool = False, candidate_gaming: bool =
                 "compositorMaturity": backend_maturity,
                 "isDefault": bool(edition_id == "desktop" and compositor and backend == compositor.get("default")),
             })
-    if candidate_studio or candidate_gaming:
+    if candidate_studio or candidate_gaming or candidate_recovery:
         desktop = next((c for c in result if c["id"] == "desktop-hyprland"), None)
         if desktop is None:
             raise ValueError("candidate choices require the desktop-hyprland composition")
@@ -255,6 +313,8 @@ def choices(root: Path, candidate_studio: bool = False, candidate_gaming: bool =
         result.extend(studio_candidate_choices(root, catalogue, desktop_packages))
     if candidate_gaming:
         result.extend(gaming_candidate_choices(root, catalogue, desktop_packages))
+    if candidate_recovery:
+        result.extend(recovery_candidate_choices(root, catalogue, desktop))
     if not result:
         raise ValueError("the pinned product catalogue exposes no installable compositions")
     return result
@@ -448,11 +508,12 @@ def main() -> int:
     parser.add_argument("--profile-packages-dir", type=Path, help="also render one profile metadata package per install choice")
     parser.add_argument("--candidate-studio", action="store_true", help="also render Studio specialization candidate choices for a candidate/testing ISO (never for a release build)")
     parser.add_argument("--candidate-gaming", action="store_true", help="also render Gaming specialization candidate choices for a candidate/testing ISO (never for a release build)")
+    parser.add_argument("--candidate-recovery", action="store_true", help="also render the Desktop recovery candidate choice (opt-in snapshots capability) for a candidate/testing ISO (never for a release build)")
     parser.add_argument("--composable-choosers", action="store_true", help="also render kernel/bootloader/capability choosers from the catalogue maps (only once settings.conf wires them; default off so shipped modules stay inert-free)")
     args = parser.parse_args()
     lock = yaml.safe_load(LOCK_PATH.read_text(encoding="utf-8"))
     root = load_product_root(lock, args.product_source, args.cache_dir.expanduser().absolute())
-    options = choices(root, candidate_studio=args.candidate_studio, candidate_gaming=args.candidate_gaming)
+    options = choices(root, candidate_studio=args.candidate_studio, candidate_gaming=args.candidate_gaming, candidate_recovery=args.candidate_recovery)
     if args.profile_packages_dir:
         output_dir = args.profile_packages_dir.expanduser().absolute()
         if output_dir.is_symlink():
