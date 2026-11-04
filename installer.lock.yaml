@@ -31,11 +31,11 @@ aur:
       version: 2.3.0-3
       revision: df5b264003f0d39ba75f42970074ff2465ed527c
     hornero-config:
-      version: 0.3.17-1
-      revision: f3d7ae3ae020a322597b5e4b74f4421983e41700
+      version: 0.3.18-1
+      revision: a5428ad98368c89f1149757c019539dc21f87a73
     horneroctl-bin:
-      version: 0.2.0_preview39-1
-      revision: dc7b6150623b41600e0feb42882cd79d9bbee9b4
+      version: 0.2.0_preview40-1
+      revision: fc987271e108478d98f469d4a9c5f262e525ed18
     libcava:
       version: 1.0.0-1
       revision: 39403443c8208f5d9adaaed7c8347c439efe52cf
