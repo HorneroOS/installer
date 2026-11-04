@@ -101,6 +101,35 @@ def test_registration_preserves_admin_entries(tmp_path: Path) -> None:
     )
 
 
+def test_registration_keeps_trailing_comment(tmp_path: Path) -> None:
+    root = _target(tmp_path, snapper=True, fstab=BTRFS_FSTAB)
+    confd = root / "etc/conf.d"
+    confd.mkdir(parents=True)
+    (confd / "snapper").write_text(
+        'SNAPPER_CONFIGS="home" # managed by admin\n', encoding="utf-8"
+    )
+    assert recovery.configure_recovery(root) is True
+    assert (confd / "snapper").read_text(encoding="utf-8") == (
+        'SNAPPER_CONFIGS="home root" # managed by admin\n'
+    )
+
+
+def test_failed_registration_rolls_back_factory_file(tmp_path: Path) -> None:
+    root = _target(tmp_path, snapper=True, fstab=BTRFS_FSTAB)
+    outside = tmp_path / "outside-confd"
+    outside.mkdir()
+    (root / "etc/conf.d").symlink_to(outside, target_is_directory=True)
+    try:
+        recovery.configure_recovery(root)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("symlinked /etc/conf.d must be refused")
+    # The just-written factory file must not survive unregistered:
+    # a retry would mistake it for an admin-owned config.
+    assert not (root / "etc/snapper/configs/root").exists()
+
+
 def test_noop_never_touches_confd(tmp_path: Path) -> None:
     root = _target(tmp_path, snapper=False, fstab=BTRFS_FSTAB)
     assert recovery.configure_recovery(root) is False

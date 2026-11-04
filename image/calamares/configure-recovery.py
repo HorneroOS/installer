@@ -131,7 +131,14 @@ def configure_recovery(root: Path) -> bool:
                 raise ValueError(f"Target snapper config parent is not a directory: {directory}")
     destination.write_text(FACTORY_CONFIG, encoding="utf-8")
     destination.chmod(0o644)
-    _register_config(root)
+    try:
+        _register_config(root)
+    except Exception:
+        # A factory file that never got registered would look like an
+        # admin-owned config on the next run and stay unregistered
+        # forever; roll this run's file back so a retry can redo both.
+        destination.unlink(missing_ok=True)
+        raise
     return True
 
 
@@ -163,12 +170,18 @@ def _register_config(root: Path) -> None:
         stripped = line.strip()
         if not stripped.startswith("SNAPPER_CONFIGS="):
             continue
-        value = stripped.split("=", 1)[1].strip().strip('"').strip("'")
+        raw = stripped.split("=", 1)[1]
+        # A trailing shell comment is not part of the value; keep it.
+        value_part, hash_mark, comment = raw.partition("#")
+        value = value_part.strip().strip('"').strip("'")
         names = value.split()
         if "root" in names:
             return
         names.append("root")
-        lines[index] = 'SNAPPER_CONFIGS="' + " ".join(names) + '"'
+        rewritten = 'SNAPPER_CONFIGS="' + " ".join(names) + '"'
+        if hash_mark:
+            rewritten += " #" + comment
+        lines[index] = rewritten
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         return
     with path.open("a", encoding="utf-8") as stream:
