@@ -35,11 +35,23 @@ def _installed_compositor(root: Path) -> str | None:
         return None
     if not isinstance(profile, dict):
         return None
+    # The installed profile records the chosen compositor explicitly;
+    # it is authoritative over any package-name parsing.
+    edition = profile.get("edition")
+    if isinstance(edition, dict):
+        compositor = edition.get("compositor")
+        if isinstance(compositor, str) and compositor in SESSION_CANDIDATES:
+            return compositor
     package = profile.get("profilePackage")
     if not isinstance(package, str):
         return None
-    suffix = package.rsplit("-", 1)[-1]
-    return suffix if suffix in SESSION_CANDIDATES else None
+    # Fallback: exactly one known compositor token in the package
+    # name. Candidate choices append suffixes after the compositor
+    # (e.g. hornero-profile-desktop-hyprland-recovery), so the last
+    # token alone does not identify the compositor.
+    tokens = {token for token in package.split("-")
+              if token in SESSION_CANDIDATES}
+    return tokens.pop() if len(tokens) == 1 else None
 
 
 def _first_regular_user(root: Path) -> str | None:
