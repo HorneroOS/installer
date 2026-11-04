@@ -30,12 +30,11 @@ jobs:
           tar -xzf "$RUNNER_TEMP/calamares.tar.gz" --strip-components=1 -C "$RUNNER_TEMP/calamares-source"
       - name: Validate Calamares schema and safety contracts
         run: python scripts/check-installer.py --schema-root "$RUNNER_TEMP/calamares-source/src/modules"
-      - name: Test pinned source-cache recovery
-        run: python -m pytest tests/test_installer_source_cache.py -q
-      - name: Test cleanup after package failure
-        run: python -m pytest tests/test_installer_cleanup.py -q
-      - name: Test installed composition audit
-        run: python -m pytest tests/test_installed_composition.py -q
+      - name: Run the installer test suite
+        # Full suite, not a hand-picked subset: installer#88 showed a
+        # merged-green fix that was a runtime no-op partly because its
+        # test file never ran in CI.
+        run: python -m pytest tests/ -q
       - name: Confirm the chooser matches the pinned product resolver
         run: |
           python scripts/render-installer-catalogue.py --cache-dir "$RUNNER_TEMP/product-cache" --output "$RUNNER_TEMP/generated/packagechooser.conf" --profile-packages-dir "$RUNNER_TEMP/generated/profile-packages"

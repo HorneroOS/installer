@@ -61,6 +61,28 @@ def test_missing_fstab_fails_safe_and_keeps_hook(tmp_path):
     assert " encrypt " in _hooks(root)
 
 
+def test_stock_comment_examples_do_not_shadow_real_hooks_line(tmp_path):
+    # installer#88: the stock mkinitcpio.conf ships commented
+    # `#    HOOKS=(...)` examples above the real assignment. The rewrite
+    # must hit the real line, not the first comment that mentions HOOKS.
+    root = _target(tmp_path, "UUID=abc / btrfs rw,subvol=@ 0 0\n")
+    conf = root / "etc/mkinitcpio.conf"
+    conf.write_text(
+        "#    HOOKS=(base)\n"
+        "#    HOOKS=(base udev microcode modconf keyboard keymap consolefont"
+        " block mdadm_udev encrypt filesystems fsck)\n"
+        + HOOKS,
+        encoding="utf-8",
+    )
+    mod.configure_initcpio_encrypt(root)
+    lines = _hooks(root).splitlines()
+    real = [line for line in lines if line.startswith("HOOKS=(")]
+    assert len(real) == 1
+    assert " encrypt" not in real[0]
+    # The commented examples are left untouched.
+    assert "#    HOOKS=(base)" in lines[0]
+
+
 def test_removal_is_idempotent(tmp_path):
     root = _target(tmp_path, "UUID=abc / btrfs rw,subvol=@ 0 0\n")
     mod.configure_initcpio_encrypt(root)

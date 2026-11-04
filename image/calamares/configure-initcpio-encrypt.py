@@ -70,7 +70,11 @@ def configure_initcpio_encrypt(root: Path) -> None:
         hooks = [h for h in match.group(1).split() if h not in ENCRYPT_HOOKS]
         return "HOOKS=(" + " ".join(hooks) + ")"
 
-    new_text, count = re.subn(r"HOOKS=\(([^)]*)\)", _drop, text, count=1)
+    # Anchor to line start: the stock mkinitcpio.conf carries commented
+    # `#    HOOKS=(...)` examples above the real assignment, and an
+    # unanchored first-match rewrite silently edits a comment instead
+    # (installer#88 — the original #66 fix was a no-op on real targets).
+    new_text, count = re.subn(r"(?m)^HOOKS=\(([^)]*)\)", _drop, text, count=1)
     if count and new_text != text:
         conf_path.write_text(new_text, encoding="utf-8")
 
