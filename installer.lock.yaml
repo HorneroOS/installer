@@ -1,8 +1,8 @@
 apiVersion: hornero.os/installer-lock/v1
 product:
   repository: https://github.com/HorneroOS/hornero.git
-  revision: ff53b5f5cd9256c0b7ce20574e4b0af4f01b9b37
-  catalogueSha256: 92db8acc564e9a07ebff20d2083259286ab07f95874ae2677d0fe5bb8494792a
+  revision: abca2f9e555b0f01dbeffb9526585629bf693c9a
+  catalogueSha256: 913829dde46d287e9de3ce5defdf4b8e201bba40b17cb48bddc145bf162e2f3a
   resolverSha256: 589069baf52064cf6fadbdd1b0b8220eac768d99fe3d285230fdfcf7f8dd40fd
 arch:
   snapshot: 2026/10/10
