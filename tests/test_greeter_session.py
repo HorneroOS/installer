@@ -23,12 +23,16 @@ SPEC.loader.exec_module(greeter)
 
 
 def _target(tmp_path: Path, profile_package: str | None,
-            sessions: tuple[str, ...] = ("hyprland.desktop",)) -> Path:
+            sessions: tuple[str, ...] = ("hyprland.desktop",),
+            compositor: str | None = None) -> Path:
     root = tmp_path / "root"
     (root / "usr/lib/hornero").mkdir(parents=True)
     if profile_package is not None:
+        profile: dict = {"profilePackage": profile_package}
+        if compositor is not None:
+            profile["edition"] = {"compositor": compositor}
         (root / "usr/lib/hornero/system-profile.json").write_text(
-            json.dumps({"profilePackage": profile_package}), encoding="utf-8")
+            json.dumps(profile), encoding="utf-8")
     sessions_dir = root / "usr/share/wayland-sessions"
     sessions_dir.mkdir(parents=True)
     for name in ("hornero-gaming-session.desktop", *sessions):
@@ -51,6 +55,33 @@ def test_desktop_hyprland_is_preseeded(tmp_path):
     state = _state(root)
     assert "Session=/usr/share/wayland-sessions/hyprland.desktop" in state
     assert "User=hornero" in state
+
+
+def test_recovery_candidate_is_preseeded(tmp_path):
+    # The candidate recovery choice appends a suffix after the
+    # compositor token in its profile package name; the seed must
+    # still find Hyprland (VM evidence: greeter opened on the
+    # experimental Gaming session, HorneroOS/greeter#38).
+    root = _target(tmp_path, "hornero-profile-desktop-hyprland-recovery",
+                   compositor="hyprland")
+    assert greeter.configure_greeter_session(root) == "hyprland.desktop"
+    assert "Session=/usr/share/wayland-sessions/hyprland.desktop" in _state(root)
+
+
+def test_recovery_candidate_without_edition_field_is_preseeded(tmp_path):
+    # Fallback: a compositor token anywhere in the package name
+    # identifies the compositor when the profile carries no
+    # explicit edition compositor.
+    root = _target(tmp_path, "hornero-profile-desktop-hyprland-recovery")
+    assert greeter.configure_greeter_session(root) == "hyprland.desktop"
+
+
+def test_edition_compositor_wins_over_package_name(tmp_path):
+    # The explicit compositor recorded in the installed profile is
+    # authoritative even when the package name has no known token.
+    root = _target(tmp_path, "hornero-profile-custom",
+                   sessions=("niri.desktop",), compositor="niri")
+    assert greeter.configure_greeter_session(root) == "niri.desktop"
 
 
 def test_gaming_still_preseeds_desktop_session(tmp_path):
