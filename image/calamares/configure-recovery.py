@@ -131,7 +131,50 @@ def configure_recovery(root: Path) -> bool:
                 raise ValueError(f"Target snapper config parent is not a directory: {directory}")
     destination.write_text(FACTORY_CONFIG, encoding="utf-8")
     destination.chmod(0o644)
+    _register_config(root)
     return True
+
+
+def _register_config(root: Path) -> None:
+    """Add `root` to SNAPPER_CONFIGS in etc/conf.d/snapper.
+
+    Arch's snapper discovers configs through that file, not by scanning
+    etc/snapper/configs: a factory config that is never registered is
+    invisible to snapperd (`snapper list-configs` stays empty), which
+    is exactly how the first recovery-candidate proof failed. Preserve
+    admin entries and comments; only the SNAPPER_CONFIGS value gains
+    the `root` token, and an already-registered config is untouched.
+    """
+    path = root / "etc/conf.d/snapper"
+    _reject_symlink_components(root, ("etc", "conf.d", "snapper"))
+    try:
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        try:
+            path.parent.mkdir(mode=0o755)
+        except FileExistsError:
+            pass
+        path.write_text('SNAPPER_CONFIGS="root"\n', encoding="utf-8")
+        path.chmod(0o644)
+        return
+
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped.startswith("SNAPPER_CONFIGS="):
+            continue
+        value = stripped.split("=", 1)[1].strip().strip('"').strip("'")
+        names = value.split()
+        if "root" in names:
+            return
+        names.append("root")
+        lines[index] = 'SNAPPER_CONFIGS="' + " ".join(names) + '"'
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return
+    with path.open("a", encoding="utf-8") as stream:
+        if text and not text.endswith("\n"):
+            stream.write("\n")
+        stream.write('SNAPPER_CONFIGS="root"\n')
 
 
 def main() -> int:
