@@ -3,11 +3,11 @@
 The provisional installer uses Calamares. This map describes the modules in
 `image/calamares/settings.conf` and the data each stage is expected to own. It
 is not a claim that every recovery and preflight behavior is complete. The
-published v0.2.0-preview30 ISO passed disposable-VM installation
-validation (Desktop, Studio and Gaming, UEFI, unencrypted); the
-UEFI/BIOS encrypted/unencrypted matrix was executed on earlier
-previews and is carried forward for unchanged areas.
-The R11 record behind it reached an authenticated desktop on BIOS; on
+published v0.2.0-preview32 ISO passed disposable-VM installation
+validation (Desktop, Studio and Gaming, UEFI, unencrypted).
+LUKS-encrypted installs, legacy BIOS, Niri sessions and copytoram were
+not run on this artifact and are not carried forward as passed.
+The earlier R11 record reached an authenticated desktop on BIOS; on
 UEFI it reached the installed login screen, but authentication remains
 unverified there. Installed package/profile parity and cleanup after a
 simulated package-install failure

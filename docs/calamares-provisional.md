@@ -15,8 +15,10 @@ high-consequence confirmation flows. The installer-specific controls and
 acceptance gates remain documented in this guide.
 
 The current image profile produced the published, signed
-v0.2.0-preview30 Desktop+Studio+Gaming Preview ISO (one x86_64 image). It
-passed disposable-VM installation validation (UEFI, unencrypted);
+v0.2.0-preview32 Desktop+Studio+Gaming Preview ISO (one x86_64 image). It
+passed disposable-VM installation validation (Desktop, Studio and
+Gaming, UEFI, unencrypted; LUKS-encrypted installs, legacy BIOS, Niri
+sessions and copytoram were not run on this artifact);
 it is not certified for physical
 legacy BIOS, offer a graphical network tray and launch Calamares. Its
 edition
