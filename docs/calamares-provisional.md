@@ -134,6 +134,22 @@ changes ship, Preview24/29 systems receive Bluetooth only by
 reinstalling or by manually installing `bluez`/`bluez-utils` and
 running `systemctl enable --now bluetooth.service`.
 
+## Cancellation contract
+
+Cancelling is available during the view steps (welcome through
+summary), before any disk write happens. During the Install (exec)
+step the Cancel button is disabled
+(`disable-cancel-during-exec: true`, installer#93): the packages job
+runs a single pacman transaction that does not stop when the UI
+quits, so offering cancel there would promise an abort the installer
+cannot honour — a preview32 QA run that "cancelled" at 56% ended
+with the transaction completing and the target booting as an
+installed system. If a deterministic mid-exec abort (transaction
+termination, cleanup, incomplete-install invalidation) is ever
+implemented and validated, this setting and the
+`install-pairwise-negative/cancel-during-install` QA scenario must
+be revisited together.
+
 ## Current limits
 
 R11 supersedes the 2026-10-23 build described below. Its exact artifact
