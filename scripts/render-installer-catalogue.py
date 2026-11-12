@@ -238,6 +238,7 @@ def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
         profile = dict(resolved_studio)
         profile["studioSelection"] = selection
         opt_ins = selection["proprietaryOptInRequired"]
+        manual_opt_ins = selection.get("manualOptInRequired", [])
         description = (
             f"Creative workstation based on HorneroOS Desktop. Specialization: {spec['title']}. "
             "Preview edition — candidate testing only, not a supported release."
@@ -247,6 +248,12 @@ def studio_candidate_choices(root: Path, catalogue: dict, desktop_packages: list
             description += (
                 " Not installed by this selection (explicit post-install opt-in required): "
                 + ", ".join(titles) + "."
+            )
+        if manual_opt_ins:
+            titles = [catalogue["studioApplications"][app]["title"] for app in manual_opt_ins]
+            description += (
+                " Not installed by this selection (explicit manual post-install opt-in only, "
+                "never downloaded by the installer): " + ", ".join(titles) + "."
             )
         result.append({
             "id": f"studio-hyprland-{spec_id}",

@@ -62,6 +62,19 @@ def test_candidate_audio_selection_records_proprietary_opt_ins():
     assert "ardour" in audio["packages"]
 
 
+def test_candidate_choices_never_install_manual_artcraft():
+    renderer = _renderer()
+    options = renderer.choices(PRODUCT, candidate_studio=True)
+    for choice in options:
+        assert "ai.storyteller.artcraft-launcher" not in choice["packages"]
+        assert "artcraft-launcher" not in choice["packages"]
+    custom = next(c for c in options if c["id"] == "studio-hyprland-custom-selection")
+    selection = custom["profile"]["studioSelection"]
+    # The entry exists in the catalogue but is not selected by any group:
+    # it is only ever an explicit application-level manual opt-in.
+    assert "artcraft-launcher" not in selection["applications"]
+
+
 def test_candidate_custom_selection_installs_platform_only_apps():
     renderer = _renderer()
     options = renderer.choices(PRODUCT, candidate_studio=True)

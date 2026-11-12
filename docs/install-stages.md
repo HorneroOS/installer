@@ -82,6 +82,15 @@ Experimental backends are clearly labeled and cannot become the default;
 planned editions remain hidden until their product and install paths have
 passed acceptance.
 
+Manual opt-in Studio applications (for example the experimental ArtCraft
+Launcher) are never part of an installer package list and are never
+downloaded by Calamares. The installer only records the selection: the
+installed profile's `studioSelection` is seeded to
+`~/.config/hornero/studio-selection.json` for `horneroctl`, and the actual
+install is a later, user-approved manual step outside the installer
+(HorneroOS/hornero `docs/studio-artcraft.md`). Cancel or failure of that
+later step does not affect the installed system.
+
 ## State ownership
 
 Target files and package state should be traceable to a Calamares stage and the
