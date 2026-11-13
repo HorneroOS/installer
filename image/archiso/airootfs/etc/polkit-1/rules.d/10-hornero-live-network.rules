@@ -1,0 +1,30 @@
+// HorneroOS live image only: let the passwordless live user join a
+// network before installing (HorneroOS/hornero#373).
+//
+// hornero-live has no password and belongs to no administrative
+// group, so NetworkManager's default `auth_admin_keep` for
+// `settings.modify.system` prompts for a root/live password that
+// does not exist and Wi-Fi cannot be joined pre-install. Grant YES
+// for exactly the NetworkManager actions needed to scan for, create
+// and activate a Wi-Fi connection, and only for hornero-live in an
+// active local session. Everything else keeps its default policy.
+//
+// This file exists only in the archiso airootfs; installed systems
+// are built from base.sqfs and never receive it, so installed users
+// keep NetworkManager's stock authorization defaults. The live
+// user's sudo grant stays limited to hornero-installer-run (see
+// /etc/sudoers.d/hornero-live); this rule adds no general admin
+// rights (no hostname, global-DNS, reload or checkpoint actions).
+polkit.addRule(function(action, subject) {
+    if (subject.user !== "hornero-live" || !subject.active || !subject.local)
+        return;
+    switch (action.id) {
+    case "org.freedesktop.NetworkManager.enable-disable-network":
+    case "org.freedesktop.NetworkManager.enable-disable-wifi":
+    case "org.freedesktop.NetworkManager.network-control":
+    case "org.freedesktop.NetworkManager.wifi.scan":
+    case "org.freedesktop.NetworkManager.settings.modify.own":
+    case "org.freedesktop.NetworkManager.settings.modify.system":
+        return polkit.Result.YES;
+    }
+});
