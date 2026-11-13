@@ -134,6 +134,34 @@ changes ship, Preview24/29 systems receive Bluetooth only by
 reinstalling or by manually installing `bluez`/`bluez-utils` and
 running `systemctl enable --now bluetooth.service`.
 
+## Live network contract
+
+The live user must be able to join a network before installing,
+without any password prompt (HorneroOS/hornero#373). `hornero-live`
+is passwordless and belongs to no administrative group, while
+NetworkManager's stock policy requires `auth_admin_keep` for
+`org.freedesktop.NetworkManager.settings.modify.system` — creating
+the Wi-Fi connection profile therefore asked for a root/live
+password that does not exist. The live image ships a polkit rule,
+`airootfs/etc/polkit-1/rules.d/10-hornero-live-network.rules`
+(pinned `0:0:644` in `profiledef.sh` so polkitd can read it), that
+returns `polkit.Result.YES` only when the subject is `hornero-live`
+in an active local session and only for the NetworkManager actions
+needed to join Wi-Fi: `enable-disable-network`,
+`enable-disable-wifi`, `wifi.scan`, `settings.modify.own`,
+`settings.modify.system` and `network-control`. Hostname,
+global-DNS, reload and checkpoint actions keep their stock
+`auth_admin` policy, and the live sudoers grant stays limited to
+`/usr/local/bin/hornero-installer-run ""` — joining a network grants
+no general administration rights. The rule lives only in the archiso
+airootfs; installed targets are built from `base.sqfs`, never
+receive it, and keep NetworkManager's default authorization for the
+named user Calamares creates. `tests/test_live_network_contract.py`
+pins this contract. Joining a real password-protected Wi-Fi network
+on a booted ISO is VM/physical proof and remains queued for the
+Preview candidate validation pass; this change is source- and
+test-verified only.
+
 ## Cancellation contract
 
 Cancelling is available during the view steps (welcome through

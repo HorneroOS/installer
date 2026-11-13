@@ -15,6 +15,7 @@ airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '8' '-processo
 file_permissions=(
   ["/root"]="0:0:750"
   ["/etc/sudoers.d/hornero-live"]="0:0:440"
+  ["/etc/polkit-1/rules.d/10-hornero-live-network.rules"]="0:0:644"
   ["/usr/local/bin/hornero-installer-start"]="0:0:755"
   ["/usr/local/bin/hornero-installer-run"]="0:0:755"
   ["/usr/local/bin/hornero-live-session-setup"]="0:0:755"
