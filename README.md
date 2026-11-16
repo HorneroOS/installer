@@ -1,6 +1,7 @@
 # HorneroOS installer
 
-Installer and installation workflows for Hornero OS.
+Installer and installation workflows for HorneroOS, the Arch-based
+workstation operating-system family (Desktop · Studio · Gaming).
 
 ## Scope
 
@@ -41,6 +42,20 @@ The installer pins that source revision and asks its resolver for package
 composition. It does not maintain an independent edition catalogue. Only
 installable product compositions are shown; experimental backends are labeled
 and planned editions remain hidden.
+
+## Appearance
+
+The Calamares branding and live-medium fonts follow
+[Hornero Signal](https://github.com/HorneroOS/docs/blob/main/development/rfc-0001-hornero-signal.md)
+on `main` (Signal Night roles, IBM Plex from `ttf-ibm-plex`); see
+[the branding sources](image/calamares/branding/hornero/SOURCES.md). The
+published v0.2.0-preview32 ISO predates this and shows the previous
+branding. Installed compositions still come from the pinned Hornero lock;
+until that lock is refreshed to a Signal release, the generated package
+lists keep the previous desktop font set, and an installed system gets
+Signal only once the pinned shell, config and `horneroctl` include it.
+Screenshots of this installer taken before November 2026 show the previous
+branding.
 
 ## Try the Preview ISO
 
