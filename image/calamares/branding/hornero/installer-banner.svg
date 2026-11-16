@@ -1,23 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="760" height="220" viewBox="0 0 760 220" role="img" aria-label="HorneroOS installer banner">
-  <!-- Brand art inlined from HorneroOS/config assets/brand/logo-dark.svg
-       (canonical HorneroOS brand identity, config/docs/BRAND.md).
-       Palette: night adobe #1D1410, sunset amber #F2B749, ember
-       terracotta #E07856, cream #F6E9DB. -->
+  <!-- Hornero Signal installer banner (RFC 0001 + amendment 2, Signal
+       Bezel). Bird and branch geometry inlined from HorneroOS/config
+       assets/brand/logo-dark.svg; the sun disc is a flat signal amber and
+       the bird is knocked out in ground, so the mark reads as one instrument
+       plate. Signal Night roles: ground #0C0F13, base #13171D, ink #ECE6DA,
+       inkMuted #A8ABAD, rule #2C333C, signal #F2A33A, onSignal #1A1205.
+       Type: IBM Plex Sans Condensed / IBM Plex Mono (ttf-ibm-plex). -->
   <defs>
-    <linearGradient id="banner-bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#241610"/>
-      <stop offset="1" stop-color="#1D1410"/>
-    </linearGradient>
-    <linearGradient id="banner-sun" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#F2B749"/>
-      <stop offset="0.55" stop-color="#E89A55"/>
-      <stop offset="1" stop-color="#E07856"/>
-    </linearGradient>
+    <clipPath id="hatch-clip">
+      <rect x="636" y="28" width="96" height="10"/>
+    </clipPath>
   </defs>
-  <rect width="760" height="220" rx="28" fill="url(#banner-bg)"/>
+  <rect width="760" height="220" rx="5" fill="#0C0F13"/>
+  <rect x="0.5" y="0.5" width="759" height="219" rx="5" fill="none" stroke="#2C333C"/>
+  <!-- Registration tick on the leading top corner. -->
+  <rect x="0" y="0" width="2" height="10" fill="#F2A33A"/>
+  <rect x="0" y="0" width="10" height="2" fill="#F2A33A"/>
   <g transform="translate(30 22) scale(0.6875)">
-    <circle cx="128" cy="124" r="86" fill="url(#banner-sun)"/>
-    <g fill="#F6E9DB">
+    <circle cx="128" cy="124" r="86" fill="#F2A33A"/>
+    <g fill="#0C0F13">
       <path d="M100,168 L52,206 L70,212 L114,180 Z"/>
       <ellipse cx="124" cy="140" rx="34" ry="42" transform="rotate(-12 124 140)"/>
       <circle cx="140" cy="92" r="24"/>
@@ -25,12 +26,34 @@
       <rect x="111" y="176" width="7" height="22" rx="3.5"/>
       <rect x="129" y="174" width="7" height="23" rx="3.5"/>
     </g>
-    <path d="M36,200 C90,188 166,188 220,200" fill="none" stroke="#F6E9DB" stroke-width="13" stroke-linecap="round"/>
-    <circle cx="146" cy="88" r="5.5" fill="#B24827"/>
+    <path d="M36,200 C90,188 166,188 220,200" fill="none" stroke="#ECE6DA" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="146" cy="88" r="5.5" fill="#F2A33A"/>
   </g>
-  <text x="252" y="104" fill="#F6E9DB" font-family="Rubik, sans-serif" font-size="44" font-weight="800" letter-spacing="2">HORNERO<tspan fill="#E07856">OS</tspan></text>
-  <rect x="256" y="122" width="120" height="8" rx="4" fill="#F2B749"/>
-  <text x="254" y="162" fill="#D9C6B2" font-family="Rubik, sans-serif" font-size="19">Calamares · Provisional installer</text>
-  <rect x="580" y="84" width="140" height="44" rx="22" fill="#E07856"/>
-  <text x="650" y="112" text-anchor="middle" fill="#1D1410" font-family="Rubik, sans-serif" font-size="16" font-weight="800" letter-spacing="2">PREVIEW</text>
+  <text x="252" y="70" fill="#A8ABAD" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="1.2">00 · INSTALLER</text>
+  <line x1="252" y1="84" x2="600" y2="84" stroke="#2C333C" stroke-width="1"/>
+  <text x="250" y="132" fill="#ECE6DA" font-family="IBM Plex Sans Condensed, IBM Plex Sans, sans-serif" font-size="48" font-weight="500">HorneroOS</text>
+  <text x="252" y="166" fill="#A8ABAD" font-family="IBM Plex Mono, monospace" font-size="14" letter-spacing="0.6">DESKTOP · STUDIO · GAMING</text>
+  <!-- On-air chip: the real maturity of every edition. -->
+  <rect x="616" y="104" width="116" height="30" rx="3" fill="#F2A33A"/>
+  <text x="674" y="124" text-anchor="middle" fill="#1A1205" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" letter-spacing="1.4">PREVIEW</text>
+  <!-- La Plata 45° diagonal, brand surface only. -->
+  <g clip-path="url(#hatch-clip)" stroke="#F2A33A" stroke-width="1.5">
+    <line x1="630" y1="38" x2="640" y2="28"/>
+    <line x1="636" y1="38" x2="646" y2="28"/>
+    <line x1="642" y1="38" x2="652" y2="28"/>
+    <line x1="648" y1="38" x2="658" y2="28"/>
+    <line x1="654" y1="38" x2="664" y2="28"/>
+    <line x1="660" y1="38" x2="670" y2="28"/>
+    <line x1="666" y1="38" x2="676" y2="28"/>
+    <line x1="672" y1="38" x2="682" y2="28"/>
+    <line x1="678" y1="38" x2="688" y2="28"/>
+    <line x1="684" y1="38" x2="694" y2="28"/>
+    <line x1="690" y1="38" x2="700" y2="28"/>
+    <line x1="696" y1="38" x2="706" y2="28"/>
+    <line x1="702" y1="38" x2="712" y2="28"/>
+    <line x1="708" y1="38" x2="718" y2="28"/>
+    <line x1="714" y1="38" x2="724" y2="28"/>
+    <line x1="720" y1="38" x2="730" y2="28"/>
+    <line x1="726" y1="38" x2="736" y2="28"/>
+  </g>
 </svg>

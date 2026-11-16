@@ -1,0 +1,148 @@
+"""Calamares branding and the live medium on Hornero Signal (RFC 0001).
+
+Pins the Signal Night palette in branding.desc, stylesheet.qss, the
+slideshow and the banner; keeps the old brand palette, Rubik and Material
+out of the installer UI; checks that the slideshow only lists packages the
+installer choices really add; and that the live medium ships IBM Plex.
+"""
+import json
+import re
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parent.parent
+BRANDING = ROOT / "image/calamares/branding/hornero"
+SHOW = (BRANDING / "show.qml").read_text(encoding="utf-8")
+QSS = (BRANDING / "stylesheet.qss").read_text(encoding="utf-8")
+BANNER = (BRANDING / "installer-banner.svg").read_text(encoding="utf-8")
+NIRI = (BRANDING / "screenshots/niri-experimental.svg").read_text(encoding="utf-8")
+LIVE_PACKAGES = (ROOT / "image/archiso/packages.x86_64").read_text(encoding="utf-8")
+LIVE_SETUP = (ROOT / "image/archiso/airootfs/usr/local/bin/hornero-live-session-setup").read_text(encoding="utf-8")
+COMPOSITIONS = json.loads((ROOT / "image/calamares/modules/compositions.json").read_text(encoding="utf-8"))
+
+# RFC 0001 §3.2 Signal Night with amendment 2 (ruleStrong #707A85).
+NIGHT = {
+    "ground": "#0C0F13", "sunken": "#101419", "base": "#13171D",
+    "panel": "#181D24", "raised": "#1F252E", "lifted": "#283039",
+    "ink": "#ECE6DA", "inkMuted": "#A8ABAD", "inkFaint": "#737980",
+    "rule": "#2C333C", "ruleStrong": "#707A85", "signal": "#F2A33A",
+    "onSignal": "#1A1205", "signalWell": "#3A2A12", "onSignalWell": "#FFD9A3",
+    "focus": "#7EC1EA", "cueWell": "#16303F", "onCueWell": "#CDE8F8",
+    "alert": "#F0705A",
+}
+OLD_BRAND = ("#1D1410", "#F6E9DB", "#F2B749", "#E07856", "#241610", "#D9C6B2", "#B24827")
+UI_SURFACES = {"show.qml": SHOW, "stylesheet.qss": QSS, "installer-banner.svg": BANNER,
+               "niri-experimental.svg": NIRI}
+
+
+def _hexes(text):
+    return {h.upper() for h in re.findall(r"#[0-9A-Fa-f]{6}\b", text)}
+
+
+def test_branding_desc_uses_signal_sidebar_and_qml_slideshow():
+    desc = yaml.safe_load((BRANDING / "branding.desc").read_text(encoding="utf-8"))
+    assert desc["slideshow"] == "show.qml"
+    assert desc["slideshowAPI"] == 2
+    assert desc["style"] == {
+        "SidebarBackground": NIGHT["ground"],
+        "SidebarText": NIGHT["ink"],
+        "SidebarTextCurrent": NIGHT["onSignalWell"],
+        "SidebarBackgroundCurrent": NIGHT["signalWell"],
+    }
+
+
+def test_ui_surfaces_use_only_signal_night_roles():
+    allowed = set(NIGHT.values())
+    for name, text in UI_SURFACES.items():
+        extra = _hexes(text) - allowed
+        assert not extra, (name, sorted(extra))
+
+
+def test_no_old_brand_palette_rubik_or_material():
+    for name, text in UI_SURFACES.items():
+        for colour in OLD_BRAND:
+            assert colour.lower() not in text.lower(), (name, colour)
+        assert "Rubik" not in text, name
+        assert "Material" not in text, name
+        assert "Gradient" not in text and "qlineargradient" not in text, name
+
+
+def test_plex_type_everywhere():
+    assert '"IBM Plex Sans"' in QSS and '"IBM Plex Mono"' in QSS
+    for family in ("IBM Plex Sans", "IBM Plex Mono", "IBM Plex Sans Condensed"):
+        assert f'"{family}"' in SHOW
+    assert "IBM Plex Sans Condensed" in BANNER and "IBM Plex Mono" in BANNER
+
+
+def test_focus_and_primary_action_follow_signal():
+    assert "QPushButton:focus" in QSS and "2px solid #7EC1EA" in QSS
+    default = QSS.split("QPushButton:default {", 1)[1].split("}", 1)[0]
+    assert "#F2A33A" in default and "#1A1205" in default
+    assert "border-radius: 3px" in QSS
+
+
+def test_slideshow_is_calamares_api2_and_honest():
+    assert "import calamares.slideshow 1.0" in SHOW
+    assert "function onActivate()" in SHOW and "function onLeave()" in SHOW
+    for channel in ("01 · DESKTOP", "02 · STUDIO", "03 · GAMING"):
+        assert channel in SHOW
+    # Every edition is labelled with its real maturity, never more.
+    assert SHOW.count('chip: "PREVIEW"') == 3
+    for claim in ("stable", "Stable", "certified", "production-ready"):
+        assert claim not in SHOW
+    # Typographic cards only: no screenshot can misrepresent the release.
+    assert "Image {" not in SHOW
+
+
+def _options():
+    return {option["id"]: set(option["packages"]) for option in COMPOSITIONS["options"]}
+
+
+def _listed(channel):
+    block = SHOW.split(f'channel: "{channel}"', 1)[1].split("Slide {", 1)[0]
+    match = re.search(r"contents: \[(.*?)\]", block, re.DOTALL)
+    assert match, channel
+    return set(re.findall(r'"([^"]+)"', match.group(1)))
+
+
+def test_slideshow_package_lists_match_installer_choices():
+    options = _options()
+    desktop = options["desktop-hyprland"]
+    assert _listed("01 · DESKTOP") <= desktop
+    for channel, option in (("02 · STUDIO", "studio-hyprland"), ("03 · GAMING", "gaming-hyprland")):
+        listed = _listed(channel)
+        adds = options[option] - desktop
+        assert listed <= adds, (channel, sorted(listed - adds))
+
+
+def test_banner_keeps_registration_tick_and_diagonal():
+    assert '<rect x="0" y="0" width="2" height="10" fill="#F2A33A"/>' in BANNER
+    assert "La Plata 45° diagonal" in BANNER
+    assert "PREVIEW" in BANNER
+
+
+def test_niri_card_stays_honestly_labelled():
+    assert "not a desktop screenshot" in NIRI
+    assert "EXPERIMENTAL" in NIRI
+
+
+def test_legacy_wallpaper_slides_removed():
+    for name in ("wallpaper-hornero-dark.jpg", "wallpaper-hornero-199x.jpg"):
+        assert not (BRANDING / "screenshots" / name).exists()
+
+
+def test_live_medium_ships_plex_and_no_material_fonts():
+    packages = {line.strip() for line in LIVE_PACKAGES.splitlines() if line.strip() and not line.startswith("#")}
+    assert "ttf-ibm-plex" in packages
+    for legacy in ("ttf-material-symbols-variable", "python-materialyoucolor", "ttf-rubik-vf"):
+        assert legacy not in packages
+
+
+def test_live_session_keeps_factory_theme_and_layout():
+    # The live user gets the shipped factory defaults (theme
+    # hornero-signal-night, layout preset cockpit, owned by HorneroOS/config
+    # and HorneroOS/shell). The live setup only disarms idle actions; it
+    # must never pin a theme, wallpaper scheme or layout of its own.
+    for key in ('"theme"', '"appearance"', '"bar"', "preset apply", "theme apply", "hornero-dark", "hornero-199x"):
+        assert key not in LIVE_SETUP, key

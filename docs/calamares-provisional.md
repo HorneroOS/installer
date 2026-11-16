@@ -178,6 +178,47 @@ implemented and validated, this setting and the
 `install-pairwise-negative/cancel-during-install` QA scenario must
 be revisited together.
 
+## Hornero Signal branding
+
+The installer UI follows Hornero Signal (RFC 0001 with amendment 2, Signal
+Bezel direction in `HorneroOS/docs/development/signal-visual-language.md`):
+
+- `branding/hornero/branding.desc` — Signal Night sidebar (ground, ink, and
+  the current step as a `signalWell` row) and the QML slideshow on
+  Calamares `slideshowAPI: 2`.
+- `branding/hornero/stylesheet.qss` — Signal Night roles for the window,
+  fields, lists, progress and buttons; IBM Plex type; radius 3; a 2 px
+  celeste focus border; the one primary action (`Next`/`Install`) in signal
+  amber.
+- `branding/hornero/show.qml` — typographic instrument cards for the OS
+  family: Desktop, Studio and Gaming, each with its real `PREVIEW` maturity
+  and the packages that choice really adds (checked against
+  `modules/compositions.json` by `tests/test_signal_branding.py`). No
+  screenshots, so the slideshow cannot show a look the installed release
+  does not have.
+- `installer-banner.svg` and `screenshots/niri-experimental.svg` — Signal
+  recompositions; the canonical logo files stay as published by
+  HorneroOS/config.
+- The live medium installs `ttf-ibm-plex`. The live user receives the
+  factory theme and layout (`hornero-signal-night`, `cockpit`) from the
+  shipped HorneroOS/config and HorneroOS/shell packages; the live setup
+  only disarms idle actions and never pins a theme or layout.
+
+Limits, stated plainly:
+
+- The slideshow was rendered with the pinned Calamares 3.4.3
+  `calamares.slideshow` QML module on Qt 6.12 offscreen; `stylesheet.qss`
+  and the sidebar colours have not yet been seen inside a running
+  Calamares. Both need a disposable-VM run of a rebuilt ISO.
+- The locked product and AUR packages still predate Hornero Signal:
+  `installer.lock.yaml` pins `hornero-shell` 1.2.60 and lists
+  `python-materialyoucolor` and `ttf-rubik-vf`, and the generated
+  `modules/compositions.json` still installs
+  `ttf-material-symbols-variable`. Removing them requires the Signal shell,
+  config and product catalogue releases first, then a lock refresh here.
+  Until then an ISO built from this repository shows the Signal installer
+  around a pre-Signal desktop.
+
 ## Current limits
 
 R11 supersedes the 2026-10-23 build described below. Its exact artifact

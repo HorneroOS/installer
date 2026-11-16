@@ -287,14 +287,13 @@ def main() -> int:
     )
     branding_root = config_root / "branding/hornero"
     branding = load_yaml(branding_root / "branding.desc")
+    # Hornero Signal slideshow: one QML presentation on Calamares
+    # slideshowAPI 2 (loaded at startup, onActivate/onLeave).
     slideshow = branding.get("slideshow")
-    assert isinstance(slideshow, list) and slideshow, (
-        "Calamares branding requires at least one slideshow image or QML file"
-    )
-    assert all(
-        isinstance(path, str) and (branding_root / path).is_file()
-        for path in slideshow
-    ), "every Calamares slideshow entry must resolve inside the branding directory"
+    assert slideshow == "show.qml", "the Calamares slideshow must be the Signal show.qml"
+    assert branding.get("slideshowAPI") == 2
+    assert (branding_root / slideshow).is_file()
+    assert (branding_root / "stylesheet.qss").is_file(), "Signal stylesheet.qss must ship"
     assert lock["arch"]["architecture"] == "x86_64"
     assert re.fullmatch(r"[0-9]{4}/[0-9]{2}/[0-9]{2}", lock["arch"]["snapshot"])
     assert re.fullmatch(r"[0-9a-f]{64}", lock["calamares"]["sha256"])
