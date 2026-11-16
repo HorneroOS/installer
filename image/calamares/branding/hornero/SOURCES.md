@@ -8,14 +8,14 @@ Nothing here is third-party:
 
 - `hornero.svg` — `assets/brand/logo.svg` (canonical full-color mark).
 - `hornero-installer.svg` — `assets/brand/icons/hornero-app.svg`.
-- `installer-banner.svg` — original composition in this repo that inlines the
-  bird/sun art from `assets/brand/logo-dark.svg` with the brand palette
-  (night adobe `#1D1410`, sunset amber `#F2B749`, ember terracotta `#E07856`,
-  cream `#F6E9DB`).
-- `screenshots/wallpaper-hornero-dark.jpg` and
-  `screenshots/wallpaper-hornero-199x.jpg` — resized (1600 px, JPEG q82)
-  derivatives of `assets/brand/wallpaper/hornero-dark.png` and
-  `hornero-199x.png` (procedural HorneroOS flagship wallpapers).
+- `installer-banner.svg` — original Hornero Signal composition in this repo
+  (RFC 0001 + amendment 2, Signal Bezel) that inlines the bird and branch
+  geometry from `assets/brand/logo-dark.svg`, recoloured to Signal Night
+  roles (ground `#0C0F13`, ink `#ECE6DA`, signal `#F2A33A`), with IBM Plex
+  type and the La Plata diagonal.
+- `show.qml` and `stylesheet.qss` — original Hornero Signal slideshow and
+  Calamares stylesheet in this repo. The slideshow is typographic (no
+  screenshots); its package lists mirror `modules/compositions.json`.
 - `screenshots/desktop-hyprland.jpg` — certified desktop preview pinned in
   `installer.lock.yaml` (`profileMedia.desktopPreview`, source in
   HorneroOS/website).

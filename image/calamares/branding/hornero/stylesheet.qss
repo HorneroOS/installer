@@ -1,0 +1,170 @@
+/* HorneroOS Calamares stylesheet on Hornero Signal (RFC 0001 +
+ * amendment 2, Signal Visual Language "Signal Bezel").
+ *
+ * Signal Night roles: ground #0C0F13, sunken #101419, base #13171D,
+ * panel #181D24, raised #1F252E, lifted #283039, ink #ECE6DA,
+ * inkMuted #A8ABAD, rule #2C333C, ruleStrong #707A85, signal #F2A33A,
+ * onSignal #1A1205, signalWell #3A2A12, onSignalWell #FFD9A3,
+ * focus #7EC1EA, cueWell #16303F, onCueWell #CDE8F8, alert #F0705A.
+ * Type: IBM Plex Sans / IBM Plex Mono (ttf-ibm-plex on the live medium).
+ * Geometry: radius 3, 1 px rule hairlines, 1 px ruleStrong control
+ * boundaries, 2 px focus. No gradients, no glass.
+ */
+
+* {
+    font-family: "IBM Plex Sans";
+}
+
+#mainApp,
+QWidget#mainApp {
+    background-color: #13171D;
+    color: #ECE6DA;
+}
+
+/* Progress sidebar: the step list is an instrument column. */
+#sidebarApp {
+    background-color: #0C0F13;
+    color: #ECE6DA;
+    border-right: 1px solid #2C333C;
+}
+
+#logoApp {
+    background-color: #0C0F13;
+}
+
+QLabel {
+    color: #ECE6DA;
+}
+
+/* Separate windows (the "Continue with Setup?" confirmation, error and
+ * cancel dialogs, menus) do not inherit #mainApp: give them the panel
+ * role so their light text never lands on Qt's default light palette. */
+QDialog,
+QMessageBox,
+QMenu {
+    background-color: #181D24;
+    color: #ECE6DA;
+}
+
+QLabel:disabled {
+    color: #737980;
+}
+
+QPushButton {
+    background-color: transparent;
+    color: #ECE6DA;
+    border: 1px solid #707A85;
+    border-radius: 3px;
+    padding: 6px 16px;
+    min-height: 20px;
+}
+
+QPushButton:hover {
+    background-color: #1F252E;
+}
+
+QPushButton:pressed {
+    background-color: #283039;
+}
+
+QPushButton:focus {
+    border: 2px solid #7EC1EA;
+}
+
+QPushButton:disabled {
+    color: #737980;
+    border-color: #2C333C;
+}
+
+/* The one primary action (Next / Install) carries the signal. */
+QPushButton:default {
+    background-color: #F2A33A;
+    color: #1A1205;
+    border: 1px solid #F2A33A;
+    font-weight: 600;
+}
+
+QPushButton:default:focus {
+    border: 2px solid #7EC1EA;
+}
+
+QLineEdit,
+QComboBox,
+QSpinBox,
+QPlainTextEdit,
+QTextEdit {
+    background-color: #101419;
+    color: #ECE6DA;
+    border: 1px solid #707A85;
+    border-radius: 3px;
+    padding: 4px 8px;
+    selection-background-color: #16303F;
+    selection-color: #CDE8F8;
+}
+
+QLineEdit:focus,
+QComboBox:focus,
+QSpinBox:focus,
+QPlainTextEdit:focus,
+QTextEdit:focus {
+    border: 2px solid #7EC1EA;
+}
+
+QComboBox QAbstractItemView,
+QListView,
+QTreeView {
+    background-color: #181D24;
+    color: #ECE6DA;
+    border: 1px solid #2C333C;
+    selection-background-color: #3A2A12;
+    selection-color: #FFD9A3;
+    outline: 0;
+}
+
+QListView::item:hover,
+QTreeView::item:hover {
+    background-color: #1F252E;
+}
+
+QListView::item:selected,
+QTreeView::item:selected {
+    background-color: #3A2A12;
+    color: #FFD9A3;
+    border-left: 2px solid #F2A33A;
+}
+
+QCheckBox,
+QRadioButton {
+    color: #ECE6DA;
+    spacing: 8px;
+}
+
+QProgressBar {
+    background-color: #101419;
+    border: 1px solid #2C333C;
+    border-radius: 3px;
+    color: #ECE6DA;
+    text-align: center;
+    font-family: "IBM Plex Mono";
+}
+
+QProgressBar::chunk {
+    background-color: #F2A33A;
+}
+
+QScrollBar:vertical {
+    background: #101419;
+    width: 10px;
+}
+
+QScrollBar::handle:vertical {
+    background: #707A85;
+    border-radius: 3px;
+    min-height: 24px;
+}
+
+QToolTip {
+    background-color: #283039;
+    color: #ECE6DA;
+    border: 1px solid #707A85;
+}

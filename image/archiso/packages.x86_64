@@ -37,6 +37,9 @@ hornero-shell
 hornero-config
 horneroctl-bin
 hornero-greeter
+# Hornero Signal type (RFC 0001 §3.3): IBM Plex Sans, Mono and Sans
+# Condensed for the live session, the greeter and the Calamares branding.
+ttf-ibm-plex
 kitty
 thunar
 exo
