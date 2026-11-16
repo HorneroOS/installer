@@ -36,6 +36,16 @@ QLabel {
     color: #ECE6DA;
 }
 
+/* Separate windows (the "Continue with Setup?" confirmation, error and
+ * cancel dialogs, menus) do not inherit #mainApp: give them the panel
+ * role so their light text never lands on Qt's default light palette. */
+QDialog,
+QMessageBox,
+QMenu {
+    background-color: #181D24;
+    color: #ECE6DA;
+}
+
 QLabel:disabled {
     color: #737980;
 }

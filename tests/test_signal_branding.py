@@ -75,6 +75,12 @@ def test_plex_type_everywhere():
     assert "IBM Plex Sans Condensed" in BANNER and "IBM Plex Mono" in BANNER
 
 
+def test_separate_windows_get_a_dark_surface():
+    block = QSS.split("QDialog,", 1)[1].split("}", 1)[0]
+    assert "QMessageBox" in block and "background-color: #181D24" in block
+    assert "color: #ECE6DA" in block
+
+
 def test_focus_and_primary_action_follow_signal():
     assert "QPushButton:focus" in QSS and "2px solid #7EC1EA" in QSS
     default = QSS.split("QPushButton:default {", 1)[1].split("}", 1)[0]
