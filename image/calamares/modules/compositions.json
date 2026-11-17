@@ -1,5 +1,5 @@
 {
-  "productRevision": "46b75160574bea9d87778bd2c3b8c7a706ef8fc7",
+  "productRevision": "dfc405884bf582a7e3a8cae1d536c4c88ab379bc",
   "options": [
     {
       "id": "desktop-hyprland",
@@ -32,8 +32,7 @@
         "qt6ct",
         "papirus-icon-theme",
         "ttf-cascadia-code-nerd",
-        "ttf-material-symbols-variable",
-        "ttf-rubik-vf",
+        "ttf-ibm-plex",
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
@@ -58,6 +57,10 @@
         "role": "desktop",
         "compositor": "hyprland",
         "compositorMaturity": "supported",
+        "appearance": {
+          "shellPreset": "cockpit",
+          "theme": "hornero-signal-night"
+        },
         "packageSets": [
           "base",
           "desktop",
@@ -90,8 +93,7 @@
           "qt6ct",
           "papirus-icon-theme",
           "ttf-cascadia-code-nerd",
-          "ttf-material-symbols-variable",
-          "ttf-rubik-vf",
+          "ttf-ibm-plex",
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
@@ -207,8 +209,7 @@
         "qt6ct",
         "papirus-icon-theme",
         "ttf-cascadia-code-nerd",
-        "ttf-material-symbols-variable",
-        "ttf-rubik-vf",
+        "ttf-ibm-plex",
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
@@ -235,6 +236,10 @@
         "role": "desktop",
         "compositor": "niri",
         "compositorMaturity": "experimental",
+        "appearance": {
+          "shellPreset": "cockpit",
+          "theme": "hornero-signal-night"
+        },
         "packageSets": [
           "base",
           "desktop",
@@ -267,8 +272,7 @@
           "qt6ct",
           "papirus-icon-theme",
           "ttf-cascadia-code-nerd",
-          "ttf-material-symbols-variable",
-          "ttf-rubik-vf",
+          "ttf-ibm-plex",
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
@@ -386,8 +390,7 @@
         "qt6ct",
         "papirus-icon-theme",
         "ttf-cascadia-code-nerd",
-        "ttf-material-symbols-variable",
-        "ttf-rubik-vf",
+        "ttf-ibm-plex",
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
@@ -421,6 +424,10 @@
         "role": "creative-workstation",
         "compositor": "hyprland",
         "compositorMaturity": "supported",
+        "appearance": {
+          "shellPreset": "cockpit",
+          "theme": "hornero-signal-night"
+        },
         "packageSets": [
           "base",
           "desktop",
@@ -454,8 +461,7 @@
           "qt6ct",
           "papirus-icon-theme",
           "ttf-cascadia-code-nerd",
-          "ttf-material-symbols-variable",
-          "ttf-rubik-vf",
+          "ttf-ibm-plex",
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
@@ -792,8 +798,7 @@
         "qt6ct",
         "papirus-icon-theme",
         "ttf-cascadia-code-nerd",
-        "ttf-material-symbols-variable",
-        "ttf-rubik-vf",
+        "ttf-ibm-plex",
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
@@ -829,6 +834,10 @@
         "role": "creative-workstation",
         "compositor": "niri",
         "compositorMaturity": "experimental",
+        "appearance": {
+          "shellPreset": "cockpit",
+          "theme": "hornero-signal-night"
+        },
         "packageSets": [
           "base",
           "desktop",
@@ -862,8 +871,7 @@
           "qt6ct",
           "papirus-icon-theme",
           "ttf-cascadia-code-nerd",
-          "ttf-material-symbols-variable",
-          "ttf-rubik-vf",
+          "ttf-ibm-plex",
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
@@ -1202,8 +1210,7 @@
         "qt6ct",
         "papirus-icon-theme",
         "ttf-cascadia-code-nerd",
-        "ttf-material-symbols-variable",
-        "ttf-rubik-vf",
+        "ttf-ibm-plex",
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
@@ -1238,6 +1245,10 @@
         "role": "gaming-workstation",
         "compositor": "hyprland",
         "compositorMaturity": "supported",
+        "appearance": {
+          "shellPreset": "cockpit",
+          "theme": "hornero-signal-night"
+        },
         "packageSets": [
           "base",
           "desktop",
@@ -1271,8 +1282,7 @@
           "qt6ct",
           "papirus-icon-theme",
           "ttf-cascadia-code-nerd",
-          "ttf-material-symbols-variable",
-          "ttf-rubik-vf",
+          "ttf-ibm-plex",
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",
@@ -1459,8 +1469,7 @@
         "qt6ct",
         "papirus-icon-theme",
         "ttf-cascadia-code-nerd",
-        "ttf-material-symbols-variable",
-        "ttf-rubik-vf",
+        "ttf-ibm-plex",
         "sddm",
         "hornero-greeter",
         "hornero-greeter-media-base",
@@ -1497,6 +1506,10 @@
         "role": "gaming-workstation",
         "compositor": "niri",
         "compositorMaturity": "experimental",
+        "appearance": {
+          "shellPreset": "cockpit",
+          "theme": "hornero-signal-night"
+        },
         "packageSets": [
           "base",
           "desktop",
@@ -1530,8 +1543,7 @@
           "qt6ct",
           "papirus-icon-theme",
           "ttf-cascadia-code-nerd",
-          "ttf-material-symbols-variable",
-          "ttf-rubik-vf",
+          "ttf-ibm-plex",
           "sddm",
           "hornero-greeter",
           "hornero-greeter-media-base",

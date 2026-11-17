@@ -11,8 +11,7 @@ guest with at least 4 GiB of RAM for its install gate (`welcome.conf`
 The ISO content is whatever `installer.lock.yaml` pins, not what is on `main`
 of the other repositories. At the time of writing the lock still pins
 `hornero-shell 1.2.60`, `hornero-config 0.3.18`, `hornero-greeter 1.0.4`,
-`horneroctl-bin 0.2.0_preview40`, plus the Material-era `python-materialyoucolor`
-and `ttf-rubik-vf`. An ISO built now would be pre-Signal again.
+and `horneroctl-bin 0.2.0_preview40`. An ISO built now would be pre-Signal again.
 `scripts/build-iso.sh` therefore runs `scripts/check-signal-lock.py` and refuses
 to build until the lock is refreshed. Set `HORNEROS_ALLOW_PRE_SIGNAL_LOCK=1`
 only for a throwaway test image, never for a release.
@@ -39,8 +38,8 @@ For each pinned AUR package set `version` to the published `pkgver-pkgrel`
 and `revision` to the commit of the AUR git repository that published it
 (`git ls-remote https://aur.archlinux.org/<pkg>.git HEAD`). Then:
 
-- Remove `python-materialyoucolor` and `ttf-rubik-vf` from the lock (the Signal
-  packages do not depend on them; the check script fails while they remain).
+- Keep `python-materialyoucolor` and `ttf-rubik-vf` out of the lock (already
+  removed; the check script fails if either returns).
 - Set `product.revision` to the HorneroOS/hornero commit of the release record
   and refresh `product.catalogueSha256` and `product.resolverSha256` from that
   commit (`sha256sum editions/catalogue.yaml` and the resolver file named in

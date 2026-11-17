@@ -357,10 +357,9 @@ def main() -> int:
         "horneroctl-bin",
         "hornero-greeter",
         "hornero-greeter-media-base",
-        "python-materialyoucolor",
-        "ttf-rubik-vf",
     }
     assert required_hornero <= set(aur)
+    assert not {"python-materialyoucolor", "ttf-rubik-vf"} & set(aur), "retired Material-era packages must not be pinned"
     assert "libcava" in aur, "the locked shell package requires the pinned libcava AUR runtime"
     assert all(item.get("packages") for item in compositions["options"])
     assert all(

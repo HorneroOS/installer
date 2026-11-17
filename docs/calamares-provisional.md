@@ -210,14 +210,15 @@ Limits, stated plainly:
   `calamares.slideshow` QML module on Qt 6.12 offscreen; `stylesheet.qss`
   and the sidebar colours have not yet been seen inside a running
   Calamares. Both need a disposable-VM run of a rebuilt ISO.
-- The locked product and AUR packages still predate Hornero Signal:
-  `installer.lock.yaml` pins `hornero-shell` 1.2.60 and lists
-  `python-materialyoucolor` and `ttf-rubik-vf`, and the generated
-  `modules/compositions.json` still installs
-  `ttf-material-symbols-variable`. Removing them requires the Signal shell,
-  config and product catalogue releases first, then a lock refresh here.
+- The locked Hornero packages still predate Hornero Signal:
+  `installer.lock.yaml` pins `hornero-shell` 1.2.60 and the other 1.x/0.3.x
+  floors below `scripts/check-signal-lock.py`. The product catalogue pin and
+  the generated `modules/compositions.json` and `packagechooser.conf` are
+  already on the Signal catalogue (`ttf-ibm-plex`, no Material Symbols or
+  Rubik fonts, no `python-materialyoucolor`). Raising the AUR pins needs the
+  Signal shell, config and greeter releases first, then a lock refresh here.
   Until then an ISO built from this repository shows the Signal installer
-  around a pre-Signal desktop.
+  around a pre-Signal desktop, and `scripts/build-iso.sh` refuses to build.
 
 ## Current limits
 
