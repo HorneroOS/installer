@@ -186,3 +186,10 @@ def test_banner_fits_the_welcome_area_without_clipping():
     chip = re.search(r'<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" rx="3" fill="#F2A33A"/>', BANNER)
     assert chip and int(chip.group(1)) + int(chip.group(3)) + 16 <= int(root.group(1))
     assert int(chip.group(2)) + int(chip.group(4)) + 16 <= int(root.group(2))
+
+def test_brand_marks_carry_signal_colours_only():
+    """hornero.svg / hornero-installer.svg are copies of config assets/brand."""
+    for name in ("hornero.svg", "hornero-installer.svg", "installer-banner.svg"):
+        text = (BRANDING / name).read_text(encoding="utf-8").lower()
+        for colour in OLD_BRAND + ("#2b1a11", "#7c4a2c", "#fffdf7", "#e89a55"):
+            assert colour.lower() not in text, (name, colour)

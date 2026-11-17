@@ -6,8 +6,10 @@ Files are either used unmodified, resized, or — for `installer-banner.svg`
 — an original composition in this repo built from the canonical art.
 Nothing here is third-party:
 
-- `hornero.svg` — `assets/brand/logo.svg` (canonical full-color mark).
-- `hornero-installer.svg` — `assets/brand/icons/hornero-app.svg`.
+- `hornero.svg` — `assets/brand/logo.svg` (canonical full-color mark,
+  byte-identical copy).
+- `hornero-installer.svg` — `assets/brand/icons/hornero-app.svg`
+  (byte-identical copy).
 - `installer-banner.svg` — original Hornero Signal composition in this repo
   (RFC 0001 + amendment 2, Signal Bezel) that inlines the bird and branch
   geometry from `assets/brand/logo-dark.svg`, recoloured to Signal Night
