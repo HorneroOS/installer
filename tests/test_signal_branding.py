@@ -152,3 +152,37 @@ def test_live_session_keeps_factory_theme_and_layout():
     # must never pin a theme, wallpaper scheme or layout of its own.
     for key in ('"theme"', '"appearance"', '"bar"', "preset apply", "theme apply", "hornero-dark", "hornero-199x"):
         assert key not in LIVE_SETUP, key
+
+
+def test_stylesheet_covers_every_calamares_page_family():
+    # installer#102: no page may fall back to Qt's stock grey. Every widget
+    # family a Calamares page uses needs a Signal rule (partition, users,
+    # summary, install progress, finished, dialogs, scroll areas).
+    for selector in (
+        "#mainApp", "#sidebarApp", "#view-button-next", "#view-button-cancel",
+        "#exec-progress", "#exec-message", "#scrollAreaWidgetContents",
+        "#partitionBarView", "#licenseItem", "QHeaderView::section",
+        "QTableView", "QTabBar::tab:selected", "QGroupBox", "QCheckBox::indicator",
+        "QRadioButton::indicator", "QSlider::handle:horizontal", "QToolButton",
+        "QScrollBar:horizontal", "QScrollBar:vertical", "QToolTip", "QDialog",
+        "QMessageBox", "QMenu", "QComboBox", "QLineEdit", "QProgressBar::chunk",
+    ):
+        assert selector in QSS, selector
+
+
+def test_stylesheet_never_encodes_state_by_colour_alone():
+    # Checked controls change fill and boundary, the active tab gets an
+    # underline, the selected row an on-air bar.
+    assert "border-bottom: 2px solid #F2A33A" in QSS
+    assert "border-left: 2px solid #F2A33A" in QSS
+    assert "QCheckBox::indicator:checked" in QSS
+
+
+def test_banner_fits_the_welcome_area_without_clipping():
+    # installer#101: the 760 px banner clipped the PREVIEW chip to "PRE".
+    root = re.search(r'<svg[^>]*width="(\d+)" height="(\d+)" viewBox="0 0 (\d+) (\d+)"', BANNER)
+    assert root and root.group(1) == root.group(3) and root.group(2) == root.group(4)
+    assert int(root.group(1)) <= 640
+    chip = re.search(r'<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" rx="3" fill="#F2A33A"/>', BANNER)
+    assert chip and int(chip.group(1)) + int(chip.group(3)) + 16 <= int(root.group(1))
+    assert int(chip.group(2)) + int(chip.group(4)) + 16 <= int(root.group(2))
