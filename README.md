@@ -88,6 +88,8 @@ compilation/compression to two workers. The `python-yaml` and
 builder checks these Python dependencies before doing package or image work.
 Building packages or images never runs against the host installation.
 
+Maintainers cutting a new ISO: [building and releasing a Signal ISO](docs/release-iso.md).
+
 See [the provisional Calamares guide](docs/calamares-provisional.md) for
 installation limits, recovery notes, image composition and acceptance gates.
 

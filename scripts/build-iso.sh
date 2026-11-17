@@ -55,6 +55,14 @@ if missing:
     print("Missing Python build dependencies: " + ", ".join(missing), file=sys.stderr)
     raise SystemExit(1)
 PY
+# A release image must be built from a Signal-era lock (installer#101): the
+# preview32 ISO shipped a pre-Signal live session from a stale lock.
+if [[ "${HORNEROS_ALLOW_PRE_SIGNAL_LOCK:-0}" != 1 ]]; then
+  python3 "$ROOT/scripts/check-signal-lock.py" || {
+    echo 'Refusing to build a pre-Signal image. Refresh installer.lock.yaml (docs/release-iso.md) or set HORNEROS_ALLOW_PRE_SIGNAL_LOCK=1 for a non-release test image.' >&2
+    exit 1
+  }
+fi
 mkdir -p "$work" "$output"
 available_kib=$(df -Pk "$work" | awk 'NR == 2 { print $4 }')
 (( available_kib >= 41943040 )) || {
