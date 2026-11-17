@@ -152,9 +152,287 @@ QProgressBar::chunk {
     background-color: #F2A33A;
 }
 
+/* ---- Navigation: Back / Next / Cancel, welcome links, About, Debug ---- */
+
+#view-button-next {
+    min-width: 96px;
+}
+
+#view-button-cancel {
+    border-color: #2C333C;
+    color: #A8ABAD;
+}
+
+#view-button-cancel:hover {
+    border-color: #707A85;
+    color: #ECE6DA;
+}
+
+#aboutButton,
+#debugButton,
+#donateButton,
+#supportButton,
+#releaseNotesButton,
+#knownIssuesButton {
+    background-color: transparent;
+    color: #A8ABAD;
+    border: 1px solid #2C333C;
+}
+
+#aboutButton:hover,
+#debugButton:hover,
+#donateButton:hover,
+#supportButton:hover,
+#releaseNotesButton:hover,
+#knownIssuesButton:hover {
+    background-color: #1F252E;
+    color: #ECE6DA;
+}
+
+QToolButton {
+    background-color: transparent;
+    color: #ECE6DA;
+    border: 1px solid #707A85;
+    border-radius: 3px;
+    padding: 4px 8px;
+}
+
+QToolButton:hover {
+    background-color: #1F252E;
+}
+
+QToolButton:pressed,
+QToolButton:checked {
+    background-color: #3A2A12;
+    color: #FFD9A3;
+    border-color: #F2A33A;
+}
+
+QToolButton:focus {
+    border: 2px solid #7EC1EA;
+}
+
+/* ---- Pages: scroll areas, frames, group boxes (partition, users,
+ * license, summary) ---- */
+
+#viewManager,
+#viewManagerStack,
+#scrollAreaWidgetContents,
+QScrollArea,
+QStackedWidget {
+    background-color: #13171D;
+    color: #ECE6DA;
+    border: none;
+}
+
+QAbstractScrollArea {
+    background-color: #101419;
+    color: #ECE6DA;
+}
+
+QFrame[frameShape="4"],
+QFrame[frameShape="5"] {
+    color: #2C333C;
+}
+
+QGroupBox {
+    background-color: transparent;
+    color: #A8ABAD;
+    border: 1px solid #2C333C;
+    border-radius: 3px;
+    margin-top: 14px;
+    padding: 8px;
+    font-family: "IBM Plex Mono";
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 8px;
+    padding: 0 4px;
+    color: #A8ABAD;
+}
+
+/* Partition page: device and boot info, the partition bar surround. */
+#bootInfoIcon,
+#deviceInfoIcon {
+    background-color: transparent;
+}
+
+#bootInfoLable,
+#defineInfoLabel {
+    color: #A8ABAD;
+    font-family: "IBM Plex Mono";
+}
+
+#partitionBarView,
+#partitionLabelView {
+    background-color: #101419;
+    border: 1px solid #2C333C;
+    border-radius: 3px;
+}
+
+/* License module items. */
+#licenseItem,
+#licenseItemFullText {
+    background-color: #181D24;
+    color: #ECE6DA;
+    border: 1px solid #2C333C;
+    border-radius: 3px;
+}
+
+/* ---- Lists and tables: partition table, requirements, summary ---- */
+
+QHeaderView::section {
+    background-color: #181D24;
+    color: #A8ABAD;
+    border: none;
+    border-bottom: 1px solid #707A85;
+    border-right: 1px solid #2C333C;
+    padding: 4px 8px;
+    font-family: "IBM Plex Mono";
+}
+
+QTableView,
+QTableWidget,
+QTreeView,
+QListView {
+    alternate-background-color: #13171D;
+    gridline-color: #2C333C;
+}
+
+QTableCornerButton::section {
+    background-color: #181D24;
+    border: none;
+    border-bottom: 1px solid #707A85;
+}
+
+QTableView::item:selected,
+QTableWidget::item:selected {
+    background-color: #3A2A12;
+    color: #FFD9A3;
+}
+
+QTreeView::branch:selected {
+    background-color: #3A2A12;
+}
+
+QTabWidget::pane {
+    background-color: #181D24;
+    border: 1px solid #2C333C;
+}
+
+QTabBar::tab {
+    background-color: transparent;
+    color: #A8ABAD;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 6px 14px;
+    font-family: "IBM Plex Mono";
+}
+
+QTabBar::tab:hover {
+    color: #ECE6DA;
+    background-color: #1F252E;
+}
+
+QTabBar::tab:selected {
+    color: #ECE6DA;
+    border-bottom: 2px solid #F2A33A;
+}
+
+QSplitter::handle {
+    background-color: #2C333C;
+}
+
+/* ---- Inputs and choice controls ---- */
+
+QCheckBox::indicator,
+QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    background-color: #101419;
+    border: 1px solid #707A85;
+}
+
+QCheckBox::indicator {
+    border-radius: 3px;
+}
+
+QRadioButton::indicator {
+    border-radius: 8px;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #F2A33A;
+    border-color: #F2A33A;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #F2A33A;
+    border: 4px solid #101419;
+}
+
+QCheckBox::indicator:focus,
+QRadioButton::indicator:focus {
+    border: 2px solid #7EC1EA;
+}
+
+QCheckBox::indicator:disabled,
+QRadioButton::indicator:disabled {
+    border-color: #2C333C;
+    background-color: #181D24;
+}
+
+QSlider::groove:horizontal {
+    background-color: #101419;
+    border: 1px solid #2C333C;
+    height: 4px;
+}
+
+QSlider::sub-page:horizontal {
+    background-color: #F2A33A;
+}
+
+QSlider::handle:horizontal {
+    background-color: #ECE6DA;
+    border: 1px solid #707A85;
+    width: 10px;
+    margin: -6px 0;
+    border-radius: 3px;
+}
+
+QComboBox:on {
+    border: 1px solid #F2A33A;
+}
+
+QComboBox QAbstractItemView {
+    min-width: 120px;
+}
+
+/* ---- Progress (install phase) ---- */
+
+#exec-progress {
+    min-height: 18px;
+}
+
+#exec-message {
+    color: #A8ABAD;
+    font-family: "IBM Plex Mono";
+}
+
+/* ---- Scrollbars ---- */
+
 QScrollBar:vertical {
     background: #101419;
     width: 10px;
+    margin: 0;
+}
+
+QScrollBar:horizontal {
+    background: #101419;
+    height: 10px;
+    margin: 0;
 }
 
 QScrollBar::handle:vertical {
@@ -163,8 +441,39 @@ QScrollBar::handle:vertical {
     min-height: 24px;
 }
 
+QScrollBar::handle:horizontal {
+    background: #707A85;
+    border-radius: 3px;
+    min-width: 24px;
+}
+
+QScrollBar::handle:hover {
+    background: #A8ABAD;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    height: 0;
+    width: 0;
+    border: none;
+    background: none;
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page {
+    background: #101419;
+}
+
+/* ---- Tooltips and status ---- */
+
 QToolTip {
     background-color: #283039;
     color: #ECE6DA;
     border: 1px solid #707A85;
+    padding: 4px 8px;
+}
+
+QStatusBar {
+    background-color: #0C0F13;
+    color: #A8ABAD;
 }
