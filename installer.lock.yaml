@@ -1,9 +1,9 @@
 apiVersion: hornero.os/installer-lock/v1
 product:
   repository: https://github.com/HorneroOS/hornero.git
-  revision: 46b75160574bea9d87778bd2c3b8c7a706ef8fc7
-  catalogueSha256: 52ea609f05b8d4e6bddf488bc68ae752c6ea0e247480cd89552d6905e572a7f7
-  resolverSha256: 7e253ed7351d332157c5c74543a53333187b9b23c1f60afef9189776e6ec79e1
+  revision: dfc405884bf582a7e3a8cae1d536c4c88ab379bc
+  catalogueSha256: 4ddb9916a7bfe5ea06d33424817501a57eb3462099f3507bd222fa04ddd61728
+  resolverSha256: 8de6c1081ae713b8d4f85534c095628df817e0995bf5a6293b22e59a578003a1
 arch:
   snapshot: 2026/10/10
   architecture: x86_64
@@ -24,12 +24,6 @@ profileMedia:
 aur:
   repository: https://aur.archlinux.org
   packages:
-    python-materialyoucolor:
-      version: 3.0.2-1
-      revision: 7a148d4abba3db45fc042faa0dfb37d329f6d615
-    ttf-rubik-vf:
-      version: 2.3.0-3
-      revision: df5b264003f0d39ba75f42970074ff2465ed527c
     hornero-config:
       version: 0.3.18-1
       revision: a5428ad98368c89f1149757c019539dc21f87a73
