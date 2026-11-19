@@ -1,7 +1,19 @@
 # HorneroOS installer
 
+[![installer-config](https://github.com/HorneroOS/installer/actions/workflows/installer-config.yml/badge.svg)](https://github.com/HorneroOS/installer/actions/workflows/installer-config.yml)
+[![lint](https://github.com/HorneroOS/installer/actions/workflows/lint.yml/badge.svg)](https://github.com/HorneroOS/installer/actions/workflows/lint.yml)
+[![License: MIT](https://img.shields.io/github/license/HorneroOS/installer)](LICENSE)
+
 Installer and installation workflows for HorneroOS, the Arch-based
 workstation operating-system family (Desktop · Studio · Gaming).
+
+> [!WARNING]
+> **Preview — virtual-machine evidence only.** The published
+> v0.2.0-preview32 ISO passed disposable-VM installation validation
+> (UEFI, unencrypted); no physical-hardware validation has been
+> performed. Never run preview media against a system that contains
+> data you have not backed up. See
+> [Implementation status](#implementation-status) below.
 
 ## Scope
 
@@ -112,3 +124,12 @@ and package composition.
 ## License
 
 [MIT](LICENSE).
+
+---
+
+[Website](https://www.horneroos.com) ·
+[Docs](https://www.horneroos.com/docs) ·
+[Install HorneroOS](https://www.horneroos.com/install) ·
+[`HorneroOS/hornero`](https://github.com/HorneroOS/hornero) ·
+[Issues](https://github.com/HorneroOS/installer/issues) ·
+[License](LICENSE)
