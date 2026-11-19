@@ -9,12 +9,16 @@ guest with at least 4 GiB of RAM for its install gate (`welcome.conf`
 ## Why the shipped preview32 ISO is pre-Signal (installer#101)
 
 The ISO content is whatever `installer.lock.yaml` pins, not what is on `main`
-of the other repositories. At the time of writing the lock still pins
-`hornero-shell 1.2.60`, `hornero-config 0.3.18`, `hornero-greeter 1.0.4`,
-and `horneroctl-bin 0.2.0_preview40`. An ISO built now would be pre-Signal again.
+of the other repositories. The shipped preview32 ISO was built while the lock
+still pinned `hornero-shell 1.2.60`, `hornero-config 0.3.18`,
+`hornero-greeter 1.0.4`, and `horneroctl-bin 0.2.0_preview40`.
 `scripts/build-iso.sh` therefore runs `scripts/check-signal-lock.py` and refuses
-to build until the lock is refreshed. Set `HORNEROS_ALLOW_PRE_SIGNAL_LOCK=1`
-only for a throwaway test image, never for a release.
+to build from a pre-Signal lock. The lock now pins the published Signal
+releases (`hornero-shell 1.3.3-1`, `hornero-config 0.4.3-1`,
+`hornero-greeter 1.1.0-1`, `horneroctl-bin 0.2.0_preview49-1`) and the gate
+passes; what remains is the maintainer build, VM verification, signing and
+upload below. Set `HORNEROS_ALLOW_PRE_SIGNAL_LOCK=1` only for a throwaway
+test image, never for a release.
 
 What is already on `main` and needs no further change for a Signal live
 session: Calamares branding (`image/calamares/branding/hornero`, Signal Night
