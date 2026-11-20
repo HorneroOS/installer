@@ -51,7 +51,7 @@ def main() -> int:
     settings = load_yaml(config_root / "settings.conf")
     phases = settings.get("sequence", [])
     assert [next(iter(phase)) for phase in phases] == ["show", "exec", "show"]
-    assert phases[0]["show"][-2:] == ["packagechooser", "summary"]
+    assert phases[0]["show"][-3:] == ["packagechooser", "netinstall", "summary"]
     exec_modules = phases[1]["exec"]
     assert exec_modules.index("unpackfs") < exec_modules.index("shellprocess@resolver")
     assert exec_modules.index("shellprocess@resolver") < exec_modules.index("packages")
@@ -242,6 +242,41 @@ def main() -> int:
     assert parsed["packages"]["pacman"]["disable_download_timeout"] is True
     assert parsed["shellprocess-cleanup"]["emergency"] is True
 
+    # Netinstall: catalogue-generated, local, optional, unticked by
+    # default (defaults must equal the current preview32 install), and
+    # proprietary payloads only as explicit individual items.
+    netinstall = parsed["netinstall"]
+    assert netinstall["groupsUrl"] == "local"
+    assert netinstall["required"] is False
+    assert netinstall["groups"], "netinstall must offer catalogue groups"
+
+    def _netinstall_walk(items):
+        for item in items:
+            yield item
+            yield from _netinstall_walk(item.get("subgroups", []))
+
+    def _netinstall_leaves(items):
+        for item in items:
+            if item.get("subgroups"):
+                yield from _netinstall_leaves(item["subgroups"])
+            else:
+                yield item
+
+    for _item in _netinstall_walk(netinstall["groups"]):
+        assert _item.get("selected") is not True, "netinstall groups must default unticked"
+        assert _item.get("critical") is not True
+    _netinstall_text = (modules / "netinstall.conf").read_text(encoding="utf-8")
+    assert "artcraft" not in _netinstall_text, "manual-only ArtCraft must never be offered"
+    for _leaf in _netinstall_leaves(netinstall["groups"]):
+        assert _leaf.get("packages"), "netinstall leaf groups must install something real"
+        _pkgs = set(_leaf["packages"])
+        assert not _pkgs & {
+            "base", "linux", "linux-lts", "linux-zen", "linux-hardened", "grub",
+        }, "netinstall must not duplicate the mandatory edition/kernel base"
+        if _pkgs & {"reaper", "steam"}:
+            assert _pkgs <= {"reaper", "steam"} and "(proprietary)" in _leaf["name"], (
+                "proprietary packages only as explicit individual opt-in items"
+            )
     chooser = parsed["packagechooser"]
     compositions = json.loads((modules / "compositions.json").read_text(encoding="utf-8"))
     lock = load_yaml(ROOT / "installer.lock.yaml")

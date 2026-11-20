@@ -49,7 +49,9 @@ def test_extra_users_wiring() -> None:
         "shellprocess@user-defaults"
     )
     show_steps = settings["sequence"][0]["show"]
+    # PR-A added no page; PR-C adds the stock netinstall page after
+    # packagechooser. Extra-users itself still ships no page.
     assert show_steps == [
         "welcome", "locale", "keyboard", "partition", "users",
-        "packagechooser", "summary",
-    ], "no new page ships until a viewmodule can be built and VM-tested"
+        "packagechooser", "netinstall", "summary",
+    ]
