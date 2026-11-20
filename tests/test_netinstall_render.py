@@ -144,3 +144,17 @@ def test_every_package_comes_from_the_pinned_catalogue():
     collect(catalogue)
     unknown = set(_all_packages(_doc()["groups"])) - allowed
     assert not unknown, f"packages outside the pinned catalogue: {sorted(unknown)}"
+
+
+def test_aur_only_packages_never_offered():
+    packages = set(_all_packages(_doc()["groups"]))
+    assert not packages & {"bottles", "vkbasalt", "lib32-vkbasalt"}
+
+
+def test_proprietary_items_have_no_checkable_parent():
+    doc = _doc()
+    names = [g["name"] for g in doc["groups"]]
+    assert "Proprietary applications (explicit opt-in only)" not in names
+    for name in names:
+        if "(proprietary)" in name:
+            assert doc["groups"][names.index(name)].get("packages")

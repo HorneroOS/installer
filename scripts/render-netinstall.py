@@ -15,6 +15,10 @@ canonical scripts/resolve-edition.py. Nothing is hand-listed here:
 - Capabilities are the catalogue capability package lists.
 - Individual applications are the curated open-source catalogue
   applications, one tickable item each.
+- AUR-only packages are NOT rendered: bottles, vkbasalt and
+  lib32-vkbasalt exist only in the AUR (verified against Arch
+  core/extra/multilib), and the target has no AUR helper, so
+  offering them would tick a box that cannot install anything.
 - GPU drivers are NOT rendered: the pinned catalogue ships no GPU
   package provenance (no nvidia/mesa/vulkan driver entries), so any
   GPU group today would be a UI that installs nothing honest. Tracked
@@ -40,6 +44,10 @@ LOCK_PATH = ROOT / "installer.lock.yaml"
 OUTPUT = ROOT / "image" / "calamares" / "modules" / "netinstall.conf"
 # Packages that belong to the mandatory edition/kernel/bootloader base:
 # netinstall must never offer to add or duplicate them.
+# AUR-only: not in Arch core/extra/multilib and not in the local
+# Hornero repository; the target pacman.conf has no AUR helper.
+AUR_ONLY_PACKAGES = {"bottles", "vkbasalt", "lib32-vkbasalt"}
+
 BASE_PACKAGES = {
     "base", "linux", "linux-lts", "linux-zen", "linux-hardened",
     "linux-headers", "linux-lts-headers", "linux-zen-headers",
@@ -65,10 +73,13 @@ def _resolve(root: Path, edition: str, specialization: str) -> dict:
     return json.loads(subprocess.check_output(command, text=True))
 
 
-def _leaf(name: str, description: str, packages: list[str]) -> dict:
-    packages = [p for p in dict.fromkeys(packages) if p not in BASE_PACKAGES]
+def _leaf(name: str, description: str, packages: list[str]) -> dict | None:
+    packages = [
+        p for p in dict.fromkeys(packages)
+        if p not in BASE_PACKAGES and p not in AUR_ONLY_PACKAGES
+    ]
     if not packages:
-        raise ValueError(f"netinstall group {name!r} would install nothing")
+        return None
     return {
         "name": name,
         "description": description,
@@ -86,12 +97,14 @@ def build_groups(root: Path, catalogue: dict) -> list[dict]:
         subgroups = []
         for spec_id, spec in studio_specs.items():
             selection = _resolve(root, "studio", spec_id)
-            subgroups.append(_leaf(
+            leaf = _leaf(
                 f"Studio — {spec['title']}",
                 f"Open-source applications for {spec['title']} from the pinned catalogue. "
                 "Proprietary applications are never installed by this group.",
                 selection["packages"],
-            ))
+            )
+            if leaf:
+                subgroups.append(leaf)
         groups.append({
             "name": "Studio specializations",
             "description": "Creative specializations from the pinned Hornero catalogue. Unticked by default.",
@@ -105,12 +118,14 @@ def build_groups(root: Path, catalogue: dict) -> list[dict]:
         subgroups = []
         for spec_id, spec in gaming_specs.items():
             selection = _resolve(root, "gaming", spec_id)
-            subgroups.append(_leaf(
+            leaf = _leaf(
                 f"Gaming — {spec['title']}",
                 f"Open-source gaming platform and applications for {spec['title']} from the pinned catalogue. "
                 "Steam is never installed by this group.",
                 selection["packages"],
-            ))
+            )
+            if leaf:
+                subgroups.append(leaf)
         groups.append({
             "name": "Gaming",
             "description": "Gaming profiles from the pinned Hornero catalogue. Unticked by default.",
@@ -122,13 +137,13 @@ def build_groups(root: Path, catalogue: dict) -> list[dict]:
     capabilities = catalogue.get("capabilities") or {}
     if capabilities:
         subgroups = [
-            _leaf(
+            leaf for cap_id, entry in capabilities.items()
+            if entry.get("packages")
+            if (leaf := _leaf(
                 f"Capability — {entry.get('title', cap_id)}",
                 f"Catalogue capability {cap_id}. Packages already in the chosen edition are skipped by pacman.",
                 entry.get("packages", []),
-            )
-            for cap_id, entry in capabilities.items()
-            if entry.get("packages")
+            ))
         ]
         if subgroups:
             groups.append({
@@ -160,12 +175,12 @@ def build_groups(root: Path, catalogue: dict) -> list[dict]:
             individual[app_id] = app
     if individual:
         subgroups = [
-            _leaf(
+            leaf for app_id, app in individual.items()
+            if (leaf := _leaf(
                 app.get("title", app_id),
                 f"Individual catalogue application {app_id}. Unticked by default.",
                 app["packages"],
-            )
-            for app_id, app in individual.items()
+            ))
         ]
         groups.append({
             "name": "Individual applications",
@@ -175,28 +190,22 @@ def build_groups(root: Path, catalogue: dict) -> list[dict]:
             "subgroups": subgroups,
         })
 
-    if proprietary_ids:
-        subgroups = []
-        for app_id in sorted(proprietary_ids):
-            app = (catalogue.get("studioApplications") or {}).get(app_id) or \
-                  (catalogue.get("gamingApplications") or {}).get(app_id)
-            if app is None or not app.get("packages"):
-                continue
-            subgroups.append(_leaf(
-                f"{app.get('title', app_id)} (proprietary)",
-                f"Proprietary application {app.get('title', app_id)}: installed ONLY because you "
-                "ticked this individual item. It is never installed by any group selection and is "
-                "subject to its vendor licence/EULA, which HorneroOS does not grant.",
-                app["packages"],
-            ))
-        if subgroups:
-            groups.append({
-                "name": "Proprietary applications (explicit opt-in only)",
-                "description": "Each item installs only when ticked individually, with its licence note. Unticked by default.",
-                "selected": False,
-                "expanded": False,
-                "subgroups": subgroups,
-            })
+    # Proprietary apps are top-level items, not subgroups of a
+    # checkable parent: ticking a parent must never install them.
+    for app_id in sorted(proprietary_ids):
+        app = (catalogue.get("studioApplications") or {}).get(app_id) or \
+              (catalogue.get("gamingApplications") or {}).get(app_id)
+        if app is None or not app.get("packages"):
+            continue
+        leaf = _leaf(
+            f"{app.get('title', app_id)} (proprietary)",
+            f"Proprietary application {app.get('title', app_id)}: installed ONLY because you "
+            "ticked this individual item. It is never installed by any group selection and is "
+            "subject to its vendor licence/EULA, which HorneroOS does not grant.",
+            app["packages"],
+        )
+        if leaf:
+            groups.append(leaf)
     return groups
 
 
