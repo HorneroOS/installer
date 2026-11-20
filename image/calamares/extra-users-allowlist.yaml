@@ -1,0 +1,15 @@
+# Groups an additional installer user may join (PR-A).
+# Deliberately closed: no free text reaches useradd. wheel is absent on
+# purpose (admin requires the explicit per-user admin flag in the
+# selection), and system groups (root, daemon, bin, sys, ...) are never
+# grantable here. The pinned product catalogue enumerates no user groups
+# today, so this list is versioned with the installer instead.
+groups:
+  - users
+  - audio
+  - video
+  - input
+  - storage
+  - network
+  - lp
+  - scanner

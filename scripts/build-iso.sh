@@ -97,6 +97,10 @@ cp -a "$ROOT/image/calamares/modules/." "$profile/calamares/modules/"
 cp -a "$ROOT/image/calamares/branding/." "$profile/calamares/branding/"
 install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"
+install -Dm755 "$ROOT/image/calamares/create-extra-users.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/create-extra-users.py"
+install -Dm644 "$ROOT/image/calamares/extra-users-allowlist.yaml" \
+  "$profile/airootfs/usr/lib/hornero-installer/extra-users-allowlist.yaml"
 install -Dm755 "$ROOT/image/calamares/configure-greeter-session.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-greeter-session.py"
 install -Dm755 "$ROOT/image/calamares/configure-os-identity.py" \

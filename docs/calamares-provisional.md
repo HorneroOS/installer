@@ -62,8 +62,24 @@ screenshot; the media lock records the capture's website commit and hashes.
   matching unlock hook. Keep the unlock phrase safe; HorneroOS cannot recover
   it. The unencrypted EFI system partition remains visible to the machine.
 - The installer creates a named user with a password and `wheel`-based sudo.
-  It does not create a shared default password, enable automatic login, or set
-  a root password.
+  It does not create a shared default password or enable automatic login.
+  The hostname stays editable on that same stock users page; no separate
+  hostname step exists and `users.conf` must not grow a `hostname:` block.
+- Additional users and a separate root password run through a tested job,
+  not a page yet: `shellprocess@extra-users` (after the stock `users` job)
+  applies `/run/hornero-installer/extra-users.json` when that file exists.
+  Logins are regex-validated, groups come only from
+  `image/calamares/extra-users-allowlist.yaml` (`wheel` only via an explicit
+  per-user `admin` flag; the primary user stays the forced `wheel` admin),
+  passwords are hashed in memory (SHA-512 crypt) and the selection file is
+  deleted after reading. With no selection file the job is a no-op and root
+  stays locked (`!`), exactly as before. What is still missing is the page
+  that writes the selection: stock Calamares 3.4.3 has no multi-user page,
+  `setRootPassword: true` alone would block Next on an empty root password
+  under the 12-character policy (so root cannot be optional that way), and
+  a custom viewmodule must be injected into the Calamares build in
+  `packaging/calamares/PKGBUILD` and VM-tested before it may enter the
+  `show` sequence. Until then there is deliberately no UI for this.
 - Calamares runs with detailed local logging. After its window closes, the live
   session copies the log to `/var/log/hornero-installer/session.log`, readable
   by the live account; the live user receives no general root shell or access
