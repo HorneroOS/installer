@@ -115,6 +115,14 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
                         problems.append(
                             f"GRUB configuration has no entry for kernel {kernel}: boot/grub/grub.cfg"
                         )
+                if len(kernels) > 1:
+                    grubenv = root / "boot/grub/grubenv"
+                    env_text = grubenv.read_text(encoding="utf-8", errors="replace") if grubenv.is_file() else ""
+                    if "saved_entry=" not in env_text:
+                        problems.append(
+                            "multi-kernel install has no saved_entry in "
+                            "boot/grub/grubenv; the primary kernel is not the default"
+                        )
         # Capability services (generalizes the legacy Bluetooth gate):
         # when the plan's service unit was installed, its enablement
         # symlink must exist. Absent unit = capability not installed.
