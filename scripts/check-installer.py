@@ -160,7 +160,33 @@ def main() -> int:
     assert parsed["locale"]["region"] == "America"
     assert parsed["locale"]["zone"] == "Argentina/Buenos_Aires"
     assert "url" not in parsed["welcome"] or not str(parsed["welcome"].get("url", "")).startswith("http://")
-    assert parsed["users"]["setRootPassword"] is False
+    assert parsed["users"]["setRootPassword"] is False, (
+        "stock users keeps root locked; a separate optional root password "
+        "is applied by shellprocess@extra-users (empty = still locked)"
+    )
+    assert parsed["users"]["doReusePassword"] is False
+    assert "hostname" not in parsed["users"], (
+        "hostname is already editable on the stock users page; do not "
+        "disable or duplicate it in users.conf"
+    )
+    # PR-A: extra users run after the stock users job (primary account and
+    # its forced wheel membership exist) and before user-defaults seeds
+    # per-user config for every regular account.
+    assert ("shellprocess", "extra-users") in instances
+    assert instances[("shellprocess", "extra-users")] == "shellprocess-extra-users.conf"
+    assert exec_modules.index("users") < exec_modules.index("shellprocess@extra-users")
+    assert exec_modules.index("shellprocess@extra-users") < exec_modules.index(
+        "shellprocess@user-defaults"
+    )
+    assert parsed["shellprocess-extra-users"]["dontChroot"] is True
+    extra_users_allowlist = load_yaml(CALAMARES / "extra-users-allowlist.yaml")
+    assert "wheel" not in extra_users_allowlist["groups"], (
+        "wheel requires the explicit per-user admin flag, never the group list"
+    )
+    assert not {"root", "daemon", "bin", "sys", "adm", "disk"} & set(
+        extra_users_allowlist["groups"]
+    )
+    assert (CALAMARES / "create-extra-users.py").is_file()
     assert parsed["users"]["displayAutologin"] is False
     assert parsed["users"]["autologinGroup"] == ""
     assert parsed["users"]["user"]["home_permissions"] == "750"
@@ -316,6 +342,8 @@ def main() -> int:
     profile_renderer = (ROOT / "scripts/render-installer-catalogue.py").read_text(encoding="utf-8")
     assert "system-profile.json" in profile_renderer and "/usr/lib/hornero/system-profile.json" in profile_renderer
     iso_builder = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
+    assert 'install -Dm755 "$ROOT/image/calamares/create-extra-users.py"' in iso_builder
+    assert 'install -Dm644 "$ROOT/image/calamares/extra-users-allowlist.yaml"' in iso_builder
     assert 'install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py"' in iso_builder
     assert '"$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"' in iso_builder
     assert 'install -Dm755 "$ROOT/image/calamares/configure-recovery.py"' in iso_builder
