@@ -93,7 +93,7 @@ then installs the kernels, toggles the services and persists
 is rejected at plan time when the boot filesystem is smaller than
 the plan's ESP recommendation. With no selection both jobs are
 no-ops and the install is exactly the preview32 default (single
-headers, GRUB, swap `none`). NetworkManager and SDDM are always
+`linux` kernel, no headers, GRUB, swap `none`). NetworkManager and SDDM are always
 enabled (no network repair / no graphical login without them) and
 can never be disabled by a selection. Swap now also offers `file`
 (a fixed 512 MiB Btrfs swapfile on `/@swap`, no hibernation); a swap
