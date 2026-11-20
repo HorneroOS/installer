@@ -79,6 +79,28 @@ screenshot; the media lock records the capture's website commit and hashes.
   removes repository configuration after package installation succeeds or
   fails; VM acceptance still has to verify both paths.
 
+## System choices (PR-B)
+
+A root-owned selection at `/run/hornero-installer/system-selection.json`
+may choose the primary/fallback kernels, optional services
+(bluetooth, timesyncd) and the recorded appearance.
+`apply-system-plan.py` validates it against
+`image/calamares/system-allowlist.yaml` and writes
+`/usr/lib/hornero/installation-plan.json`; `apply-system-choices.py`
+then installs the kernels, toggles the services and persists
+`GRUB_DEFAULT=saved`. With no selection both jobs are no-ops and the
+install is exactly the preview32 default (single `linux` kernel, no
+headers, GRUB, swap `none`). NetworkManager and SDDM are always
+enabled (no network repair / no graphical login without them) and
+can never be disabled by a selection. Swap now also offers `file`
+(a fixed 512 MiB Btrfs swapfile on `/@swap`, no hibernation); a swap
+partition stays un-offered because of the mkinitcpio `openswap` gap.
+systemd-boot, a proven GRUB saved default with two kernels, a full
+offline install, themes beyond Hornero Signal Night and swap
+partitions with LUKS are documented gaps in
+[issue #113](https://github.com/HorneroOS/installer/issues/113) —
+none of them is presented as a working choice today.
+
 ## Bluetooth
 
 Installed targets enable `bluetooth.service` through the existing

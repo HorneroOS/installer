@@ -188,7 +188,19 @@ def main() -> int:
     assert parsed["bootloader"]["installHybridGRUB"] is False
     # LUKS/openswap invariants must survive any composable selection.
     assert parsed["partition"]["luksGeneration"] == "luks1"
-    assert parsed["partition"]["userSwapChoices"] == ["none"]
+    assert parsed["partition"]["userSwapChoices"] == ["none", "file"]
+    # PR-B system choices: plan job before packages, choices job
+    # after services-systemd and before initcpiocfg; absent selection
+    # or plan must stay a no-op (preview32 defaults unchanged).
+    assert exec_modules.index("fstab") < exec_modules.index("shellprocess@system-plan")
+    assert exec_modules.index("shellprocess@system-plan") < exec_modules.index("packages")
+    assert exec_modules.index("services-systemd") < exec_modules.index("shellprocess@system-choices")
+    assert exec_modules.index("shellprocess@system-choices") < exec_modules.index("initcpiocfg")
+    assert parsed["shellprocess-system-plan"]["dontChroot"] is True
+    assert parsed["shellprocess-system-choices"]["dontChroot"] is True
+    assert (CALAMARES / "apply-system-plan.py").is_file()
+    assert (CALAMARES / "apply-system-choices.py").is_file()
+    assert (CALAMARES / "system-allowlist.yaml").is_file()
     assert (ROOT / "scripts/installation_plan.py").is_file(), (
         "composable installation-plan contract module missing"
     )
