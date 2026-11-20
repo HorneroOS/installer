@@ -116,6 +116,8 @@ def apply_services(root: Path, plan: dict, allowlist: dict) -> list[str]:
 def apply_grub_default(root: Path, plan: dict) -> bool:
     """Persist GRUB_DEFAULT=saved; False when there is nothing to do."""
     selection = plan.get("selection") or {}
+    if selection.get("bootloader") == "systemd-boot":
+        return False  # No GRUB config to persist; bootctl owns the default.
     if (selection.get("kernels") or ["linux"]) == ["linux"]:
         return False
     grub_path = root / "etc/default/grub"
@@ -154,6 +156,8 @@ def find_primary_entry(grub_text: str, primary_package: str) -> str | None:
 def apply_grub_saved_entry(root: Path, plan: dict, allowlist: dict, runner=_run) -> bool:
     """grub-set-default to the primary kernel entry; False for default."""
     selection = plan.get("selection") or {}
+    if selection.get("bootloader") == "systemd-boot":
+        return False  # kernel-install/bootctl set entries; no grub.cfg.
     kernels = selection.get("kernels") or ["linux"]
     if kernels == ["linux"]:
         return False

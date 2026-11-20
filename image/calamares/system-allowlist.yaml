@@ -17,13 +17,26 @@ kernels:
   linux-hardened:
     package: linux-hardened
     headers: linux-hardened-headers
-# Only GRUB is offered today. systemd-boot is not safe to offer yet
-# (UEFI/LUKS/snapshots rows are unverified); see the gap issue.
+# Bootloaders: GRUB everywhere; systemd-boot only on UEFI with an
+# ESP of at least systemdBootEspMiB (enforced by apply-system-plan.py
+# before the package transaction and by the HorneroSystem page before
+# partitioning). Its UEFI/LUKS boot rows are VM-gated (installer#113).
 bootloaders:
   - grub
+  - systemd-boot
+systemdBootEspMiB: 1024
+systemdBootPerKernelMiB: 256
+grubEspMiB: 512
+grubPerKernelMiB: 256
+# Swap: `partition` maps to the partition module's `small` choice. It
+# is offered only without LUKS: with LUKS the swap partition needs
+# the mkinitcpio openswap hook, which is not pinned in the Hornero
+# catalogue, so hibernation (`suspend`) is not offered at all and
+# apply-system-plan.py aborts a partition+LUKS selection.
 swapChoices:
   - none
   - file
+  - partition
 # Optional services the selection may toggle. NetworkManager and
 # SDDM are mandatory (no network repair / no graphical login without
 # them) and can never be disabled through a selection.

@@ -74,18 +74,31 @@ def validate_selection(selection: dict, allowlist: dict) -> list[str]:
     bootloader = selection.get("bootloader")
     if bootloader not in (allowlist.get("bootloaders") or []):
         errors.append(
-            f"Bootloader {bootloader!r} is not offered: only GRUB is proven "
-            "today (systemd-boot on UEFI/LUKS is a documented gap, not a choice)."
+            f"Bootloader {bootloader!r} is not offered. "
+            f"Offered bootloaders: {allowlist.get('bootloaders')}"
+        )
+    if bootloader == "systemd-boot" and selection.get("firmware") != "uefi":
+        errors.append(
+            "systemd-boot needs UEFI: this machine did not boot in UEFI "
+            "mode (firmware is not 'uefi'). Choose GRUB or reboot the "
+            "installer in UEFI mode. Nothing has been written yet."
         )
     swap = selection.get("swap")
     if swap not in (allowlist.get("swapChoices") or []):
         errors.append(
-            f"Swap choice {swap!r} is not offered: use 'none' or 'file' "
-            "(a swap partition with LUKS is blocked by the mkinitcpio "
-            "openswap gap and is not offered)."
+            f"Swap choice {swap!r} is not offered: use 'none', 'file' or "
+            "'partition' (hibernation-sized swap is not offered: the "
+            "mkinitcpio openswap hook is not pinned in the catalogue)."
         )
-    if swap == "file" and selection.get("encryption") not in (None, "none", "luks"):
+    if selection.get("encryption") not in (None, "none", "luks"):
         errors.append(f"Unknown encryption mode: {selection.get('encryption')!r}")
+    if swap == "partition" and selection.get("encryption") == "luks":
+        errors.append(
+            "A swap partition is only offered without LUKS: with LUKS it "
+            "needs the mkinitcpio openswap hook, which is not pinned in "
+            "the Hornero catalogue. Choose swap 'file' or 'none', or "
+            "disable LUKS encryption."
+        )
     services = selection.get("services") or {}
     optional = allowlist.get("optionalServices") or {}
     for name, enabled in services.items():
@@ -193,8 +206,31 @@ def build_plan(selection: dict, allowlist: dict) -> dict:
         },
         "packages": kernel_packages(selection, allowlist),
         "services": enabled_units,
-        "espRecommendedMiB": 512 if len(kernels) == 1 else 768,
+        "espRecommendedMiB": esp_recommended_mib(selection, allowlist),
     }
+
+
+def esp_recommended_mib(selection: dict, allowlist: dict) -> int:
+    """ESP size for the selected bootloader: catalogue base + per-kernel."""
+    kernels = selected_kernels(selection)
+    if selection.get("bootloader") == "systemd-boot":
+        base = int(allowlist.get("systemdBootEspMiB", 1024))
+        per_kernel = int(allowlist.get("systemdBootPerKernelMiB", 256))
+    else:
+        base = int(allowlist.get("grubEspMiB", 512))
+        per_kernel = int(allowlist.get("grubPerKernelMiB", 256))
+    return base + per_kernel * (len(kernels) - 1)
+
+
+def target_encryption(root: Path) -> str:
+    """'luks' when the mounted target carries a crypttab, else 'none'."""
+    crypttab = root / "etc/crypttab"
+    if crypttab.is_file() and not crypttab.is_symlink():
+        for line in crypttab.read_text(encoding="utf-8", errors="replace").splitlines():
+            stripped = line.strip()
+            if stripped and not stripped.startswith("#"):
+                return "luks"
+    return "none"
 
 
 def _reject_symlink_components(root: Path, rel: Path) -> None:
@@ -237,18 +273,23 @@ def apply_system_plan(root: Path, selection_path: Path, allowlist: dict) -> dict
     if not isinstance(parsed, dict):
         raise ValueError("system selection must be a JSON object")
     selection.update(parsed)
+    # LUKS is chosen on the partition page, after any system page: the
+    # mounted target is the ground truth for the swap-partition gate.
+    if selection.get("encryption") in (None, "none"):
+        selection["encryption"] = target_encryption(root)
     plan = build_plan(selection, allowlist)
     # Fail before the package transaction (not at verify-install,
-    # after the bootloader) when a multi-kernel plan cannot fit the
-    # ESP the partition step already created.
-    if len(plan["selection"]["kernels"]) > 1:
+    # after the bootloader) when the plan cannot fit the ESP the
+    # partition step already created (multi-kernel GRUB, or any
+    # systemd-boot selection, which needs a larger ESP).
+    if len(plan["selection"]["kernels"]) > 1 or plan["selection"]["bootloader"] == "systemd-boot":
         boot_dir = root / "boot"
         if boot_dir.is_dir():
             boot_mib = shutil.disk_usage(boot_dir).total // (1024 * 1024)
             if boot_mib < int(plan["espRecommendedMiB"]):
                 raise ValueError(
-                    f"boot filesystem is {boot_mib} MiB but a multi-kernel "
-                    f"install needs {plan['espRecommendedMiB']} MiB; choose a "
+                    f"boot filesystem is {boot_mib} MiB but this selection "
+                    f"needs {plan['espRecommendedMiB']} MiB; choose GRUB/a "
                     "single kernel or partition manually with a larger ESP"
                 )
     write_plan(root, plan)

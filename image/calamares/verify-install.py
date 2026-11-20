@@ -123,6 +123,13 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
                             "multi-kernel install has no saved_entry in "
                             "boot/grub/grubenv; the primary kernel is not the default"
                         )
+        if selection.get("swap") == "partition":
+            fstab = root / "etc/fstab"
+            fstab_text = fstab.read_text(encoding="utf-8", errors="replace") if fstab.is_file() else ""
+            if " swap " not in fstab_text and "\tswap\t" not in fstab_text:
+                problems.append(
+                    "swap partition was selected but etc/fstab has no swap entry"
+                )
         # Capability services (generalizes the legacy Bluetooth gate):
         # when the plan's service unit was installed, its enablement
         # symlink must exist. Absent unit = capability not installed.

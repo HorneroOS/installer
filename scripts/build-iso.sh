@@ -117,6 +117,10 @@ install -Dm755 "$ROOT/image/calamares/apply-system-choices.py" \
   "$profile/airootfs/usr/lib/hornero-installer/apply-system-choices.py"
 install -Dm644 "$ROOT/image/calamares/system-allowlist.yaml" \
   "$profile/airootfs/usr/lib/hornero-installer/system-allowlist.yaml"
+install -Dm755 "$ROOT/image/calamares/probe-gpu.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/probe-gpu.py"
+install -Dm755 "$ROOT/image/calamares/preselect-gpu.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/preselect-gpu.py"
 install -Dm644 "$ROOT/image/calamares/hornero-installer-repo.conf" \
   "$profile/airootfs/etc/pacman.d/hornero-installer.conf"
 if [[ -n "$product_source" ]]; then
