@@ -1,0 +1,43 @@
+# Allowlist for system selections (HorneroOS/installer PR-B).
+# Only values listed here may be selected. Kernels mirror the pinned
+# HorneroOS/hornero catalogue kernel ids; themes mirror the only
+# appearance the pinned catalogue ships today. Anything else is
+# rejected by apply-system-plan.py instead of becoming a UI choice
+# that does nothing.
+kernels:
+  linux:
+    package: linux
+    headers: linux-headers
+  linux-lts:
+    package: linux-lts
+    headers: linux-lts-headers
+  linux-zen:
+    package: linux-zen
+    headers: linux-zen-headers
+  linux-hardened:
+    package: linux-hardened
+    headers: linux-hardened-headers
+# Only GRUB is offered today. systemd-boot is not safe to offer yet
+# (UEFI/LUKS/snapshots rows are unverified); see the gap issue.
+bootloaders:
+  - grub
+swapChoices:
+  - none
+  - file
+# Optional services the selection may toggle. NetworkManager and
+# SDDM are mandatory (no network repair / no graphical login without
+# them) and can never be disabled through a selection.
+optionalServices:
+  bluetooth:
+    unit: bluetooth.service
+    wants: bluetooth.target.wants
+  timesyncd:
+    unit: systemd-timesyncd.service
+    wants: sysinit.target.wants
+mandatoryServices:
+  - NetworkManager.service
+  - sddm.service
+themes:
+  - hornero-signal-night
+shellPresets:
+  - cockpit

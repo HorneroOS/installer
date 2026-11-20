@@ -62,8 +62,24 @@ screenshot; the media lock records the capture's website commit and hashes.
   matching unlock hook. Keep the unlock phrase safe; HorneroOS cannot recover
   it. The unencrypted EFI system partition remains visible to the machine.
 - The installer creates a named user with a password and `wheel`-based sudo.
-  It does not create a shared default password, enable automatic login, or set
-  a root password.
+  It does not create a shared default password or enable automatic login.
+  The hostname stays editable on that same stock users page; no separate
+  hostname step exists and `users.conf` must not grow a `hostname:` block.
+- Additional users and a separate root password run through a tested job,
+  not a page yet: `shellprocess@extra-users` (after the stock `users` job)
+  applies `/run/hornero-installer/extra-users.json` when that file exists.
+  Logins are regex-validated, groups come only from
+  `image/calamares/extra-users-allowlist.yaml` (`wheel` only via an explicit
+  per-user `admin` flag; the primary user stays the forced `wheel` admin),
+  passwords are hashed in memory (SHA-512 crypt) and the selection file is
+  deleted after reading. With no selection file the job is a no-op and root
+  stays locked (`!`), exactly as before. What is still missing is the page
+  that writes the selection: stock Calamares 3.4.3 has no multi-user page,
+  `setRootPassword: true` alone would block Next on an empty root password
+  under the 12-character policy (so root cannot be optional that way), and
+  a custom viewmodule must be injected into the Calamares build in
+  `packaging/calamares/PKGBUILD` and VM-tested before it may enter the
+  `show` sequence. Until then there is deliberately no UI for this.
 - Calamares runs with detailed local logging. After its window closes, the live
   session copies the log to `/var/log/hornero-installer/session.log`, readable
   by the live account; the live user receives no general root shell or access
@@ -78,6 +94,31 @@ screenshot; the media lock records the capture's website commit and hashes.
   target only during package installation. An emergency-capable cleanup step
   removes repository configuration after package installation succeeds or
   fails; VM acceptance still has to verify both paths.
+
+## System choices (PR-B)
+
+A root-owned selection at `/run/hornero-installer/system-selection.json`
+may choose the primary/fallback kernels, optional services
+(bluetooth, timesyncd) and the recorded appearance.
+`apply-system-plan.py` validates it against
+`image/calamares/system-allowlist.yaml` and writes
+`/usr/lib/hornero/installation-plan.json`; `apply-system-choices.py`
+then installs the kernels, toggles the services and persists
+`GRUB_DEFAULT=saved` (not sticky) and, after the bootloader job,
+`grub-set-default` to the primary-kernel entry. A multi-kernel plan
+is rejected at plan time when the boot filesystem is smaller than
+the plan's ESP recommendation. With no selection both jobs are
+no-ops and the install is exactly the preview32 default (single
+`linux` kernel, no headers, GRUB, swap `none`). NetworkManager and SDDM are always
+enabled (no network repair / no graphical login without them) and
+can never be disabled by a selection. Swap now also offers `file`
+(a fixed 512 MiB Btrfs swapfile on `/@swap`, no hibernation); a swap
+partition stays un-offered because of the mkinitcpio `openswap` gap.
+systemd-boot, a VM-proven GRUB saved default with two kernels, a full
+offline install, themes beyond Hornero Signal Night and swap
+partitions with LUKS are documented gaps in
+[issue #113](https://github.com/HorneroOS/installer/issues/113) —
+none of them is presented as a working choice today.
 
 ## Bluetooth
 

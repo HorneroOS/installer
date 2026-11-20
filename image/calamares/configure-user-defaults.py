@@ -79,6 +79,65 @@ def _seed_studio_selection(root: Path, home: Path, uid: int, gid: int, selection
         os.chown(destination, uid, gid)
 
 
+def _appearance_from_plan(root: Path) -> dict | None:
+    """Appearance recorded in the installation plan, if any.
+
+    Record-only handoff (same contract as the Studio selection):
+    ~/.config/hornero/appearance.json is seeded once and never
+    overwritten. Only the theme the pinned catalogue ships today
+    (hornero-signal-night) can reach a plan; other themes are
+    rejected by apply-system-plan.py, never silently seeded.
+    """
+    plan_path = root / "usr/lib/hornero/installation-plan.json"
+    if not plan_path.is_file():
+        return None
+    try:
+        plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    appearance = (plan.get("selection") or {}).get("appearance") if isinstance(plan, dict) else None
+    if not isinstance(appearance, dict) or not appearance.get("theme"):
+        return None
+    return {
+        "schemaVersion": 1,
+        "theme": appearance["theme"],
+        "shellPreset": appearance.get("shellPreset", "cockpit"),
+    }
+
+
+def _seed_appearance(root: Path, home: Path, uid: int, gid: int, appearance: dict) -> None:
+    hornero_dir = home / ".config" / "hornero"
+    destination = hornero_dir / "appearance.json"
+    current = root
+    for component in home.relative_to(root).parts + (".config", "hornero", "appearance.json"):
+        current = current / component
+        try:
+            info = current.lstat()
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(info.st_mode):
+            raise ValueError(f"Refusing symlink in target appearance path: {current}")
+    try:
+        hornero_dir.mkdir(mode=0o755)
+    except FileExistsError:
+        if not hornero_dir.is_dir() or hornero_dir.is_symlink():
+            raise ValueError(f"Target appearance parent is not a directory: {hornero_dir}")
+    if os.geteuid() == 0:
+        os.chown(hornero_dir, uid, gid)
+    try:
+        info = destination.lstat()
+    except FileNotFoundError:
+        info = None
+    if info is not None:
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError(f"Target appearance file is not a regular file: {destination}")
+        return  # Never overwrite an appearance the user already recorded.
+    destination.write_text(json.dumps(appearance, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    destination.chmod(0o644)
+    if os.geteuid() == 0:
+        os.chown(destination, uid, gid)
+
+
 def configure_user_defaults(root: Path) -> None:
     root = root.resolve()
     source = root / "etc/xdg/xfce4/helpers.rc"
@@ -157,6 +216,9 @@ def configure_user_defaults(root: Path) -> None:
         selection = _studio_selection_from_profile(root)
         if selection is not None:
             _seed_studio_selection(root, home, uid, gid, selection)
+        appearance = _appearance_from_plan(root)
+        if appearance is not None:
+            _seed_appearance(root, home, uid, gid, appearance)
 
 
 def main() -> int:

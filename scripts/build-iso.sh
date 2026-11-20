@@ -97,6 +97,10 @@ cp -a "$ROOT/image/calamares/modules/." "$profile/calamares/modules/"
 cp -a "$ROOT/image/calamares/branding/." "$profile/calamares/branding/"
 install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"
+install -Dm755 "$ROOT/image/calamares/create-extra-users.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/create-extra-users.py"
+install -Dm644 "$ROOT/image/calamares/extra-users-allowlist.yaml" \
+  "$profile/airootfs/usr/lib/hornero-installer/extra-users-allowlist.yaml"
 install -Dm755 "$ROOT/image/calamares/configure-greeter-session.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-greeter-session.py"
 install -Dm755 "$ROOT/image/calamares/configure-os-identity.py" \
@@ -107,6 +111,12 @@ install -Dm755 "$ROOT/image/calamares/configure-initcpio-encrypt.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-initcpio-encrypt.py"
 install -Dm755 "$ROOT/image/calamares/configure-recovery.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-recovery.py"
+install -Dm755 "$ROOT/image/calamares/apply-system-plan.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/apply-system-plan.py"
+install -Dm755 "$ROOT/image/calamares/apply-system-choices.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/apply-system-choices.py"
+install -Dm644 "$ROOT/image/calamares/system-allowlist.yaml" \
+  "$profile/airootfs/usr/lib/hornero-installer/system-allowlist.yaml"
 install -Dm644 "$ROOT/image/calamares/hornero-installer-repo.conf" \
   "$profile/airootfs/etc/pacman.d/hornero-installer.conf"
 if [[ -n "$product_source" ]]; then
