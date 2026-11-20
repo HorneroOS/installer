@@ -88,8 +88,11 @@ may choose the primary/fallback kernels, optional services
 `image/calamares/system-allowlist.yaml` and writes
 `/usr/lib/hornero/installation-plan.json`; `apply-system-choices.py`
 then installs the kernels, toggles the services and persists
-`GRUB_DEFAULT=saved` (not sticky) and, after the bootloader job, `grub-set-default` to the primary-kernel entry. A multi-kernel plan is rejected at plan time when the boot filesystem is smaller than the plan's ESP recommendation. With no selection both jobs are no-ops and the
-install is exactly the preview32 default (single `linux` kernel, no
+`GRUB_DEFAULT=saved` (not sticky) and, after the bootloader job,
+`grub-set-default` to the primary-kernel entry. A multi-kernel plan
+is rejected at plan time when the boot filesystem is smaller than
+the plan's ESP recommendation. With no selection both jobs are
+no-ops and the install is exactly the preview32 default (single
 headers, GRUB, swap `none`). NetworkManager and SDDM are always
 enabled (no network repair / no graphical login without them) and
 can never be disabled by a selection. Swap now also offers `file`
