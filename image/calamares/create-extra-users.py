@@ -29,10 +29,14 @@ Safety rules enforced here, before anything touches the target:
   when its own ``admin`` flag is explicitly true. The primary user stays
   the forced ``wheel`` admin created by the stock ``users`` module.
 - Passwords need at least 12 characters (the ``users.conf`` policy). They
-  are hashed in memory with SHA-512 crypt and applied with the same
-  ``usermod --password <hash>`` pattern the stock SetPasswordJob uses.
-  Plaintext and hashes are never printed, logged, or written anywhere;
-  the selection file is unlinked as soon as it has been read.
+  are hashed in memory with SHA-512 crypt and applied via
+  ``chpasswd -e`` fed on stdin, so hashes never appear in any argv
+  (``/proc/<pid>/cmdline``). Plaintext and hashes are never printed,
+  logged, or written anywhere; the selection file is unlinked as soon
+  as it has been read.
+- The selection file must be owned by the invoking user (root in the
+  installer, so root-owned in production) with mode ``0600``; anything
+  else is rejected and removed.
 - An absent selection file, an empty user list, and an empty
   ``rootPassword`` are all no-ops: root stays locked (``!``) exactly as
   the stock ``users`` job leaves it today, and an untouched install is
@@ -46,6 +50,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import secrets
 import subprocess
@@ -294,15 +299,16 @@ class ChrootRunner:
     def __init__(self, root: Path) -> None:
         self.root = root
 
-    def __call__(self, argv: list[str]) -> None:
+    def __call__(self, argv: list[str], stdin: str | None = None) -> None:
         completed = subprocess.run(
             ["/usr/bin/arch-chroot", str(self.root), *argv],
+            input=stdin,
             check=False,
             capture_output=True,
             text=True,
         )
         if completed.returncode != 0:
-            # Never echo argv back: it may carry a password hash.
+            # Never echo argv/stdin back: stdin may carry a password hash.
             raise RuntimeError(
                 f"target command failed ({argv[0]}, rc={completed.returncode})"
             )
@@ -337,16 +343,15 @@ def apply_selection(
             argv.append(login)
             runner(argv)
             runner(
-                [
-                    "/usr/sbin/usermod",
-                    "--password",
-                    hash_password(user["password"]),
-                    login,
-                ]
+                ["/usr/sbin/chpasswd", "-e"],
+                stdin=f"{login}:{hash_password(user['password'])}\n",
             )
         touched.append(login)
     if root_password is not None:
-        runner(["/usr/sbin/usermod", "--password", hash_password(root_password), "root"])
+        runner(
+            ["/usr/sbin/chpasswd", "-e"],
+            stdin=f"root:{hash_password(root_password)}\n",
+        )
     return touched
 
 
@@ -358,6 +363,11 @@ def create_extra_users(
     if not selection_path.is_file():
         return []
     try:
+        stat = selection_path.stat()
+        if stat.st_uid != os.geteuid():
+            raise ValueError("selection file must be owned by the invoking user")
+        if stat.st_mode & 0o077:
+            raise ValueError("selection file must have mode 0600")
         selection = json.loads(selection_path.read_text(encoding="utf-8"))
     finally:
         # Plaintext passwords live only in this file and in memory; remove

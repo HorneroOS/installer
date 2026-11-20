@@ -38,15 +38,18 @@ def _target(tmp_path: Path) -> Path:
 def _selection(tmp_path: Path, payload: dict) -> Path:
     path = tmp_path / "extra-users.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
+    path.chmod(0o600)
     return path
 
 
 class Recorder:
     def __init__(self) -> None:
         self.calls: list[list[str]] = []
+        self.stdins: list[str | None] = []
 
-    def __call__(self, argv: list[str]) -> None:
+    def __call__(self, argv: list[str], stdin: str | None = None) -> None:
         self.calls.append(list(argv))
+        self.stdins.append(stdin)
 
 
 def test_sha512_crypt_matches_openssl_vector() -> None:
@@ -81,12 +84,14 @@ def test_creates_user_with_allowlisted_groups_and_hashed_password(tmp_path, caps
                     "groups": ["audio", "video"], "admin": False}]},
     )
     assert mod.create_extra_users(root, selection, ALLOWLIST, recorder) == ["ana"]
-    useradd, usermod = recorder.calls
+    useradd, chpasswd = recorder.calls
     assert useradd[:2] == ["/usr/sbin/useradd", "--create-home"]
     assert useradd[useradd.index("-G") + 1] == "audio,video"
     assert "wheel" not in useradd
-    assert usermod[:2] == ["/usr/sbin/usermod", "--password"]
-    hashed = usermod[2]
+    assert chpasswd == ["/usr/sbin/chpasswd", "-e"]
+    assert all("$6$" not in arg for call in recorder.calls for arg in call), "hash must never be in argv"
+    hashed = recorder.stdins[1].split(":", 1)[1].strip()
+    assert recorder.stdins[1].startswith("ana:")
     assert hashed.startswith("$6$") and PASSWORD not in hashed
     assert mod.sha512_crypt(PASSWORD, hashed.split("$")[2]) == hashed
     assert PASSWORD not in capsys.readouterr().out
@@ -162,15 +167,28 @@ def test_root_password_optional_and_separate(tmp_path) -> None:
     selection = _selection(tmp_path, {"rootPassword": PASSWORD, "users": []})
     assert mod.create_extra_users(root, selection, ALLOWLIST, recorder) == []
     (call,) = recorder.calls
-    assert call[:2] == ["/usr/sbin/usermod", "--password"]
-    assert call[3] == "root" and call[2].startswith("$6$")
-    assert mod.sha512_crypt(PASSWORD, call[2].split("$")[2]) == call[2]
+    assert call == ["/usr/sbin/chpasswd", "-e"]
+    assert all("$6$" not in arg for arg in call)
+    hashed = recorder.stdins[0].split(":", 1)[1].strip()
+    assert recorder.stdins[0].startswith("root:") and hashed.startswith("$6$")
+    assert mod.sha512_crypt(PASSWORD, hashed.split("$")[2]) == hashed
 
 
 def test_runner_errors_never_echo_password_hash(tmp_path) -> None:
-    def failing(argv: list[str]) -> None:
+    def failing(argv: list[str], stdin: str | None = None) -> None:
         raise RuntimeError(f"target command failed ({argv[0]}, rc=1)")
 
     with pytest.raises(RuntimeError) as excinfo:
         mod.apply_selection(_target(tmp_path), "hornero", [], PASSWORD, failing)
     assert PASSWORD not in str(excinfo.value) and "$6$" not in str(excinfo.value)
+
+
+def test_selection_file_with_loose_mode_rejected_and_removed(tmp_path) -> None:
+    root = _target(tmp_path)
+    recorder = Recorder()
+    selection = _selection(tmp_path, {"rootPassword": PASSWORD, "users": []})
+    selection.chmod(0o644)
+    with pytest.raises(ValueError, match="0600"):
+        mod.create_extra_users(root, selection, ALLOWLIST, recorder)
+    assert recorder.calls == []
+    assert not selection.exists()
