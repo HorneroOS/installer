@@ -11,9 +11,12 @@ the default install is unchanged. With a plan it:
 * enables/disables the optional services (bluetooth, timesyncd)
   by managing their wants symlinks; NetworkManager and SDDM are
   never touched,
-* persists GRUB_DEFAULT=saved in /etc/default/grub so the primary
-  kernel stays the default boot entry (the saved entry itself is
-  chosen by grub-set-default in the VM-gated runtime row).
+* persists GRUB_DEFAULT=saved in /etc/default/grub (without
+  GRUB_SAVEDEFAULT, so a manual boot never becomes sticky), and —
+  in the late ``--set-grub-default`` run after the bootloader job
+  has generated grub.cfg — calls ``grub-set-default`` with the
+  first menu entry that boots the primary kernel, so the primary
+  kernel is the actual default boot entry.
 
 All external commands go through an argv-list runner; no shell
 interpolation and no package list is hard-coded here beyond the
@@ -24,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import stat
 import subprocess
 import sys
@@ -124,14 +128,46 @@ def apply_grub_default(root: Path, plan: dict) -> bool:
             output.append("GRUB_DEFAULT=saved")
             seen = True
         elif line.startswith("GRUB_SAVEDEFAULT="):
-            output.append("GRUB_SAVEDEFAULT=true")
+            # Never sticky: a manual boot must not rewrite the default.
+            output.append("GRUB_SAVEDEFAULT=false")
         else:
             output.append(line)
     if not seen:
         output.append("GRUB_DEFAULT=saved")
-    if "GRUB_SAVEDEFAULT=true" not in output:
-        output.append("GRUB_SAVEDEFAULT=true")
+    if not any(line.startswith("GRUB_SAVEDEFAULT=") for line in output):
+        output.append("GRUB_SAVEDEFAULT=false")
     grub_path.write_text("\n".join(output) + "\n", encoding="utf-8")
+    return True
+
+
+def find_primary_entry(grub_text: str, primary_package: str) -> str | None:
+    """First menuentry title whose body boots *primary_package*."""
+    matches = list(re.finditer(r"menuentry\s+['\"]([^'\"]+)['\"]", grub_text))
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(grub_text)
+        body = grub_text[match.start():end]
+        if re.search(rf"vmlinuz-{re.escape(primary_package)}(?![-\w])", body):
+            return match.group(1)
+    return None
+
+
+def apply_grub_saved_entry(root: Path, plan: dict, allowlist: dict, runner=_run) -> bool:
+    """grub-set-default to the primary kernel entry; False for default."""
+    selection = plan.get("selection") or {}
+    kernels = selection.get("kernels") or ["linux"]
+    if kernels == ["linux"]:
+        return False
+    primary = selection.get("primaryKernel") or kernels[0]
+    package = allowlist["kernels"][primary]["package"]
+    grub_cfg = root / "boot/grub/grub.cfg"
+    if not grub_cfg.is_file():
+        raise RuntimeError("grub.cfg missing when setting the default kernel entry")
+    entry = find_primary_entry(grub_cfg.read_text(encoding="utf-8", errors="replace"), package)
+    if entry is None:
+        raise RuntimeError(f"no GRUB entry boots the primary kernel {package}")
+    argv = ["arch-chroot", str(root), "grub-set-default", entry]
+    if runner(argv) != 0:
+        raise RuntimeError("grub-set-default failed for the primary kernel entry")
     return True
 
 
@@ -157,8 +193,23 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True, help="installed target root")
     parser.add_argument("--allowlist", type=Path, default=ALLOWLIST_PATH)
+    parser.add_argument("--set-grub-default", action="store_true",
+                        help="late run after bootloader: grub-set-default to the primary kernel")
     args = parser.parse_args()
     allowlist = yaml.safe_load(args.allowlist.read_text(encoding="utf-8"))
+    if args.set_grub_default:
+        try:
+            root = args.root.resolve()
+            plan = load_plan(root)
+            if plan is None:
+                print("apply-system-choices: no installation plan; keeping defaults")
+                return 0
+            applied = apply_grub_saved_entry(root, plan, allowlist)
+        except (ValueError, RuntimeError, json.JSONDecodeError) as error:
+            print(f"apply-system-choices: {error}", file=sys.stderr)
+            return 1
+        print(f"apply-system-choices: grub default set to primary kernel: {applied}")
+        return 0
     try:
         result = apply_system_choices(args.root, allowlist)
     except (ValueError, RuntimeError, json.JSONDecodeError) as error:

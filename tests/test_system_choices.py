@@ -93,6 +93,7 @@ def test_selection_writes_plan_and_is_consumed(tmp_path):
     root = _root(tmp_path)
     selection_file = tmp_path / "system-selection.json"
     selection_file.write_text(json.dumps({"primaryKernel": "linux-lts", "fallbackKernel": "linux"}))
+    selection_file.chmod(0o600)
     plan = plan_mod.apply_system_plan(root, selection_file, ALLOWLIST)
     assert plan["selection"]["primaryKernel"] == "linux-lts"
     assert not selection_file.exists()
@@ -110,7 +111,7 @@ def test_kernel_transaction_and_grub_default(tmp_path):
     assert "linux-lts" in commands[0] and "linux-lts-headers" in commands[0]
     assert choices_mod.apply_grub_default(root, plan) is True
     text = (root / "etc/default/grub").read_text()
-    assert "GRUB_DEFAULT=saved" in text and "GRUB_SAVEDEFAULT=true" in text
+    assert "GRUB_DEFAULT=saved" in text and "GRUB_SAVEDEFAULT=false" in text
 
 
 def test_services_disable_and_enable_via_wants_symlinks(tmp_path):
@@ -146,3 +147,39 @@ def test_swap_choices_offer_file_but_not_partition():
     assert partition["initialSwapChoice"] == "none"
     mount = yaml.safe_load((CALAMARES / "modules/mount.conf").read_text())
     assert mount["btrfsSwapSubvol"] == "/@swap"
+
+
+def test_grub_saved_entry_targets_primary_kernel(tmp_path):
+    root = _root(tmp_path)
+    grub = root / "boot/grub"; grub.mkdir(parents=True)
+    (grub / "grub.cfg").write_text(
+        "menuentry 'HorneroOS, on linux' { linux /vmlinuz-linux }\n"
+        "menuentry 'HorneroOS, on linux-lts' { linux /vmlinuz-linux-lts }\n"
+    )
+    plan = plan_mod.build_plan(_selection(primaryKernel="linux-lts", fallbackKernel="linux"), ALLOWLIST)
+    calls = []
+    assert choices_mod.apply_grub_saved_entry(root, plan, ALLOWLIST, runner=lambda argv: calls.append(argv) or 0) is True
+    assert calls == [["arch-chroot", str(root.resolve()), "grub-set-default", "HorneroOS, on linux-lts"]]
+    assert choices_mod.find_primary_entry((grub / "grub.cfg").read_text(), "linux") == "HorneroOS, on linux"
+
+
+def test_multi_kernel_small_boot_rejected_at_plan_time(tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    (root / "boot").mkdir(parents=True)
+    selection_file = tmp_path / "system-selection.json"
+    selection_file.write_text(json.dumps({"primaryKernel": "linux-lts", "fallbackKernel": "linux"}))
+    selection_file.chmod(0o600)
+    class U: total = 512 * 1024 * 1024
+    monkeypatch.setattr(plan_mod.shutil, "disk_usage", lambda _p: U())
+    with pytest.raises(ValueError, match="larger ESP"):
+        plan_mod.apply_system_plan(root, selection_file, ALLOWLIST)
+    assert not (root / "usr/lib/hornero/installation-plan.json").exists()
+
+
+def test_system_selection_loose_mode_rejected(tmp_path):
+    root = _root(tmp_path)
+    selection_file = tmp_path / "system-selection.json"
+    selection_file.write_text(json.dumps({"primaryKernel": "linux"}))
+    selection_file.chmod(0o644)
+    with pytest.raises(ValueError, match="0600"):
+        plan_mod.apply_system_plan(root, selection_file, ALLOWLIST)

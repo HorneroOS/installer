@@ -88,14 +88,14 @@ may choose the primary/fallback kernels, optional services
 `image/calamares/system-allowlist.yaml` and writes
 `/usr/lib/hornero/installation-plan.json`; `apply-system-choices.py`
 then installs the kernels, toggles the services and persists
-`GRUB_DEFAULT=saved`. With no selection both jobs are no-ops and the
+`GRUB_DEFAULT=saved` (not sticky) and, after the bootloader job, `grub-set-default` to the primary-kernel entry. A multi-kernel plan is rejected at plan time when the boot filesystem is smaller than the plan's ESP recommendation. With no selection both jobs are no-ops and the
 install is exactly the preview32 default (single `linux` kernel, no
 headers, GRUB, swap `none`). NetworkManager and SDDM are always
 enabled (no network repair / no graphical login without them) and
 can never be disabled by a selection. Swap now also offers `file`
 (a fixed 512 MiB Btrfs swapfile on `/@swap`, no hibernation); a swap
 partition stays un-offered because of the mkinitcpio `openswap` gap.
-systemd-boot, a proven GRUB saved default with two kernels, a full
+systemd-boot, a VM-proven GRUB saved default with two kernels, a full
 offline install, themes beyond Hornero Signal Night and swap
 partitions with LUKS are documented gaps in
 [issue #113](https://github.com/HorneroOS/installer/issues/113) —

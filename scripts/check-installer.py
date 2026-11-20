@@ -198,6 +198,9 @@ def main() -> int:
     assert exec_modules.index("shellprocess@system-choices") < exec_modules.index("initcpiocfg")
     assert parsed["shellprocess-system-plan"]["dontChroot"] is True
     assert parsed["shellprocess-system-choices"]["dontChroot"] is True
+    assert exec_modules.index("bootloader") < exec_modules.index("shellprocess@system-grub-default")
+    assert exec_modules.index("shellprocess@system-grub-default") < exec_modules.index("shellprocess@verify")
+    assert parsed["shellprocess-system-grub-default"]["dontChroot"] is True
     assert (CALAMARES / "apply-system-plan.py").is_file()
     assert (CALAMARES / "apply-system-choices.py").is_file()
     assert (CALAMARES / "system-allowlist.yaml").is_file()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate a system selection and write the installation plan.
 
-The selection arrives as a root-owned JSON file written by the
+The selection arrives as a JSON file owned by the invoking user (root in the installer; mode 0600 enforced) written by the
 installer launcher (or a future Calamares page) at
 /run/hornero-installer/system-selection.json. When the file is
 absent or empty this job is a no-op, so an untouched install
@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 import stat
 import sys
 from pathlib import Path
@@ -222,6 +224,11 @@ def apply_system_plan(root: Path, selection_path: Path, allowlist: dict) -> dict
     """Write the plan for a present selection; None when absent (no-op)."""
     if not selection_path.is_file():
         return None
+    stat_result = selection_path.stat()
+    if stat_result.st_uid != os.geteuid():
+        raise ValueError("system selection must be owned by the invoking user")
+    if stat_result.st_mode & 0o077:
+        raise ValueError("system selection must have mode 0600")
     raw = selection_path.read_text(encoding="utf-8").strip()
     if not raw:
         return None
@@ -231,6 +238,19 @@ def apply_system_plan(root: Path, selection_path: Path, allowlist: dict) -> dict
         raise ValueError("system selection must be a JSON object")
     selection.update(parsed)
     plan = build_plan(selection, allowlist)
+    # Fail before the package transaction (not at verify-install,
+    # after the bootloader) when a multi-kernel plan cannot fit the
+    # ESP the partition step already created.
+    if len(plan["selection"]["kernels"]) > 1:
+        boot_dir = root / "boot"
+        if boot_dir.is_dir():
+            boot_mib = shutil.disk_usage(boot_dir).total // (1024 * 1024)
+            if boot_mib < int(plan["espRecommendedMiB"]):
+                raise ValueError(
+                    f"boot filesystem is {boot_mib} MiB but a multi-kernel "
+                    f"install needs {plan['espRecommendedMiB']} MiB; choose a "
+                    "single kernel or partition manually with a larger ESP"
+                )
     write_plan(root, plan)
     selection_path.unlink(missing_ok=True)
     return plan
