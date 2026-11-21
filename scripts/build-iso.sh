@@ -2,15 +2,17 @@
 set -euo pipefail
 
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-usage() { printf 'Usage: %s --work NEW_EMPTY_PATH --output NEW_EMPTY_PATH [--product-source HORNEROS_REPO]\n' "$0" >&2; }
+usage() { printf 'Usage: %s --work NEW_EMPTY_PATH --output NEW_EMPTY_PATH [--product-source HORNEROS_REPO] [--offline]\n' "$0" >&2; }
 work=""
 output=""
 product_source=""
+offline=0
 while (($#)); do
   case "$1" in
     --work) work=${2:?}; shift 2 ;;
     --output) output=${2:?}; shift 2 ;;
     --product-source) product_source=${2:?}; shift 2 ;;
+    --offline) offline=1; shift ;;
     *) usage; exit 2 ;;
   esac
 done
@@ -111,6 +113,8 @@ install -Dm755 "$ROOT/image/calamares/configure-initcpio-encrypt.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-initcpio-encrypt.py"
 install -Dm755 "$ROOT/image/calamares/configure-recovery.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-recovery.py"
+install -Dm755 "$ROOT/image/calamares/offline-repo.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/offline-repo.py"
 install -Dm755 "$ROOT/image/calamares/apply-system-plan.py" \
   "$profile/airootfs/usr/lib/hornero-installer/apply-system-plan.py"
 install -Dm755 "$ROOT/image/calamares/apply-system-choices.py" \
@@ -195,6 +199,24 @@ python3 "$ROOT/scripts/check-installer.py" \
   --schema-root "$package_work/installer-source/packaging/calamares/src/calamares/src/modules"
 install -d "$profile/airootfs/usr/share/hornero-installer/repo"
 cp -a "$repo/." "$profile/airootfs/usr/share/hornero-installer/repo/"
+# Offline support is opt-in at build time: without --offline the image
+# is exactly the online-only preview build. With it, the full closure
+# of every selectable package (compositions + netinstall leaves) is
+# downloaded from the same pinned snapshot into a file:// repository
+# the launcher may offer when no network is detected.
+if [[ "$offline" == 1 ]]; then
+  python3 "$ROOT/scripts/offline-repo.py" packages \
+    --compositions "$profile/calamares/modules/compositions.json" \
+    --netinstall "$profile/calamares/modules/netinstall.conf" \
+    > "$work/offline-packages.txt"
+  bash "$ROOT/scripts/build-offline-repo.sh" \
+    --pacman-conf "$work/pacman.conf" \
+    --packages "$work/offline-packages.txt" \
+    --snapshot "$snapshot" \
+    --output "$work/offline-repo"
+  install -d "$profile/airootfs/usr/share/hornero-installer/offline-repo"
+  cp -a "$work/offline-repo/." "$profile/airootfs/usr/share/hornero-installer/offline-repo/"
+fi
 cat > "$work/build-repo.conf" <<EOF
 [hornero-installer]
 SigLevel = Optional TrustAll
@@ -292,4 +314,21 @@ manifest = {
 }
 artifact.with_suffix(artifact.suffix + ".manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 PY
+if [[ "$offline" == 1 ]]; then
+  python3 - "$iso.manifest.json" "$work/offline-repo/offline-manifest.json" <<'PY'
+import json
+import sys
+manifest = json.load(open(sys.argv[1], encoding="utf-8"))
+offline = json.load(open(sys.argv[2], encoding="utf-8"))
+manifest["offlineRepository"] = {
+    "repo": offline["repo"],
+    "archSnapshot": offline["archSnapshot"],
+    "packageCount": offline["packageCount"],
+    "totalBytes": offline["totalBytes"],
+}
+with open(sys.argv[1], "w", encoding="utf-8") as handle:
+    json.dump(manifest, handle, indent=2)
+    handle.write("\n")
+PY
+fi
 printf 'Built provisional HorneroOS installer media: %s\n' "$iso"

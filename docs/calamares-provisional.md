@@ -115,7 +115,8 @@ can never be disabled by a selection. Swap now also offers `file`
 (a fixed 512 MiB Btrfs swapfile on `/@swap`, no hibernation); a swap
 partition stays un-offered because of the mkinitcpio `openswap` gap.
 systemd-boot, a VM-proven GRUB saved default with two kernels, a full
-offline install, themes beyond Hornero Signal Night and swap
+offline install (mechanism in docs/offline-install.md, VM gate
+pending), themes beyond Hornero Signal Night and swap
 partitions with LUKS are documented gaps in
 [issue #113](https://github.com/HorneroOS/installer/issues/113) —
 none of them is presented as a working choice today.

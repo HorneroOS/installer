@@ -227,6 +227,39 @@ def main() -> int:
     assert exec_modules.index("bootloader") < exec_modules.index("shellprocess@system-grub-default")
     assert exec_modules.index("shellprocess@system-grub-default") < exec_modules.index("shellprocess@verify")
     assert parsed["shellprocess-system-grub-default"]["dontChroot"] is True
+    # Offline mode: launcher offer (pre-partition) -> root marker ->
+    # preflight gate (pre-partition) -> target pacman.conf switch
+    # (pre-packages). Without the marker every step is a no-op and the
+    # online path is unchanged.
+    assert ("shellprocess", "offline-repo") in instances
+    assert instances[("shellprocess", "offline-repo")] == "shellprocess-offline-repo.conf"
+    assert exec_modules.index("shellprocess@preflight") < exec_modules.index("partition")
+    assert exec_modules.index("shellprocess@system-plan") < exec_modules.index(
+        "shellprocess@offline-repo"
+    )
+    assert exec_modules.index("shellprocess@offline-repo") < exec_modules.index("packages")
+    assert parsed["shellprocess-offline-repo"]["dontChroot"] is True
+    assert (CALAMARES / "offline-repo.py").is_file()
+    assert (ROOT / "scripts/offline-repo.py").is_file()
+    assert (ROOT / "scripts/build-offline-repo.sh").is_file()
+    _build_iso_text = (ROOT / "scripts/build-iso.sh").read_text(encoding="utf-8")
+    assert 'install -Dm755 "$ROOT/image/calamares/offline-repo.py"' in _build_iso_text
+    assert '"$profile/airootfs/usr/lib/hornero-installer/offline-repo.py"' in _build_iso_text
+    assert "--offline" in _build_iso_text and "build-offline-repo.sh" in _build_iso_text
+    assert 'if [[ "$offline" == 1 ]]' in _build_iso_text
+    launcher_text = (
+        ROOT / "image/archiso/airootfs/usr/local/bin/hornero-installer-start"
+    ).read_text(encoding="utf-8")
+    assert "Continue offline" in launcher_text
+    assert launcher_text.index("offer_offline") < launcher_text.index(
+        "exec /usr/bin/sudo"
+    )
+    runner_text = (
+        ROOT / "image/archiso/airootfs/usr/local/bin/hornero-installer-run"
+    ).read_text(encoding="utf-8")
+    assert "/run/hornero-installer/offline-mode" in runner_text
+    assert "/run/hornero-installer/system-selection.json" in runner_text
+    assert runner_text.index("offline-mode") < runner_text.index("/usr/bin/calamares")
     assert (CALAMARES / "apply-system-plan.py").is_file()
     assert (CALAMARES / "apply-system-choices.py").is_file()
     assert (CALAMARES / "system-allowlist.yaml").is_file()
@@ -582,7 +615,10 @@ def main() -> int:
     assert "sudo /usr/local/bin/hornero-installer-run" in launcher
     assert "/usr/bin/nm-online --quiet --timeout=45" in launcher
     assert "/usr/bin/timeout 10 /usr/bin/getent ahostsv4 archive.archlinux.org" in launcher
-    assert launcher.index("nm-online") < launcher.index("getent") < launcher.index("sudo")
+    assert launcher.index("nm-online") < launcher.index("getent")
+    assert launcher.index("getent") < launcher.rindex("exec /usr/bin/sudo"), (
+        "the online path still checks network and DNS before launching"
+    )
     assert "Exec=/usr/local/bin/hornero-installer-start" in desktop_entry
     assert "sudo /usr/local/bin/hornero-installer-run" not in desktop_entry
     assert "/usr/bin/calamares -D6" in runner

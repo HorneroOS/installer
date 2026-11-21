@@ -43,4 +43,4 @@ jobs:
           python scripts/render-netinstall.py --cache-dir "$RUNNER_TEMP/product-cache" --output "$RUNNER_TEMP/generated/netinstall.conf"
           cmp image/calamares/modules/netinstall.conf "$RUNNER_TEMP/generated/netinstall.conf"
       - name: Check build-script syntax
-        run: bash -n scripts/build-iso.sh scripts/build-package-repository.sh image/archiso/airootfs/usr/local/bin/hornero-installer-start
+        run: bash -n scripts/build-iso.sh scripts/build-package-repository.sh scripts/build-offline-repo.sh image/archiso/airootfs/usr/local/bin/hornero-installer-start image/archiso/airootfs/usr/local/bin/hornero-installer-run

@@ -40,9 +40,50 @@ def missing_sources(conf: Path, root: Path) -> list[str]:
     return missing
 
 
+OFFLINE_MARKER = Path("/run/hornero-installer/offline-mode")
+OFFLINE_REPO = Path("/usr/share/hornero-installer/offline-repo")
+
+
+def offline_repo_errors(root: Path) -> list[str]:
+    """Fail before partitioning when offline mode lacks its repo."""
+    marker = root / OFFLINE_MARKER.relative_to("/")
+    if not marker.is_file():
+        return []
+    repo = root / OFFLINE_REPO.relative_to("/")
+    errors: list[str] = []
+    import json as _json
+
+    if not (repo / "hornero-offline.db.tar.gz").is_file():
+        errors.append("offline pacman database is missing")
+    manifest_path = repo / "offline-manifest.json"
+    if not manifest_path.is_file():
+        errors.append("offline repository manifest is missing")
+        return errors
+    try:
+        manifest = _json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (ValueError, OSError) as error:
+        return [f"offline repository manifest is unreadable: {error}"]
+    for entry in manifest.get("packages") or []:
+        artifact = repo / entry["file"]
+        if not artifact.is_file() or artifact.stat().st_size != entry["size"]:
+            errors.append(f"offline package missing or truncated: {entry['file']}")
+    return errors
+
+
 def main(argv: list[str]) -> int:
     conf = Path(argv[1]) if len(argv) > 1 else DEFAULT_CONF
     root = Path(argv[2]) if len(argv) > 2 else Path("/")
+    offline_errors = offline_repo_errors(root)
+    for error in offline_errors:
+        print(
+            "HorneroOS installer preflight: offline installation was "
+            f"requested but {error}. Installation was aborted before "
+            "any disk change. Reconnect to the internet or re-create "
+            "the USB medium from an ISO built with offline support.",
+            file=sys.stderr,
+        )
+    if offline_errors:
+        return 1
     missing = missing_sources(conf, root)
     if missing:
         for source in missing:
