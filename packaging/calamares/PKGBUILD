@@ -2,7 +2,7 @@
 # Calamares upstream build with package chooser and initramfs modules enabled.
 pkgname=calamares
 pkgver=3.4.3
-pkgrel=1
+pkgrel=2
 pkgdesc='Distribution-independent Linux system installer (HorneroOS module set)'
 arch=('x86_64')
 url='https://calamares.codeberg.page/'
@@ -13,6 +13,10 @@ source=("calamares-$pkgver.tar.gz::https://codeberg.org/Calamares/calamares/arch
 sha256sums=('78784e6018097e4fe74cbd8f1530929626dcecfe303e14383bc8c074feb34eec')
 
 build() {
+  # Inject the HorneroUsers viewmodule (installer#111) before cmake scans
+  # src/modules; it is the only writer of the extra-users selection.
+  cp -a "$startdir/../../image/calamares/viewmodules/hornerousers" "$srcdir/calamares/src/modules/hornerousers"
+
   local skip_modules=(
     dracut
     dracutlukscfg

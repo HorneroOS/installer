@@ -73,13 +73,23 @@ screenshot; the media lock records the capture's website commit and hashes.
   per-user `admin` flag; the primary user stays the forced `wheel` admin),
   passwords are hashed in memory (SHA-512 crypt) and the selection file is
   deleted after reading. With no selection file the job is a no-op and root
-  stays locked (`!`), exactly as before. What is still missing is the page
-  that writes the selection: stock Calamares 3.4.3 has no multi-user page,
-  `setRootPassword: true` alone would block Next on an empty root password
-  under the 12-character policy (so root cannot be optional that way), and
-  a custom viewmodule must be injected into the Calamares build in
-  `packaging/calamares/PKGBUILD` and VM-tested before it may enter the
-  `show` sequence. Until then there is deliberately no UI for this.
+  stays locked (`!`), exactly as before. The page that writes the selection
+  now exists as a custom C++ viewmodule, `hornerousers`
+  (`image/calamares/viewmodules/hornerousers/`, installer#111): an optional
+  separate root password (empty = locked; no reuse of the primary password)
+  plus repeatable additional users with allowlist group checkboxes and a
+  per-user admin (`wheel`) flag with a warning. It is the only writer of the
+  selection: on leaving the page it writes
+  `/run/hornero-installer/extra-users.json` created with mode `0600` before
+  any secret is written, and an untouched page writes nothing, so the
+  backend stays an absent-file no-op and the default install is unchanged.
+  `packaging/calamares/PKGBUILD` injects the module into the pinned
+  Calamares 3.4.3 tree before cmake. The module is built and installed but
+  deliberately **not** in the `show` sequence yet: it enters `show` (one
+  page after `users`) only after VM rows pass — page loads in Calamares,
+  selection is root-owned `0600` on tmpfs, extra users and root password
+  are created, and an untouched install is identical to preview32. Those
+  VM rows are not yet run; nothing here claims they passed.
 - Calamares runs with detailed local logging. After its window closes, the live
   session copies the log to `/var/log/hornero-installer/session.log`, readable
   by the live account; the live user receives no general root shell or access
