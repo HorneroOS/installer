@@ -1,6 +1,6 @@
 """GPU probe + netinstall GPU groups (installer#115, hornero#466).
 
-Fail-closed: the pinned catalogue (0618004) has no gpuVendors, so no
+Fail-closed: a pinned catalogue without gpuVendors, so no
 GPU group renders from it. With a catalogue that ships gpuVendors,
 every rendered package needs complete gpuProvenance or rendering
 raises. AMD/Intel pre-select only from a PCI probe; NVIDIA never.
@@ -113,10 +113,10 @@ def test_preselect_only_touches_detected_open_leaf():
     assert doc["groups"][1]["selected"] is False
 
 
-def test_committed_netinstall_has_no_gpu_until_pin_bump():
+def test_committed_netinstall_has_gpu_after_pin_bump():
     conf = yaml.safe_load((ROOT / "image/calamares/modules/netinstall.conf").read_text(encoding="utf-8"))
     names = [g["name"] for g in conf["groups"]]
-    assert not any("GPU" in name for name in names), (
-        "pinned catalogue 0618004 has no GPU provenance; GPU groups "
-        "appear only after hornero#466 merges and the pin bumps"
+    assert any("GPU" in name for name in names), (
+        "pinned catalogue 8c0d13c ships GPU provenance (hornero#466 merged); "
+        "GPU groups must be rendered"
     )

@@ -74,7 +74,7 @@ Presentation {
             channel: "01 · DESKTOP"
             numeral: "01"
             title: "HorneroOS Desktop"
-            chip: "PREVIEW"
+            chip: "SUPPORTED"
             body: "A Wayland-first desktop on Hyprland with Hornero Shell: bars, launcher, notifications, layouts and the Control Center. Studio and Gaming build on it. Niri is offered as an experimental compositor."
             contentsLabel: "CORE"
             contents: ["hyprland", "hornero-shell", "hornero-config", "horneroctl-bin", "hornero-greeter"]
@@ -87,7 +87,7 @@ Presentation {
             channel: "02 · STUDIO"
             numeral: "02"
             title: "HorneroOS Studio"
-            chip: "PREVIEW"
+            chip: "SUPPORTED"
             body: "A creative workstation based on Desktop: low-latency audio routing through PipeWire's JACK layer, plus applications for music, illustration, 3D, video editing and streaming."
             contentsLabel: "ADDS TO DESKTOP"
             contents: ["pipewire-jack", "qpwgraph", "ardour", "guitarix", "krita", "blender", "kdenlive", "obs-studio", "ffmpeg"]
@@ -100,7 +100,7 @@ Presentation {
             channel: "03 · GAMING"
             numeral: "03"
             title: "HorneroOS Gaming"
-            chip: "PREVIEW"
+            chip: "SUPPORTED"
             body: "A gaming desktop based on Desktop with Gamescope, GameMode and MangoHud ready. Game launchers are explicit opt-ins: none is installed unless you add it."
             contentsLabel: "ADDS TO DESKTOP"
             contents: ["gamescope", "gamemode", "mangohud", "vulkan-icd-loader", "vulkan-tools", "steam-devices", "xorg-xwayland"]

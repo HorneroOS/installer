@@ -8,11 +8,11 @@ Installer and installation workflows for HorneroOS, the Arch-based
 workstation operating-system family (Desktop · Studio · Gaming).
 
 > [!WARNING]
-> **Preview — virtual-machine evidence only.** The published
+> **Installation-medium evidence is virtual-machine only.** The published
 > v0.2.0-preview32 ISO passed disposable-VM installation validation
 > (UEFI, unencrypted); no physical-hardware validation has been
-> performed. Never run preview media against a system that contains
-> data you have not backed up. See
+> performed for that ISO. Never run installation media against a system
+> that contains data you have not backed up. See
 > [Implementation status](#implementation-status) below.
 
 ## Scope
@@ -69,14 +69,14 @@ Signal only once the pinned shell, config and `horneroctl` include it.
 Screenshots of this installer taken before November 2026 show the previous
 branding.
 
-## Try the Preview ISO
+## Try the current ISO
 
 Download and verify the signed v0.2.0-preview32 ISO from the
 [HorneroOS website install page](https://www.horneroos.com/install) or
 the [v0.2.0-preview32 release](https://github.com/HorneroOS/hornero/releases/tag/v0.2.0-preview32).
-It installs Desktop, Studio or Gaming Preview and was validated in virtual
-machines only; no physical-hardware validation has been performed.
-Report installation problems in this repository's issue chooser.
+It installs Desktop, Studio or Gaming and was validated in virtual
+machines only; no physical-hardware validation has been performed for
+that ISO. Report installation problems in this repository's issue chooser.
 
 ## Development checks
 

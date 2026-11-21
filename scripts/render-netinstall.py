@@ -22,7 +22,7 @@ canonical scripts/resolve-edition.py. Nothing is hand-listed here:
 - GPU drivers are rendered only when the pinned catalogue ships
   both `gpuVendors` and complete `gpuProvenance` for every rendered
   package (HorneroOS/hornero#466, installer#115). The catalogue
-  pinned today (0618004) ships neither, so no GPU group is rendered
+  a catalogue without them renders no GPU group
   from it; a catalogue with vendors but missing/incomplete
   provenance fails closed (ValueError) instead of rendering a group
   that installs something unprovenanced. AMD/Intel open-source

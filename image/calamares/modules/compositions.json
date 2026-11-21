@@ -1,10 +1,10 @@
 {
-  "productRevision": "0618004b3280038ff3868d7b372cf0ad7e0be67b",
+  "productRevision": "8c0d13ca3fcb33342d64403ae5a6b747673694f9",
   "options": [
     {
       "id": "desktop-hyprland",
       "name": "HorneroOS Desktop \u2014 Hyprland",
-      "description": "Wayland-first desktop with Hornero Shell, themes, layouts and Control Center. Compositor: Hyprland. Preview support.",
+      "description": "Wayland-first desktop with Hornero Shell, themes, layouts and Control Center. Compositor: Hyprland.",
       "packages": [
         "base",
         "linux",
@@ -53,7 +53,7 @@
       "profile": {
         "edition": "desktop",
         "title": "HorneroOS Desktop",
-        "maturity": "preview",
+        "maturity": "supported",
         "role": "desktop",
         "compositor": "hyprland",
         "compositorMaturity": "supported",
@@ -174,14 +174,14 @@
       },
       "edition": "desktop",
       "compositor": "hyprland",
-      "maturity": "preview",
+      "maturity": "supported",
       "compositorMaturity": "supported",
       "isDefault": true
     },
     {
       "id": "desktop-niri",
       "name": "HorneroOS Desktop \u2014 Niri (Experimental)",
-      "description": "Wayland-first desktop with Hornero Shell, themes, layouts and Control Center. Compositor: Niri. Preview, Experimental compositor support.",
+      "description": "Wayland-first desktop with Hornero Shell, themes, layouts and Control Center. Compositor: Niri. Experimental compositor support.",
       "packages": [
         "base",
         "linux",
@@ -232,7 +232,7 @@
       "profile": {
         "edition": "desktop",
         "title": "HorneroOS Desktop",
-        "maturity": "preview",
+        "maturity": "supported",
         "role": "desktop",
         "compositor": "niri",
         "compositorMaturity": "experimental",
@@ -355,14 +355,14 @@
       },
       "edition": "desktop",
       "compositor": "niri",
-      "maturity": "preview",
+      "maturity": "supported",
       "compositorMaturity": "experimental",
       "isDefault": false
     },
     {
       "id": "studio-hyprland",
       "name": "HorneroOS Studio \u2014 Hyprland",
-      "description": "Creative workstation based on HorneroOS Desktop. Compositor: Hyprland. Preview support.",
+      "description": "Creative workstation based on HorneroOS Desktop. Compositor: Hyprland.",
       "packages": [
         "base",
         "linux",
@@ -420,7 +420,7 @@
       "profile": {
         "edition": "studio",
         "title": "HorneroOS Studio",
-        "maturity": "preview",
+        "maturity": "supported",
         "role": "creative-workstation",
         "compositor": "hyprland",
         "compositorMaturity": "supported",
@@ -763,14 +763,14 @@
       },
       "edition": "studio",
       "compositor": "hyprland",
-      "maturity": "preview",
+      "maturity": "supported",
       "compositorMaturity": "supported",
       "isDefault": false
     },
     {
       "id": "studio-niri",
       "name": "HorneroOS Studio \u2014 Niri (Experimental)",
-      "description": "Creative workstation based on HorneroOS Desktop. Compositor: Niri. Preview, Experimental compositor support.",
+      "description": "Creative workstation based on HorneroOS Desktop. Compositor: Niri. Experimental compositor support.",
       "packages": [
         "base",
         "linux",
@@ -830,7 +830,7 @@
       "profile": {
         "edition": "studio",
         "title": "HorneroOS Studio",
-        "maturity": "preview",
+        "maturity": "supported",
         "role": "creative-workstation",
         "compositor": "niri",
         "compositorMaturity": "experimental",
@@ -1175,14 +1175,14 @@
       },
       "edition": "studio",
       "compositor": "niri",
-      "maturity": "preview",
+      "maturity": "supported",
       "compositorMaturity": "experimental",
       "isDefault": false
     },
     {
       "id": "gaming-hyprland",
       "name": "HorneroOS Gaming \u2014 Hyprland",
-      "description": "Gaming desktop based on HorneroOS Desktop, with Gamescope, GameMode and MangoHud; launchers are explicit opt-ins. Compositor: Hyprland. Preview support.",
+      "description": "Gaming desktop based on HorneroOS Desktop, with Gamescope, GameMode and MangoHud; launchers are explicit opt-ins. Compositor: Hyprland.",
       "packages": [
         "base",
         "linux",
@@ -1241,7 +1241,7 @@
       "profile": {
         "edition": "gaming",
         "title": "HorneroOS Gaming",
-        "maturity": "preview",
+        "maturity": "supported",
         "role": "gaming-workstation",
         "compositor": "hyprland",
         "compositorMaturity": "supported",
@@ -1434,14 +1434,14 @@
       },
       "edition": "gaming",
       "compositor": "hyprland",
-      "maturity": "preview",
+      "maturity": "supported",
       "compositorMaturity": "supported",
       "isDefault": false
     },
     {
       "id": "gaming-niri",
       "name": "HorneroOS Gaming \u2014 Niri (Experimental)",
-      "description": "Gaming desktop based on HorneroOS Desktop, with Gamescope, GameMode and MangoHud; launchers are explicit opt-ins. Compositor: Niri. Preview, Experimental compositor support.",
+      "description": "Gaming desktop based on HorneroOS Desktop, with Gamescope, GameMode and MangoHud; launchers are explicit opt-ins. Compositor: Niri. Experimental compositor support.",
       "packages": [
         "base",
         "linux",
@@ -1502,7 +1502,7 @@
       "profile": {
         "edition": "gaming",
         "title": "HorneroOS Gaming",
-        "maturity": "preview",
+        "maturity": "supported",
         "role": "gaming-workstation",
         "compositor": "niri",
         "compositorMaturity": "experimental",
@@ -1697,7 +1697,7 @@
       },
       "edition": "gaming",
       "compositor": "niri",
-      "maturity": "preview",
+      "maturity": "supported",
       "compositorMaturity": "experimental",
       "isDefault": false
     }
