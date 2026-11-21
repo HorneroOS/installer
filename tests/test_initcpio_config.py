@@ -25,9 +25,13 @@ def test_initcpiocfg_keeps_single_encrypt_hook_source():
 
 def test_swap_choices_never_generate_openswap():
     # `file` is safe (Btrfs swapfile on /@swap via fstab, no openswap
-    # hook); only a swap *partition* would generate openswap, so it
-    # stays un-offered. Default remains `none` (preview32 unchanged).
+    # hook). A swap *partition* (`small`, installer#113) is offered
+    # only without LUKS: apply-system-plan.py aborts partition+LUKS
+    # before packages, since only that combination generates the
+    # missing openswap hook. Hibernation (`suspend`) is never offered
+    # (openswap is not pinned). Default remains `none` (preview32).
     conf = yaml.safe_load((MODULES / "partition.conf").read_text(encoding="utf-8"))
-    assert conf["userSwapChoices"] == ["none", "file"]
+    assert conf["userSwapChoices"] == ["none", "file", "small"]
+    assert "suspend" not in conf["userSwapChoices"]
     assert "partition" not in conf["userSwapChoices"]
     assert conf["initialSwapChoice"] == "none"

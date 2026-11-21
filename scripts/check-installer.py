@@ -135,10 +135,10 @@ def main() -> int:
             module_name = "shellprocess" if name.startswith("shellprocess-") else name
             schema_path = module_root / module_name / f"{module_name}.schema.yaml"
             if not schema_path.is_file():
-                if module_name == "hornerousers":
-                    # Custom viewmodule (installer#111): upstream has no
-                    # schema for it; validate against the shipped one.
-                    schema_path = CALAMARES / "viewmodules/hornerousers/hornerousers.schema.yaml"
+                if module_name in ("hornerousers", "hornerosystem"):
+                    # Hornero viewmodules: upstream has no schema for
+                    # them; validate against the shipped ones.
+                    schema_path = CALAMARES / f"viewmodules/{module_name}/{module_name}.schema.yaml"
                 elif module_name != "packagechooser":
                     raise FileNotFoundError(f"Calamares schema missing for {module_name}: {schema_path}")
                 else:
@@ -232,9 +232,22 @@ def main() -> int:
     else:
         assert parsed["bootloader"]["efiBootLoader"] == "grub"
     assert parsed["bootloader"]["installHybridGRUB"] is False
-    # LUKS/openswap invariants must survive any composable selection.
+    # HorneroSystem (VM-gated): built but not shown until its VM gate;
+    # bootloader.conf delegates to its GlobalStorage key when present.
+    assert parsed["bootloader"].get("efiBootLoaderVar") == "hornero_bootloader"
+    assert "hornerosystem" not in phases[0]["show"], (
+        "HorneroSystem enters the show sequence (before partition) only "
+        "after its VM gate in docs/calamares-provisional.md passes"
+    )
+    assert parsed["hornerosystem"]["selectionPath"] == "/run/hornero-installer/system-selection.json"
+    assert (CALAMARES / "probe-gpu.py").is_file()
+    assert (CALAMARES / "preselect-gpu.py").is_file()
+    # LUKS/openswap invariants must survive any composable selection:
+    # swap partition (`small`) only without LUKS (backend gate), and
+    # hibernation (`suspend`) never offered (openswap not pinned).
     assert parsed["partition"]["luksGeneration"] == "luks1"
-    assert parsed["partition"]["userSwapChoices"] == ["none", "file"]
+    assert parsed["partition"]["userSwapChoices"] == ["none", "file", "small"]
+    assert "suspend" not in parsed["partition"]["userSwapChoices"]
     # PR-B system choices: plan job before packages, choices job
     # after services-systemd and before initcpiocfg; absent selection
     # or plan must stay a no-op (preview32 defaults unchanged).

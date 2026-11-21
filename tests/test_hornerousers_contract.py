@@ -55,7 +55,7 @@ def test_viewmodule_registered_and_injected_before_cmake():
     injection = 'cp -a "$startdir/../../image/calamares/viewmodules/hornerousers" "$srcdir/calamares/src/modules/hornerousers"'
     assert injection in pkgbuild
     assert pkgbuild.index(injection) < pkgbuild.index("cmake -S")
-    assert re.search(r"^pkgrel=2$", pkgbuild, re.MULTILINE)
+    assert re.search(r"^pkgrel=3$", pkgbuild, re.MULTILINE)
 
 
 def test_page_not_in_show_sequence_until_vm_gate():

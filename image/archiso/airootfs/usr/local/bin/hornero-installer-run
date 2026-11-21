@@ -1,6 +1,22 @@
 #!/usr/bin/bash
 set -u
 
+# GPU probe + netinstall pre-selection (installer#115): open-source
+# AMD/Intel groups detected over PCI start ticked but editable; the
+# NVIDIA proprietary item is never pre-selected. Failure leaves the
+# committed netinstall config untouched (fail-closed, install goes on).
+if [[ -x /usr/lib/hornero-installer/probe-gpu.py && -f /etc/calamares/modules/netinstall.conf ]]; then
+  /usr/bin/python3 /usr/lib/hornero-installer/probe-gpu.py \
+    --output /run/hornero-installer/gpu-probe.json \
+    >/var/log/hornero-installer-gpu-probe.log 2>&1 || true
+  if [[ -f /run/hornero-installer/gpu-probe.json && -x /usr/lib/hornero-installer/preselect-gpu.py ]]; then
+    /usr/bin/python3 /usr/lib/hornero-installer/preselect-gpu.py \
+      --probe /run/hornero-installer/gpu-probe.json \
+      --netinstall /etc/calamares/modules/netinstall.conf \
+      >>/var/log/hornero-installer-gpu-probe.log 2>&1 || true
+  fi
+fi
+
 # Calamares runs as root and writes its session log below root's home. Keep a
 # readable local copy for the live user after the window closes. This wrapper
 # accepts no arguments; the live user's sudo rule permits only this fixed job.

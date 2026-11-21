@@ -19,10 +19,15 @@ canonical scripts/resolve-edition.py. Nothing is hand-listed here:
   lib32-vkbasalt exist only in the AUR (verified against Arch
   core/extra/multilib), and the target has no AUR helper, so
   offering them would tick a box that cannot install anything.
-- GPU drivers are NOT rendered: the pinned catalogue ships no GPU
-  package provenance (no nvidia/mesa/vulkan driver entries), so any
-  GPU group today would be a UI that installs nothing honest. Tracked
-  as a gap until HorneroOS/hornero models GPU provenance.
+- GPU drivers are rendered only when the pinned catalogue ships
+  both `gpuVendors` and complete `gpuProvenance` for every rendered
+  package (HorneroOS/hornero#466, installer#115). The catalogue
+  pinned today (0618004) ships neither, so no GPU group is rendered
+  from it; a catalogue with vendors but missing/incomplete
+  provenance fails closed (ValueError) instead of rendering a group
+  that installs something unprovenanced. AMD/Intel open-source
+  groups may be pre-selected from a PCI probe (probe-gpu.py JSON);
+  the NVIDIA proprietary item is never pre-selected.
 
 All groups default to unticked: an untouched netinstall page installs
 exactly the edition chosen in packagechooser, nothing more.
@@ -89,7 +94,93 @@ def _leaf(name: str, description: str, packages: list[str]) -> dict | None:
     }
 
 
-def build_groups(root: Path, catalogue: dict) -> list[dict]:
+def build_gpu_groups(catalogue: dict, probe_vendors: list[str] | tuple = ()) -> list[dict]:
+    """GPU groups from catalogue gpuVendors+gpuProvenance (fail-closed).
+
+    No gpuVendors in the pinned catalogue -> no groups (dependency on
+    the Hornero catalogue GPU provenance, hornero#466, plus a pin
+    bump). Vendors present but any rendered package without complete
+    provenance -> ValueError. AMD/Intel leaves are pre-selected only
+    when the PCI probe reported that vendor; NVIDIA is an explicit
+    top-level proprietary item, never pre-selected.
+    """
+    vendors = catalogue.get("gpuVendors")
+    if not vendors:
+        return []
+    provenance = catalogue.get("gpuProvenance") or {}
+    if not provenance:
+        raise ValueError(
+            "catalogue ships gpuVendors without gpuProvenance; refusing "
+            "to render GPU groups without provenance (fail-closed)"
+        )
+
+    def require_provenance(packages: list[str]) -> None:
+        for package in packages:
+            entry = provenance.get(package)
+            if not isinstance(entry, dict) or not entry.get("source") \
+                    or not str(entry.get("sourceUrl", "")).startswith("https://") \
+                    or not entry.get("licenses"):
+                raise ValueError(
+                    f"GPU package {package!r} lacks complete gpuProvenance "
+                    "(source/sourceUrl/licenses); refusing to render it"
+                )
+
+    groups: list[dict] = []
+    subgroups: list[dict] = []
+    for vendor_id in ("amd", "intel"):
+        entry = vendors.get(vendor_id)
+        if not entry:
+            continue
+        packages = list(entry.get("packages") or [])
+        if not packages:
+            raise ValueError(f"gpuVendors.{vendor_id} has no packages")
+        require_provenance(packages)
+        licences = sorted({lic for pkg in packages for lic in provenance[pkg]["licenses"]})
+        subgroups.append({
+            "name": f"GPU — {entry.get('title', vendor_id)}",
+            "description": (
+                f"Open-source GPU drivers for {vendor_id} from the pinned catalogue "
+                f"(licences: {', '.join(licences)}). "
+                + ("Pre-selected because the PCI probe detected this vendor; untick freely."
+                   if vendor_id in probe_vendors else "Unticked by default.")
+            ),
+            "selected": vendor_id in probe_vendors,
+            "critical": False,
+            "packages": packages,
+        })
+    if subgroups:
+        groups.append({
+            "name": "GPU drivers (open-source)",
+            "description": "Open-source GPU drivers by vendor from the pinned catalogue. Only a probe-detected vendor is pre-selected, and it stays editable.",
+            "selected": False,
+            "expanded": False,
+            "subgroups": subgroups,
+        })
+    nvidia = vendors.get("nvidia")
+    if nvidia:
+        userspace = list(nvidia.get("packages") or [])
+        dkms = nvidia.get("dkmsModule")
+        packages = ([dkms] if dkms else []) + userspace
+        if not packages:
+            raise ValueError("gpuVendors.nvidia has no packages")
+        require_provenance(packages)
+        groups.append({
+            "name": "NVIDIA GPU driver (proprietary)",
+            "description": (
+                "Proprietary NVIDIA userspace (nvidia-utils) with the nvidia-open-dkms "
+                "kernel module, which builds against the installed kernel headers. "
+                "Installed ONLY because you ticked this individual item: it is never "
+                "pre-selected, never installed by any group, and is subject to the "
+                "NVIDIA licence/EULA, which HorneroOS does not grant."
+            ),
+            "selected": False,
+            "critical": False,
+            "packages": packages,
+        })
+    return groups
+
+
+def build_groups(root: Path, catalogue: dict, probe_vendors: list[str] | tuple = ()) -> list[dict]:
     groups: list[dict] = []
 
     studio_specs = catalogue.get("studioSpecializations") or {}
@@ -206,15 +297,16 @@ def build_groups(root: Path, catalogue: dict) -> list[dict]:
         )
         if leaf:
             groups.append(leaf)
+    groups.extend(build_gpu_groups(catalogue, probe_vendors))
     return groups
 
 
-def render(root: Path, catalogue: dict) -> dict:
+def render(root: Path, catalogue: dict, probe_vendors: list[str] | tuple = ()) -> dict:
     return {
         "groupsUrl": "local",
         "required": False,
         "label": {"sidebar": "Additional software", "title": "Additional software"},
-        "groups": build_groups(root, catalogue),
+        "groups": build_groups(root, catalogue, probe_vendors),
     }
 
 
@@ -223,17 +315,23 @@ def main() -> int:
     parser.add_argument("--product-source", type=Path, help="use a local Hornero checkout instead of the pinned source")
     parser.add_argument("--output", type=Path, default=OUTPUT)
     parser.add_argument("--cache-dir", type=Path, default=Path.home() / ".cache" / "hornero-installer")
+    parser.add_argument("--gpu-probe", type=Path, help="probe-gpu.py JSON; pre-selects detected AMD/Intel GPU groups (NVIDIA never)")
     args = parser.parse_args()
+    probe_vendors: list[str] = []
+    if args.gpu_probe:
+        probe_vendors = list(json.loads(args.gpu_probe.read_text(encoding="utf-8")).get("vendors") or [])
     renderer = _catalogue_renderer()
     lock = yaml.safe_load(LOCK_PATH.read_text(encoding="utf-8"))
     root = renderer.load_product_root(lock, args.product_source, args.cache_dir.expanduser().absolute())
     catalogue = yaml.safe_load((root / "editions" / "catalogue.yaml").read_text(encoding="utf-8"))
-    rendered = render(root, catalogue)
+    rendered = render(root, catalogue, probe_vendors)
     header = (
         "# Generated by scripts/render-netinstall.py from the pinned\n"
         f"# HorneroOS/hornero catalogue ({lock['product']['revision']}); do not edit.\n"
-        "# All groups are unticked by default. GPU driver groups are absent on\n"
-        "# purpose: the pinned catalogue has no GPU package provenance yet.\n"
+        "# All groups are unticked by default, except open-source GPU groups\n"
+        "# pre-selected from a PCI probe at render time. GPU groups are absent\n"
+        "# when the pinned catalogue ships no gpuVendors/gpuProvenance\n"
+        "# (dependency: HorneroOS/hornero#466 + a catalogue pin bump).\n"
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
