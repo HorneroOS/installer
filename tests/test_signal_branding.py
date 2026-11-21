@@ -94,7 +94,7 @@ def test_slideshow_is_calamares_api2_and_honest():
     for channel in ("01 · DESKTOP", "02 · STUDIO", "03 · GAMING"):
         assert channel in SHOW
     # Every edition is labelled with its real maturity, never more.
-    assert SHOW.count('chip: "PREVIEW"') == 3
+    assert SHOW.count('chip: "SUPPORTED"') == 3
     for claim in ("stable", "Stable", "certified", "production-ready"):
         assert claim not in SHOW
     # Typographic cards only: no screenshot can misrepresent the release.
