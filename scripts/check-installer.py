@@ -135,9 +135,14 @@ def main() -> int:
             module_name = "shellprocess" if name.startswith("shellprocess-") else name
             schema_path = module_root / module_name / f"{module_name}.schema.yaml"
             if not schema_path.is_file():
-                if module_name != "packagechooser":
+                if module_name in ("hornerousers", "hornerosystem"):
+                    # Hornero viewmodules: upstream has no schema for
+                    # them; validate against the shipped ones.
+                    schema_path = CALAMARES / f"viewmodules/{module_name}/{module_name}.schema.yaml"
+                elif module_name != "packagechooser":
                     raise FileNotFoundError(f"Calamares schema missing for {module_name}: {schema_path}")
-                continue
+                else:
+                    continue
             schema = load_yaml(schema_path)
             schema_configuration = configuration
             if (
@@ -187,6 +192,21 @@ def main() -> int:
         extra_users_allowlist["groups"]
     )
     assert (CALAMARES / "create-extra-users.py").is_file()
+    # installer#111: hornerousers viewmodule is built/installed but VM-gated
+    # out of the show sequence until its VM rows pass.
+    hornerousers = parsed["hornerousers"]
+    assert hornerousers["selectionPath"] == "/run/hornero-installer/extra-users.json"
+    assert hornerousers["groups"] == extra_users_allowlist["groups"]
+    assert hornerousers["minPasswordLength"] >= 12
+    assert "hornerousers" not in phases[0]["show"], (
+        "hornerousers must not enter show before its VM gate (installer#111)"
+    )
+    viewmodule = CALAMARES / "viewmodules/hornerousers"
+    for _name in ("CMakeLists.txt", "HorneroUsersViewStep.cpp", "HorneroUsersViewStep.h",
+                  "HorneroUsersPage.cpp", "HorneroUsersPage.h",
+                  "HorneroUsersConfig.cpp", "HorneroUsersConfig.h",
+                  "hornerousers.schema.yaml"):
+        assert (viewmodule / _name).is_file(), f"hornerousers viewmodule missing {_name}"
     assert parsed["users"]["displayAutologin"] is False
     assert parsed["users"]["autologinGroup"] == ""
     assert parsed["users"]["user"]["home_permissions"] == "750"
@@ -212,9 +232,22 @@ def main() -> int:
     else:
         assert parsed["bootloader"]["efiBootLoader"] == "grub"
     assert parsed["bootloader"]["installHybridGRUB"] is False
-    # LUKS/openswap invariants must survive any composable selection.
+    # HorneroSystem (VM-gated): built but not shown until its VM gate;
+    # bootloader.conf delegates to its GlobalStorage key when present.
+    assert parsed["bootloader"].get("efiBootLoaderVar") == "hornero_bootloader"
+    assert "hornerosystem" not in phases[0]["show"], (
+        "HorneroSystem enters the show sequence (before partition) only "
+        "after its VM gate in docs/calamares-provisional.md passes"
+    )
+    assert parsed["hornerosystem"]["selectionPath"] == "/run/hornero-installer/system-selection.json"
+    assert (CALAMARES / "probe-gpu.py").is_file()
+    assert (CALAMARES / "preselect-gpu.py").is_file()
+    # LUKS/openswap invariants must survive any composable selection:
+    # swap partition (`small`) only without LUKS (backend gate), and
+    # hibernation (`suspend`) never offered (openswap not pinned).
     assert parsed["partition"]["luksGeneration"] == "luks1"
-    assert parsed["partition"]["userSwapChoices"] == ["none", "file"]
+    assert parsed["partition"]["userSwapChoices"] == ["none", "file", "small"]
+    assert "suspend" not in parsed["partition"]["userSwapChoices"]
     # PR-B system choices: plan job before packages, choices job
     # after services-systemd and before initcpiocfg; absent selection
     # or plan must stay a no-op (preview32 defaults unchanged).
@@ -412,6 +445,10 @@ def main() -> int:
     )
     assert 'shellprocess_descriptor="$pkgdir/usr/lib/calamares/modules/shellprocess/module.desc"' in calamares_pkgbuild
     assert "emergency: true" in calamares_pkgbuild
+    assert 'cp -a "$startdir/../../image/calamares/viewmodules/hornerousers" "$srcdir/calamares/src/modules/hornerousers"' in calamares_pkgbuild
+    assert calamares_pkgbuild.index("viewmodules/hornerousers") < calamares_pkgbuild.index("cmake -S"), (
+        "hornerousers must be injected before cmake scans src/modules"
+    )
     package_builder = (ROOT / "scripts/build-package-repository.sh").read_text(encoding="utf-8")
     assert "makepkg --nodeps --noconfirm --force --cleanbuild --dir" in package_builder
     assert "--packagelist" not in package_builder, "package builder must compile packages before collecting artifacts"

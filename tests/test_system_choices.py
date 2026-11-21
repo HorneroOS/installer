@@ -69,8 +69,10 @@ def test_lts_substitution_replaces_kernel_exactly_once():
 @pytest.mark.parametrize("selection,fragment", [
     (_selection(primaryKernel="linux-rt"), "Unknown primary kernel"),
     (_selection(fallbackKernel="linux"), "must differ"),
-    (_selection(bootloader="systemd-boot"), "only GRUB is proven"),
-    (_selection(swap="partition"), "not offered"),
+    (_selection(bootloader="systemd-boot"), "needs UEFI"),
+    (_selection(bootloader="refind"), "not offered"),
+    (_selection(swap="suspend"), "not offered"),
+    (_selection(swap="partition", encryption="luks"), "only offered without LUKS"),
     (_selection(services={"NetworkManager": False}), "cannot be toggled"),
     (_selection(appearance={"theme": "hornero-signal-day", "shellPreset": "cockpit"}), "not available"),
     (_selection(offline=True, primaryKernel="linux-lts"), "Offline installation"),
@@ -141,10 +143,38 @@ def test_appearance_seeded_from_plan_and_never_overwritten(tmp_path):
     assert appearance == {"schemaVersion": 1, "shellPreset": "cockpit", "theme": "hornero-signal-night"}
 
 
-def test_swap_choices_offer_file_but_not_partition():
+def test_swap_choices_offer_partition_only_without_luks_gate():
     partition = yaml.safe_load((CALAMARES / "modules/partition.conf").read_text())
-    assert partition["userSwapChoices"] == ["none", "file"]
+    assert partition["userSwapChoices"] == ["none", "file", "small"]
+    assert "suspend" not in partition["userSwapChoices"]
     assert partition["initialSwapChoice"] == "none"
+
+
+def test_systemd_boot_uefi_plan_esp_and_no_grub_default(tmp_path):
+    selection = _selection(bootloader="systemd-boot", firmware="uefi",
+                             primaryKernel="linux-lts", fallbackKernel="linux")
+    plan = plan_mod.build_plan(selection, ALLOWLIST)
+    assert plan["espRecommendedMiB"] == 1024 + 256
+    assert plan_mod.validate_selection(_selection(bootloader="systemd-boot", firmware="bios"), ALLOWLIST)
+    root = _root(tmp_path)
+    assert choices_mod.apply_grub_default(root, plan) is False
+    assert choices_mod.apply_grub_saved_entry(root, plan, ALLOWLIST, runner=lambda argv: 0) is False
+
+
+def test_swap_partition_aborts_when_target_is_luks(tmp_path):
+    root = _root(tmp_path)
+    (root / "etc/crypttab").write_text("cryptroot UUID=abc none luks\n")
+    selection_file = tmp_path / "system-selection.json"
+    selection_file.write_text(json.dumps({"swap": "partition"}))
+    selection_file.chmod(0o600)
+    with pytest.raises(ValueError, match="only offered without LUKS"):
+        plan_mod.apply_system_plan(root, selection_file, ALLOWLIST)
+    assert not (root / "usr/lib/hornero/installation-plan.json").exists()
+
+
+def test_swap_partition_plan_without_luks():
+    plan = plan_mod.build_plan(_selection(swap="partition"), ALLOWLIST)
+    assert plan["selection"]["swap"] == "partition"
     mount = yaml.safe_load((CALAMARES / "modules/mount.conf").read_text())
     assert mount["btrfsSwapSubvol"] == "/@swap"
 
