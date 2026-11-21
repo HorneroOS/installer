@@ -58,18 +58,32 @@ def cleanup(root: Path) -> None:
     original = pacman_conf.read_text(encoding="utf-8").splitlines()
     output: list[str] = []
     section = ""
+    seen_repositories: set[str] = set()
+    offline_seen = False
     for line in original:
         if line in LOCAL_INCLUDES:
             continue
         if line.startswith("[") and line.endswith("]"):
             section = line
+            if section == "[hornero-offline]":
+                offline_seen = True
+                continue
             output.append(line)
             if section in REPOSITORIES:
+                seen_repositories.add(section)
                 output.append(NORMAL_MIRROR)
+            continue
+        if section == "[hornero-offline]":
             continue
         if section in REPOSITORIES and line == NORMAL_MIRROR:
             continue
         output.append(line)
+    # An offline install dropped the Arch sections entirely; restore
+    # them so the installed system uses normal mirrors after reboot.
+    if offline_seen:
+        for repository in ("[core]", "[extra]", "[multilib]"):
+            if repository not in seen_repositories:
+                output += ["", repository, NORMAL_MIRROR]
 
     temporary = pacman_conf.with_name(".pacman.conf.hornero-tmp")
     if temporary.is_symlink():

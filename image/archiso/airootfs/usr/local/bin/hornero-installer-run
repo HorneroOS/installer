@@ -1,6 +1,24 @@
 #!/usr/bin/bash
 set -u
 
+# Offline consent comes from the live launcher as a flag file; it is
+# never trusted on its own. Re-verify the on-media repository as root
+# and only then create the root-owned 0600 marker and system selection
+# the Calamares jobs consume, all before Calamares (pre-partition).
+offline_flag=/tmp/hornero-installer-offline-accepted
+if [[ -f "$offline_flag" ]] && grep -qx offline "$offline_flag"; then
+  if /usr/bin/python3 /usr/lib/hornero-installer/offline-repo.py --verify-only; then
+    /usr/bin/install -d -m 0755 /run/hornero-installer
+    printf 'offline\n' | /usr/bin/install -m 0600 /dev/stdin /run/hornero-installer/offline-mode
+    printf '{"offline": true}\n' | /usr/bin/install -m 0600 /dev/stdin /run/hornero-installer/system-selection.json
+  else
+    /usr/bin/logger -t hornero-installer "Offline mode requested but the on-media repository is incomplete; refusing to start."
+    rm -f "$offline_flag"
+    exit 1
+  fi
+  rm -f "$offline_flag"
+fi
+
 # GPU probe + netinstall pre-selection (installer#115): open-source
 # AMD/Intel groups detected over PCI start ticked but editable; the
 # NVIDIA proprietary item is never pre-selected. Failure leaves the
