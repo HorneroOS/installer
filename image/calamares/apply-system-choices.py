@@ -37,6 +37,40 @@ import yaml
 
 ALLOWLIST_PATH = Path(__file__).with_name("system-allowlist.yaml")
 PLAN_REL = Path("usr/lib/hornero/installation-plan.json")
+BOOT_CONFIRM_UNIT_REL = Path("usr/lib/systemd/system/hornero-boot-confirm.service")
+BOOT_CONFIRM_WANTS_REL = Path(
+    "etc/systemd/system/graphical.target.wants/hornero-boot-confirm.service"
+)
+BOOT_TRIAL_HOOK_REL = Path("etc/pacman.d/hooks/95-hornero-boot-trial.hook")
+
+BOOT_CONFIRM_UNIT_CONTENT = """\
+[Unit]
+Description=Confirm HorneroOS boot trial as healthy
+After=graphical.target
+ConditionPathExists=/var/lib/hornero/boot-trial.pending
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sh -c 'mkdir -p /var/lib/hornero && rm -f /var/lib/hornero/boot-trial.pending /var/lib/hornero/boot-trial.tries && /usr/bin/date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ > /var/lib/hornero/boot-confirmed'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical.target
+"""
+
+BOOT_TRIAL_HOOK_CONTENT = """\
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Path
+Target = usr/lib/modules/*/vmlinuz
+Target = boot/initramfs-*.img
+
+[Action]
+Description = Arm HorneroOS Btrfs snapshot boot trial counter...
+When = PostTransaction
+Exec = /usr/bin/sh -c 'mkdir -p /var/lib/hornero && printf "3\\n" > /var/lib/hornero/boot-trial.tries && touch /var/lib/hornero/boot-trial.pending'
+"""
 
 
 def _run(argv: list[str]) -> int:
@@ -89,6 +123,37 @@ def configure_zram(root: Path) -> Path:
             encoding="utf-8",
         )
     return conf
+
+
+def configure_boot_trial_rollback(root: Path, *, enabled: bool = True) -> dict[str, str] | None:
+    """Provision hornero-boot-confirm.service and 95-hornero-boot-trial.hook."""
+    if not enabled:
+        return None
+    unit_path = root / BOOT_CONFIRM_UNIT_REL
+    wants_path = root / BOOT_CONFIRM_WANTS_REL
+    hook_path = root / BOOT_TRIAL_HOOK_REL
+
+    for path in (unit_path, hook_path):
+        if path.is_symlink():
+            raise ValueError(f"Refusing symlink in target boot-trial path: {path}")
+
+    if not unit_path.exists():
+        unit_path.parent.mkdir(parents=True, exist_ok=True)
+        unit_path.write_text(BOOT_CONFIRM_UNIT_CONTENT, encoding="utf-8")
+
+    if not wants_path.is_symlink() and not wants_path.exists():
+        wants_path.parent.mkdir(parents=True, exist_ok=True)
+        wants_path.symlink_to("/usr/lib/systemd/system/hornero-boot-confirm.service")
+
+    if not hook_path.exists():
+        hook_path.parent.mkdir(parents=True, exist_ok=True)
+        hook_path.write_text(BOOT_TRIAL_HOOK_CONTENT, encoding="utf-8")
+
+    return {
+        "unit": str(BOOT_CONFIRM_UNIT_REL),
+        "wants": str(BOOT_CONFIRM_WANTS_REL),
+        "hook": str(BOOT_TRIAL_HOOK_REL),
+    }
 
 
 def install_cpu_ucode(
@@ -250,6 +315,8 @@ def apply_system_choices(
             default_plan = {"selection": {"kernels": ["linux"], "dkms": True}}
             kernel_transaction(root, default_plan, allowlist, runner=runner)
         configure_zram(root)
+        if (root / "etc/snapper/configs/root").is_file():
+            configure_boot_trial_rollback(root, enabled=True)
         return None
     for component in (root / "etc/default/grub",):
         try:
@@ -262,8 +329,15 @@ def apply_system_choices(
     services = apply_services(root, plan, allowlist)
     grub = apply_grub_default(root, plan)
     configure_zram(root)
+    snapshots_enabled = (plan.get("selection") or {}).get("snapshots", True) is not False
+    boot_trial = configure_boot_trial_rollback(root, enabled=snapshots_enabled)
     ucode = install_cpu_ucode(root, offline=offline, cpuinfo_path=cpuinfo_path, runner=runner)
-    return {"services": services, "grubDefaultSaved": grub, "ucode": ucode}
+    return {
+        "services": services,
+        "grubDefaultSaved": grub,
+        "ucode": ucode,
+        "bootTrial": boot_trial,
+    }
 
 
 def main() -> int:
