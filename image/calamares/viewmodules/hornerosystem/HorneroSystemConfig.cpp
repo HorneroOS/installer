@@ -15,6 +15,7 @@
 
 HorneroSystemConfig::HorneroSystemConfig( QObject* parent )
     : QObject( parent )
+    , m_offline( QFileInfo::exists( QStringLiteral( "/run/hornero-installer/offline-mode" ) ) )
 {
 }
 
@@ -43,7 +44,7 @@ int
 HorneroSystemConfig::espMiB() const
 {
     const int count = m_fallbackKernel.isEmpty() ? 1 : 2;
-    const int base = m_bootloader == QStringLiteral( "systemd-boot" ) ? 1024 : 512;
+    const int base = 1024;
     return base + 256 * ( count - 1 );
 }
 
@@ -109,7 +110,9 @@ HorneroSystemConfig::writeSelection() const
 {
     if ( isDefaultSelection() )
     {
-        return true;  // Untouched page: backend absent-file no-op (preview32).
+        storeBootloaderGlobal();
+        QFile::remove( m_selectionPath );
+        return true;  // Untouched/reset page: backend absent-file no-op (preview32).
     }
     if ( !isValid() )
     {

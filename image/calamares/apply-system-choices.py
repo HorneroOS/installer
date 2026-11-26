@@ -53,17 +53,75 @@ def load_plan(root: Path) -> dict | None:
     return plan
 
 
+def has_dkms_packages(root: Path) -> bool:
+    """Return True if any *-dkms package is installed in the target pacman DB."""
+    local_db = root / "var/lib/pacman/local"
+    if not local_db.is_dir():
+        return False
+    return any(
+        entry.is_dir() and "-dkms-" in entry.name
+        for entry in local_db.iterdir()
+    )
+
+
+def detect_cpu_ucode(cpuinfo_path: Path = Path("/proc/cpuinfo")) -> str | None:
+    """Return 'amd-ucode' or 'intel-ucode' for the host CPU, or None."""
+    try:
+        text = cpuinfo_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    if "AuthenticAMD" in text:
+        return "amd-ucode"
+    if "GenuineIntel" in text:
+        return "intel-ucode"
+    return None
+
+
+def configure_zram(root: Path) -> Path:
+    """Write a default zram-generator.conf in the target if absent."""
+    conf = root / "etc/systemd/zram-generator.conf"
+    if conf.is_symlink():
+        raise ValueError(f"Refusing symlink in target zram config path: {conf}")
+    if not conf.exists():
+        conf.parent.mkdir(parents=True, exist_ok=True)
+        conf.write_text(
+            "[zram0]\nzram-size = min(ram / 2, 4096)\ncompression-algorithm = zstd\n",
+            encoding="utf-8",
+        )
+    return conf
+
+
+def install_cpu_ucode(
+    root: Path,
+    *,
+    offline: bool = False,
+    cpuinfo_path: Path = Path("/proc/cpuinfo"),
+    runner=_run,
+) -> str | None:
+    """Install matching CPU microcode package when not offline."""
+    if offline:
+        return None
+    ucode = detect_cpu_ucode(cpuinfo_path)
+    if ucode is None:
+        return None
+    argv = ["arch-chroot", str(root), "pacman", "-S", "--noconfirm", "--needed", ucode]
+    runner(argv)
+    return ucode
+
+
 def kernel_transaction(root: Path, plan: dict, allowlist: dict, runner=_run) -> list[list[str]]:
-    """Pacman argv lists realising the plan kernels; [] when default."""
+    """Pacman argv lists realising the plan kernels; [] when default without DKMS."""
     selection = plan.get("selection") or {}
     kernels = selection.get("kernels") or ["linux"]
-    if kernels == ["linux"]:
+    dkms = bool(selection.get("dkms")) or has_dkms_packages(root)
+    if kernels == ["linux"] and not dkms:
         return []
     entries = allowlist["kernels"]
     wanted = []
     for kernel in kernels:
-        wanted.append(entries[kernel]["package"])
-    if len(kernels) > 1:
+        if kernels != ["linux"]:
+            wanted.append(entries[kernel]["package"])
+    if len(kernels) > 1 or dkms:
         for kernel in kernels:
             if entries[kernel].get("headers"):
                 wanted.append(entries[kernel]["headers"])
@@ -179,6 +237,9 @@ def apply_system_choices(root: Path, allowlist: dict, runner=_run) -> dict | Non
     root = root.resolve()
     plan = load_plan(root)
     if plan is None:
+        if has_dkms_packages(root):
+            default_plan = {"selection": {"kernels": ["linux"], "dkms": True}}
+            kernel_transaction(root, default_plan, allowlist, runner=runner)
         return None
     for component in (root / "etc/default/grub",):
         try:
@@ -190,6 +251,7 @@ def apply_system_choices(root: Path, allowlist: dict, runner=_run) -> dict | Non
     kernel_transaction(root, plan, allowlist, runner=runner)
     services = apply_services(root, plan, allowlist)
     grub = apply_grub_default(root, plan)
+    configure_zram(root)
     return {"services": services, "grubDefaultSaved": grub}
 
 

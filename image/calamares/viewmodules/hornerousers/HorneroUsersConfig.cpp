@@ -125,7 +125,8 @@ HorneroUsersConfig::writeSelection() const
 {
     if ( isEmptySelection() )
     {
-        return true;  // Untouched page: backend absent-file no-op (preview32).
+        QFile::remove( m_selectionPath );
+        return true;  // Untouched/reset page: backend absent-file no-op (preview32).
     }
     if ( !isValid() )
     {

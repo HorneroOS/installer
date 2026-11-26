@@ -121,12 +121,14 @@ def main() -> int:
         "shellprocess-resolver-cleanup"
     ]["script"]
     initcpiocfg = parsed["initcpiocfg"]
+    assert initcpiocfg["useSystemdHook"] is True
     assert initcpiocfg["hooks"]["remove"] == ["filesystems", "fsck"]
-    assert initcpiocfg["hooks"]["append"] == ["encrypt", "filesystems", "fsck"]
+    assert initcpiocfg["hooks"]["append"] == ["sd-encrypt", "filesystems", "fsck"]
     assert "luksbootkeyfile" not in exec_modules, (
         "the EFI System Partition mounted at /boot is unencrypted; do not put a LUKS keyfile in initramfs"
     )
-    assert parsed["grubcfg"]["kernel_params"] == ["quiet"]
+    assert parsed["grubcfg"]["kernel_params"] == ["quiet", "nvidia_drm.modeset=1"]
+    assert parsed["grubcfg"]["defaults"]["GRUB_DISABLE_OS_PROBER"] is False
     if args.schema_root:
         import jsonschema
 
@@ -245,7 +247,8 @@ def main() -> int:
     # LUKS/openswap invariants must survive any composable selection:
     # swap partition (`small`) only without LUKS (backend gate), and
     # hibernation (`suspend`) never offered (openswap not pinned).
-    assert parsed["partition"]["luksGeneration"] == "luks1"
+    assert parsed["partition"]["luksGeneration"] == "luks2"
+    assert parsed["partition"]["efi"]["recommendedSize"] == "1024MiB"
     assert parsed["partition"]["userSwapChoices"] == ["none", "file", "small"]
     assert "suspend" not in parsed["partition"]["userSwapChoices"]
     # PR-B system choices: plan job before packages, choices job
@@ -651,7 +654,7 @@ def main() -> int:
     assert "sudo -E" not in launcher + desktop_entry
     assert "sudo /usr/local/bin/hornero-installer-run" in launcher
     assert "/usr/bin/nm-online --quiet --timeout=45" in launcher
-    assert "/usr/bin/timeout 10 /usr/bin/getent ahostsv4 archive.archlinux.org" in launcher
+    assert "/usr/bin/timeout 10 /usr/bin/getent ahosts archive.archlinux.org" in launcher
     assert launcher.index("nm-online") < launcher.index("getent")
     assert launcher.index("getent") < launcher.rindex("exec /usr/bin/sudo"), (
         "the online path still checks network and DNS before launching"
@@ -740,6 +743,7 @@ def main() -> int:
         )
         assert failures == [] and cleaned == [fake_target]
         assert unmounted == [
+            fake_target / "usr/share/hornero-installer/offline-repo",
             fake_target / "etc/hosts",
             fake_target / "etc/resolv.conf",
             fake_target / "sys/firmware/efi/efivars",

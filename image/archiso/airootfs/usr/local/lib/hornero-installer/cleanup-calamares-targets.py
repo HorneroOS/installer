@@ -19,7 +19,7 @@ TEMP_INCLUDES = (
     "Include = /etc/pacman.d/hornero-installer.conf",
     "Include = /etc/pacman.d/hornero-installer-mirrorlist.conf",
 )
-RESOLVER_MOUNTS = ("etc/hosts", "etc/resolv.conf")
+RESOLVER_MOUNTS = ("usr/share/hornero-installer/offline-repo", "etc/hosts", "etc/resolv.conf")
 TARGET_MOUNTS = (
     "sys/firmware/efi/efivars",
     "run/udev",

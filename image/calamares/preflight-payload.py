@@ -41,7 +41,7 @@ def missing_sources(conf: Path, root: Path) -> list[str]:
 
 
 OFFLINE_MARKER = Path("/run/hornero-installer/offline-mode")
-OFFLINE_REPO = Path("/usr/share/hornero-installer/offline-repo")
+OFFLINE_REPO = Path("/run/archiso/bootmnt/hornero/x86_64/offline-repo")
 
 
 def offline_repo_errors(root: Path) -> list[str]:

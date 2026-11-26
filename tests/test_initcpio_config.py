@@ -17,10 +17,10 @@ MODULES = ROOT / "image/calamares/modules"
 def test_initcpiocfg_keeps_single_encrypt_hook_source():
     conf = yaml.safe_load((MODULES / "initcpiocfg.conf").read_text(encoding="utf-8"))
     append = conf["hooks"]["append"]
-    # Exactly one configured `encrypt` (the bootloader-layout contract);
+    # Exactly one configured `sd-encrypt` (the bootloader-layout contract);
     # the duplicate seen on hardware came from generation, not config.
-    assert append.count("encrypt") == 1
-    assert append == ["encrypt", "filesystems", "fsck"]
+    assert append.count("sd-encrypt") == 1
+    assert append == ["sd-encrypt", "filesystems", "fsck"]
 
 
 def test_swap_choices_never_generate_openswap():

@@ -115,10 +115,20 @@ def test_apply_offline_rewrites_and_cleanup_restores(tmp_path):
     repo = _repo(tmp_path)
     marker = tmp_path / "offline-mode"
     marker.write_text("offline\n")
-    assert runtime_mod.apply_offline(root, repo, marker) is True
+    mounted: list[tuple[Path, Path]] = []
+    assert (
+        runtime_mod.apply_offline(
+            root,
+            repo,
+            marker,
+            bind_mount=lambda src, dst: mounted.append((src, dst)),
+        )
+        is True
+    )
+    assert mounted == [(repo, root / "usr/share/hornero-installer/offline-repo")]
     conf = (root / "etc/pacman.conf").read_text()
     assert "[hornero-offline]" in conf
-    assert f"Server = file://{repo}" in conf
+    assert "Server = file:///usr/share/hornero-installer/offline-repo" in conf
     assert "archive.archlinux.org" not in conf
     assert "[core]" not in conf
     assert "Include = /etc/pacman.d/hornero-installer.conf" in conf
@@ -143,7 +153,7 @@ def test_preflight_blocks_incomplete_offline_repo_before_partition(tmp_path):
     root = tmp_path / "live"
     (root / "run/hornero-installer").mkdir(parents=True)
     (root / "run/hornero-installer/offline-mode").write_text("offline\n")
-    (root / "usr/share/hornero-installer/offline-repo").mkdir(parents=True)
+    (root / "run/archiso/bootmnt/hornero/x86_64/offline-repo").mkdir(parents=True)
     errors = preflight_mod.offline_repo_errors(root)
     assert errors, "preflight must reject offline mode without its repo"
     # No marker: online installs never consult the offline repo.
@@ -181,3 +191,14 @@ def test_build_iso_offline_is_opt_in():
     assert "--offline" in build
     assert "build-offline-repo.sh" in build
     assert "offline-manifest.json" in build
+    assert '"/hornero/$arch/offline-repo"' in build
+    assert "airootfs/usr/share/hornero-installer/offline-repo" not in build
+
+
+def test_offline_repo_chroot_bind_mount_and_unmount_configured():
+    assert runtime_mod.DEFAULT_REPO == Path("/run/archiso/bootmnt/hornero/x86_64/offline-repo")
+    assert runtime_mod.CHROOT_REPO == Path("/usr/share/hornero-installer/offline-repo")
+    resolver_cleanup = (
+        CALAMARES / "modules/shellprocess-resolver-cleanup.conf"
+    ).read_text()
+    assert "-/usr/bin/umount ${ROOT}/usr/share/hornero-installer/offline-repo" in resolver_cleanup
