@@ -70,9 +70,60 @@ def offline_repo_errors(root: Path) -> list[str]:
     return errors
 
 
+def preflight_environment(root: Path, *, min_ram_mib: int = 2048) -> dict:
+    """Inspect firmware mode (UEFI/BIOS), RAM, and AC/battery power status."""
+    firmware = "uefi" if (root / "sys/firmware/efi").is_dir() else "bios"
+    ram_mib: int | None = None
+    warnings: list[str] = []
+    errors: list[str] = []
+
+    meminfo = root / "proc/meminfo"
+    if meminfo.is_file():
+        for line in meminfo.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.startswith("MemTotal:"):
+                parts = line.split()
+                if len(parts) >= 2 and parts[1].isdigit():
+                    ram_mib = int(parts[1]) // 1024
+                break
+    if ram_mib is not None:
+        if ram_mib < min_ram_mib:
+            errors.append(
+                f"available RAM ({ram_mib} MiB) is below minimum ({min_ram_mib} MiB)"
+            )
+        elif ram_mib < 4096:
+            warnings.append(
+                f"available RAM ({ram_mib} MiB) is below recommended 4096 MiB"
+            )
+
+    on_battery = False
+    power_dir = root / "sys/class/power_supply"
+    if power_dir.is_dir():
+        for entry in sorted(power_dir.iterdir()):
+            status_file = entry / "status"
+            if status_file.is_file():
+                status = status_file.read_text(encoding="utf-8", errors="replace").strip()
+                if status.lower() == "discharging":
+                    on_battery = True
+                    warnings.append(
+                        "system is running on battery power; connect AC adapter to avoid power loss during installation"
+                    )
+                    break
+
+    return {
+        "firmware": firmware,
+        "ramMiB": ram_mib,
+        "onBattery": on_battery,
+        "warnings": warnings,
+        "errors": errors,
+    }
+
+
 def main(argv: list[str]) -> int:
     conf = Path(argv[1]) if len(argv) > 1 else DEFAULT_CONF
     root = Path(argv[2]) if len(argv) > 2 else Path("/")
+    env = preflight_environment(root)
+    for warning in env["warnings"]:
+        print(f"HorneroOS installer preflight warning: {warning}", file=sys.stderr)
     offline_errors = offline_repo_errors(root)
     for error in offline_errors:
         print(

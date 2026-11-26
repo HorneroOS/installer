@@ -233,13 +233,23 @@ def apply_grub_saved_entry(root: Path, plan: dict, allowlist: dict, runner=_run)
     return True
 
 
-def apply_system_choices(root: Path, allowlist: dict, runner=_run) -> dict | None:
+def apply_system_choices(
+    root: Path,
+    allowlist: dict,
+    runner=_run,
+    *,
+    offline: bool | None = None,
+    cpuinfo_path: Path = Path("/proc/cpuinfo"),
+) -> dict | None:
     root = root.resolve()
+    if offline is None:
+        offline = Path("/run/hornero-installer/offline-mode").is_file()
     plan = load_plan(root)
     if plan is None:
         if has_dkms_packages(root):
             default_plan = {"selection": {"kernels": ["linux"], "dkms": True}}
             kernel_transaction(root, default_plan, allowlist, runner=runner)
+        configure_zram(root)
         return None
     for component in (root / "etc/default/grub",):
         try:
@@ -252,7 +262,8 @@ def apply_system_choices(root: Path, allowlist: dict, runner=_run) -> dict | Non
     services = apply_services(root, plan, allowlist)
     grub = apply_grub_default(root, plan)
     configure_zram(root)
-    return {"services": services, "grubDefaultSaved": grub}
+    ucode = install_cpu_ucode(root, offline=offline, cpuinfo_path=cpuinfo_path, runner=runner)
+    return {"services": services, "grubDefaultSaved": grub, "ucode": ucode}
 
 
 def main() -> int:

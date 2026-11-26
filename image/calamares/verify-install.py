@@ -164,6 +164,23 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
     ):
         problems.append("installer-only repository still enabled in etc/pacman.conf")
 
+    zram_conf = root / "etc/systemd/zram-generator.conf"
+    if zram_conf.is_file():
+        zram_text = zram_conf.read_text(encoding="utf-8", errors="replace")
+        if "[zram0]" not in zram_text:
+            problems.append("invalid zram-generator configuration (missing [zram0]): etc/systemd/zram-generator.conf")
+
+    mkinitcpio_conf = root / "etc/mkinitcpio.conf"
+    if mkinitcpio_conf.is_file():
+        mk_text = mkinitcpio_conf.read_text(encoding="utf-8", errors="replace")
+        hooks_match = re.search(r"^\s*HOOKS=\(([^)]*)\)", mk_text, re.MULTILINE)
+        if hooks_match:
+            hooks = hooks_match.group(1).split()
+            if "sd-encrypt" in hooks and "systemd" not in hooks:
+                problems.append(
+                    "mkinitcpio.conf uses sd-encrypt without systemd hook: etc/mkinitcpio.conf"
+                )
+
     return problems
 
 
