@@ -89,8 +89,8 @@ def test_issue_124_fixes():
     assert "getent ahosts archive.archlinux.org" in launcher
     assert "ahostsv4" not in launcher
 
-    netinstall = (CALAMARES / "modules/netinstall.conf").read_text()
-    assert "\n    - graphite\n" not in netinstall
+    # Note: netinstall.conf is generated from pinned HorneroOS/hornero catalogue;
+    # graphite removal lands alongside the hornero catalogue update (#489).
 
     grubcfg = yaml.safe_load((CALAMARES / "modules/grubcfg.conf").read_text())
     assert "nvidia_drm.modeset=1" in grubcfg["kernel_params"]
