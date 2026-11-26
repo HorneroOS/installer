@@ -181,6 +181,40 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
                     "mkinitcpio.conf uses sd-encrypt without systemd hook: etc/mkinitcpio.conf"
                 )
 
+    boot_confirm_unit = root / "usr/lib/systemd/system/hornero-boot-confirm.service"
+    boot_trial_hook = root / "etc/pacman.d/hooks/95-hornero-boot-trial.hook"
+    snapshots_required = bool(
+        plan is not None and (plan.get("selection") or {}).get("snapshots") is True
+    )
+    if snapshots_required:
+        require_file(
+            "usr/lib/systemd/system/hornero-boot-confirm.service",
+            "boot-confirm systemd service",
+        )
+        require_file(
+            "etc/pacman.d/hooks/95-hornero-boot-trial.hook",
+            "boot-trial pacman ALPM hook",
+        )
+    if boot_confirm_unit.is_file():
+        unit_text = boot_confirm_unit.read_text(encoding="utf-8", errors="replace")
+        if "[Unit]" not in unit_text or "[Service]" not in unit_text or "graphical.target" not in unit_text:
+            problems.append(
+                "invalid hornero-boot-confirm.service unit: "
+                "usr/lib/systemd/system/hornero-boot-confirm.service"
+            )
+        if not _service_enabled(root, "hornero-boot-confirm.service"):
+            problems.append(
+                "hornero-boot-confirm.service installed but not enabled: "
+                "etc/systemd/system/*.target.wants/hornero-boot-confirm.service"
+            )
+    if boot_trial_hook.is_file():
+        hook_text = boot_trial_hook.read_text(encoding="utf-8", errors="replace")
+        if "[Trigger]" not in hook_text or "[Action]" not in hook_text:
+            problems.append(
+                "invalid boot-trial ALPM hook (missing [Trigger] or [Action]): "
+                "etc/pacman.d/hooks/95-hornero-boot-trial.hook"
+            )
+
     return problems
 
 
