@@ -218,8 +218,6 @@ if [[ "$offline" == 1 ]]; then
     --packages "$work/offline-packages.txt" \
     --snapshot "$snapshot" \
     --output "$work/offline-repo"
-  install -d "$profile/airootfs/usr/share/hornero-installer/offline-repo"
-  cp -a "$work/offline-repo/." "$profile/airootfs/usr/share/hornero-installer/offline-repo/"
 fi
 cat > "$work/build-repo.conf" <<EOF
 [hornero-installer]
@@ -285,8 +283,12 @@ iso=$(find "$output" -maxdepth 1 -type f -name '*.iso' -print -quit)
 # Calamares loop-mounts this SquashFS image; nesting its loop device under the
 # loop-mounted Archiso airootfs is rejected by the Linux loop driver.
 enriched_iso="$output/.horneroos-with-base.iso"
+xorriso_args=(-map "$work/base.sqfs" "/hornero/$arch/base.sqfs")
+if [[ "$offline" == 1 ]]; then
+  xorriso_args+=(-map "$work/offline-repo" "/hornero/$arch/offline-repo")
+fi
 xorriso -indev "$iso" -outdev "$enriched_iso" \
-  -map "$work/base.sqfs" "/hornero/$arch/base.sqfs" \
+  "${xorriso_args[@]}" \
   -boot_image any replay -commit
 mv -- "$enriched_iso" "$iso"
 sha256sum "$iso" > "$iso.sha256"

@@ -17,11 +17,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 DEFAULT_MARKER = Path("/run/hornero-installer/offline-mode")
-DEFAULT_REPO = Path("/usr/share/hornero-installer/offline-repo")
+DEFAULT_REPO = Path("/run/archiso/bootmnt/hornero/x86_64/offline-repo")
+CHROOT_REPO = Path("/usr/share/hornero-installer/offline-repo")
 DB_NAME = "hornero-offline.db.tar.gz"
 MANIFEST_NAME = "offline-manifest.json"
 OFFLINE_SECTION = "[hornero-offline]"
@@ -81,7 +84,27 @@ def offline_pacman_conf(text: str, repo_dir: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
-def apply_offline(root: Path, repo_dir: Path, marker: Path) -> bool:
+def _bind_mount_ro(source: Path, target: Path) -> None:
+    target.mkdir(parents=True, exist_ok=True)
+    for argv in (
+        ["/usr/bin/mount", "--bind", str(source), str(target)],
+        ["/usr/bin/mount", "-o", "remount,bind,ro", str(target)],
+    ):
+        result = subprocess.run(argv, check=False, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise ValueError(
+                f"bind-mount offline repo failed ({' '.join(argv)}): {result.stderr.strip()}"
+            )
+
+
+def apply_offline(
+    root: Path,
+    repo_dir: Path,
+    marker: Path,
+    *,
+    bind_mount: Callable[[Path, Path], None] = _bind_mount_ro,
+    chroot_repo: Path = CHROOT_REPO,
+) -> bool:
     if not marker.is_file():
         return False
     errors = verify_repo(repo_dir)
@@ -90,8 +113,10 @@ def apply_offline(root: Path, repo_dir: Path, marker: Path) -> bool:
     pacman_conf = root / "etc/pacman.conf"
     if pacman_conf.is_symlink() or not pacman_conf.is_file():
         raise ValueError("target pacman.conf is missing or is not a regular file")
+    target_mount = root / chroot_repo.relative_to("/")
+    bind_mount(repo_dir, target_mount)
     pacman_conf.write_text(
-        offline_pacman_conf(pacman_conf.read_text(encoding="utf-8"), repo_dir),
+        offline_pacman_conf(pacman_conf.read_text(encoding="utf-8"), chroot_repo),
         encoding="utf-8",
     )
     return True

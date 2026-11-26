@@ -42,7 +42,7 @@ def test_encrypted_root_unlocks_before_mount_without_embedded_keyfile() -> None:
     assert modules.index("initcpiocfg") < modules.index("initcpio") < modules.index("grubcfg")
     assert modules.index("grubcfg") < modules.index("bootloader")
     assert initcpio["hooks"]["remove"] == ["filesystems", "fsck"]
-    assert initcpio["hooks"]["append"] == ["encrypt", "filesystems", "fsck"]
+    assert initcpio["hooks"]["append"] == ["sd-encrypt", "filesystems", "fsck"]
     assert "luksbootkeyfile" not in modules
     assert "cryptdevice=UUID=" not in grub.get("kernel_params", [])
 
@@ -62,6 +62,7 @@ def test_package_chroot_uses_live_dns_and_host_overrides() -> None:
         "/usr/bin/mount --bind /etc/hosts ${ROOT}/etc/hosts",
     ]
     assert cleanup["script"] == [
+        "-/usr/bin/umount ${ROOT}/usr/share/hornero-installer/offline-repo",
         "-/usr/bin/umount ${ROOT}/etc/hosts",
         "-/usr/bin/umount ${ROOT}/etc/resolv.conf",
     ]

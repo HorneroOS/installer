@@ -22,6 +22,7 @@ bluez-utils
 ntfs-3g
 os-prober
 parted
+pciutils
 python-yaml
 rsync
 sddm

@@ -56,7 +56,7 @@ def test_dual_kernel_headers_and_primary_first():
     ]
     plan = plan_mod.build_plan(selection, ALLOWLIST)
     assert plan["selection"]["kernels"] == ["linux-lts", "linux"]
-    assert plan["espRecommendedMiB"] == 768
+    assert plan["espRecommendedMiB"] == 1280
 
 
 def test_lts_substitution_replaces_kernel_exactly_once():

@@ -26,7 +26,7 @@ bootloaders:
   - systemd-boot
 systemdBootEspMiB: 1024
 systemdBootPerKernelMiB: 256
-grubEspMiB: 512
+grubEspMiB: 1024
 grubPerKernelMiB: 256
 # Swap: `partition` maps to the partition module's `small` choice. It
 # is offered only without LUKS: with LUKS the swap partition needs

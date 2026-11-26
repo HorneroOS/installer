@@ -136,19 +136,19 @@ def selected_kernels(selection: dict) -> list[str]:
     return kernels
 
 
-def kernel_packages(selection: dict, allowlist: dict) -> list[str]:
+def kernel_packages(selection: dict, allowlist: dict, *, dkms: bool = False) -> list[str]:
     """Kernel packages in primary-first order.
 
-    Headers are added only when more than one kernel is installed
-    (DKMS/multi-kernel rule), so the single-kernel default stays
-    byte-identical to the current compositions (linux, no headers).
+    Headers are added whenever more than one kernel is installed OR
+    whenever any DKMS package is selected (e.g. nvidia-open-dkms),
+    so single-kernel non-DKMS installs stay unchanged.
     """
     kernels = selected_kernels(selection)
     entries = allowlist["kernels"]
     packages: list[str] = []
     for kernel in kernels:
         packages.append(entries[kernel]["package"])
-    if len(kernels) > 1:
+    if len(kernels) > 1 or dkms or selection.get("dkms"):
         for kernel in kernels:
             headers = entries[kernel].get("headers")
             if headers:
