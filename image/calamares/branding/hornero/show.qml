@@ -1,5 +1,5 @@
 // HorneroOS installation slideshow (Calamares slideshowAPI 2) on Hornero
-// Signal (RFC 0001 + amendment 2, Signal Visual Language "Signal Bezel").
+// Signal (RFC 0001 + amendment 3, Signal Visual Language "Signal Bezel").
 
 // Tells the OS-family story while files are copied: Desktop, Studio and
 // Gaming, each with the packages its installer choice really adds (from
@@ -14,17 +14,17 @@ import calamares.slideshow 1.0
 Presentation {
     id: presentation
 
-    // Signal Night roles used by the slideshow (RFC 0001 §3.2, amendment 2).
-    readonly property color ground: "#0C0F13"
-    readonly property color sunken: "#101419"
-    readonly property color panel: "#181D24"
-    readonly property color ink: "#ECE6DA"
-    readonly property color inkMuted: "#A8ABAD"
-    readonly property color rule: "#2C333C"
-    readonly property color ruleStrong: "#707A85"
-    readonly property color signal: "#F2A33A"
+    // Signal Night roles used by the slideshow (RFC 0001 §3.2, amendment 3).
+    readonly property color ground: "#0C1016"
+    readonly property color sunken: "#10151C"
+    readonly property color panel: "#1B2430"
+    readonly property color ink: "#E6EBF1"
+    readonly property color inkMuted: "#A9B7C6"
+    readonly property color rule: "#2D3B4B"
+    readonly property color ruleStrong: "#8393A6"
+    readonly property color signal: "#F2AC52"
     // onSignal role (named so QML does not read it as a signal handler).
-    readonly property color inkOnSignal: "#1A1205"
+    readonly property color inkOnSignal: "#1E1304"
     readonly property string sans: "IBM Plex Sans"
     readonly property string mono: "IBM Plex Mono"
     readonly property string display: "IBM Plex Sans Condensed"

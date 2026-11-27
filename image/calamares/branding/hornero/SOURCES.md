@@ -11,9 +11,9 @@ Nothing here is third-party:
 - `hornero-installer.svg` — `assets/brand/icons/hornero-app.svg`
   (byte-identical copy).
 - `installer-banner.svg` — original Hornero Signal composition in this repo
-  (RFC 0001 + amendment 2, Signal Bezel) that inlines the bird and branch
+  (RFC 0001 + amendment 3, Signal Bezel) that inlines the bird and branch
   geometry from `assets/brand/logo-dark.svg`, recoloured to Signal Night
-  roles (ground `#0C0F13`, ink `#ECE6DA`, signal `#F2A33A`), with IBM Plex
+  roles (ground `#0C1016`, ink `#E6EBF1`, signal `#F2AC52`), with IBM Plex
   type and the La Plata diagonal.
 - `show.qml` and `stylesheet.qss` — original Hornero Signal slideshow and
   Calamares stylesheet in this repo. The slideshow is typographic (no

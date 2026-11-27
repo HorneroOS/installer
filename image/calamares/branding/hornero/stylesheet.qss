@@ -1,11 +1,11 @@
 /* HorneroOS Calamares stylesheet on Hornero Signal (RFC 0001 +
- * amendment 2, Signal Visual Language "Signal Bezel").
+ * amendment 3, Signal Visual Language "Signal Bezel").
  *
- * Signal Night roles: ground #0C0F13, sunken #101419, base #13171D,
- * panel #181D24, raised #1F252E, lifted #283039, ink #ECE6DA,
- * inkMuted #A8ABAD, rule #2C333C, ruleStrong #707A85, signal #F2A33A,
- * onSignal #1A1205, signalWell #3A2A12, onSignalWell #FFD9A3,
- * focus #7EC1EA, cueWell #16303F, onCueWell #CDE8F8, alert #F0705A.
+ * Signal Night roles: ground #0C1016, sunken #10151C, base #141B24,
+ * panel #1B2430, raised #24303D, lifted #2C3947, ink #E6EBF1,
+ * inkMuted #A9B7C6, rule #2D3B4B, ruleStrong #8393A6, signal #F2AC52,
+ * onSignal #1E1304, signalWell #3D2B12, onSignalWell #FFE0B0,
+ * focus #8BCEF0, cueWell #163345, onCueWell #D6EFFC, alert #FF8494.
  * Type: IBM Plex Sans / IBM Plex Mono (ttf-ibm-plex on the live medium).
  * Geometry: radius 3, 1 px rule hairlines, 1 px ruleStrong control
  * boundaries, 2 px focus. No gradients, no glass.
@@ -18,23 +18,23 @@
 #mainApp,
 QMainWindow,
 QWidget#mainApp {
-    background-color: #13171D;
-    color: #ECE6DA;
+    background-color: #141B24;
+    color: #E6EBF1;
 }
 
 /* Progress sidebar: the step list is an instrument column. */
 #sidebarApp {
-    background-color: #0C0F13;
-    color: #ECE6DA;
-    border-right: 1px solid #2C333C;
+    background-color: #0C1016;
+    color: #E6EBF1;
+    border-right: 1px solid #2D3B4B;
 }
 
 #logoApp {
-    background-color: #0C0F13;
+    background-color: #0C1016;
 }
 
 QLabel {
-    color: #ECE6DA;
+    color: #E6EBF1;
 }
 
 /* Separate windows (the "Continue with Setup?" confirmation, error and
@@ -43,41 +43,41 @@ QLabel {
 QDialog,
 QMessageBox,
 QMenu {
-    background-color: #181D24;
-    color: #ECE6DA;
+    background-color: #1B2430;
+    color: #E6EBF1;
 }
 
 QDialog QLabel,
 QMessageBox QLabel {
     background-color: transparent;
-    color: #ECE6DA;
+    color: #E6EBF1;
 }
 
 QMenu::item:selected {
-    background-color: #3A2A12;
-    color: #FFD9A3;
+    background-color: #3D2B12;
+    color: #FFE0B0;
 }
 
 QMenu::separator {
     height: 1px;
-    background-color: #2C333C;
+    background-color: #2D3B4B;
 }
 
 /* Welcome page text, requirements container, and error/warning blocks:
  * replace Qt's stock pink error block and grey checker container with
- * Signal Night roles (alert #F0705A / signalWell #3A2A12). */
+ * Signal Night roles (alert #FF8494 / signalWell #3D2B12). */
 #mainText,
 #belowWelcomeText {
     background-color: transparent;
-    color: #ECE6DA;
+    color: #E6EBF1;
 }
 
 #CheckerContainer,
 #requirementsWidget,
 #checkerWidget {
-    background-color: #101419;
-    color: #ECE6DA;
-    border: 1px solid #2C333C;
+    background-color: #10151C;
+    color: #E6EBF1;
+    border: 1px solid #2D3B4B;
     border-radius: 3px;
     padding: 6px;
 }
@@ -85,10 +85,10 @@ QMenu::separator {
 #errorLabel,
 QLabel[severity="error"],
 .error {
-    background-color: #181D24;
-    color: #ECE6DA;
-    border: 1px solid #F0705A;
-    border-left: 3px solid #F0705A;
+    background-color: #1B2430;
+    color: #E6EBF1;
+    border: 1px solid #FF8494;
+    border-left: 3px solid #FF8494;
     border-radius: 3px;
     padding: 8px 12px;
 }
@@ -96,54 +96,54 @@ QLabel[severity="error"],
 #warningLabel,
 QLabel[severity="warning"],
 .warning {
-    background-color: #3A2A12;
-    color: #FFD9A3;
-    border: 1px solid #F2A33A;
-    border-left: 3px solid #F2A33A;
+    background-color: #3D2B12;
+    color: #FFE0B0;
+    border: 1px solid #F2AC52;
+    border-left: 3px solid #F2AC52;
     border-radius: 3px;
     padding: 8px 12px;
 }
 
 QLabel:disabled {
-    color: #737980;
+    color: #8999AB;
 }
 
 QPushButton {
     background-color: transparent;
-    color: #ECE6DA;
-    border: 1px solid #707A85;
+    color: #E6EBF1;
+    border: 1px solid #8393A6;
     border-radius: 3px;
     padding: 6px 16px;
     min-height: 20px;
 }
 
 QPushButton:hover {
-    background-color: #1F252E;
+    background-color: #24303D;
 }
 
 QPushButton:pressed {
-    background-color: #283039;
+    background-color: #2C3947;
 }
 
 QPushButton:focus {
-    border: 2px solid #7EC1EA;
+    border: 2px solid #8BCEF0;
 }
 
 QPushButton:disabled {
-    color: #737980;
-    border-color: #2C333C;
+    color: #8999AB;
+    border-color: #2D3B4B;
 }
 
 /* The one primary action (Next / Install) carries the signal. */
 QPushButton:default {
-    background-color: #F2A33A;
-    color: #1A1205;
-    border: 1px solid #F2A33A;
+    background-color: #F2AC52;
+    color: #1E1304;
+    border: 1px solid #F2AC52;
     font-weight: 600;
 }
 
 QPushButton:default:focus {
-    border: 2px solid #7EC1EA;
+    border: 2px solid #8BCEF0;
 }
 
 QLineEdit,
@@ -152,13 +152,13 @@ QSpinBox,
 QPlainTextEdit,
 QTextEdit,
 QTextBrowser {
-    background-color: #101419;
-    color: #ECE6DA;
-    border: 1px solid #707A85;
+    background-color: #10151C;
+    color: #E6EBF1;
+    border: 1px solid #8393A6;
     border-radius: 3px;
     padding: 4px 8px;
-    selection-background-color: #16303F;
-    selection-color: #CDE8F8;
+    selection-background-color: #163345;
+    selection-color: #D6EFFC;
 }
 
 QLineEdit:focus,
@@ -166,49 +166,49 @@ QComboBox:focus,
 QSpinBox:focus,
 QPlainTextEdit:focus,
 QTextEdit:focus {
-    border: 2px solid #7EC1EA;
+    border: 2px solid #8BCEF0;
 }
 
 QComboBox QAbstractItemView,
 QListView,
 QTreeView {
-    background-color: #181D24;
-    color: #ECE6DA;
-    border: 1px solid #2C333C;
-    selection-background-color: #3A2A12;
-    selection-color: #FFD9A3;
+    background-color: #1B2430;
+    color: #E6EBF1;
+    border: 1px solid #2D3B4B;
+    selection-background-color: #3D2B12;
+    selection-color: #FFE0B0;
     outline: 0;
 }
 
 QListView::item:hover,
 QTreeView::item:hover {
-    background-color: #1F252E;
+    background-color: #24303D;
 }
 
 QListView::item:selected,
 QTreeView::item:selected {
-    background-color: #3A2A12;
-    color: #FFD9A3;
-    border-left: 2px solid #F2A33A;
+    background-color: #3D2B12;
+    color: #FFE0B0;
+    border-left: 2px solid #F2AC52;
 }
 
 QCheckBox,
 QRadioButton {
-    color: #ECE6DA;
+    color: #E6EBF1;
     spacing: 8px;
 }
 
 QProgressBar {
-    background-color: #101419;
-    border: 1px solid #2C333C;
+    background-color: #10151C;
+    border: 1px solid #2D3B4B;
     border-radius: 3px;
-    color: #ECE6DA;
+    color: #E6EBF1;
     text-align: center;
     font-family: "IBM Plex Mono";
 }
 
 QProgressBar::chunk {
-    background-color: #F2A33A;
+    background-color: #F2AC52;
 }
 
 /* ---- Navigation: Back / Next / Cancel, welcome links, About, Debug ---- */
@@ -218,13 +218,13 @@ QProgressBar::chunk {
 }
 
 #view-button-cancel {
-    border-color: #2C333C;
-    color: #A8ABAD;
+    border-color: #2D3B4B;
+    color: #A9B7C6;
 }
 
 #view-button-cancel:hover {
-    border-color: #707A85;
-    color: #ECE6DA;
+    border-color: #8393A6;
+    color: #E6EBF1;
 }
 
 #aboutButton,
@@ -234,8 +234,8 @@ QProgressBar::chunk {
 #releaseNotesButton,
 #knownIssuesButton {
     background-color: transparent;
-    color: #A8ABAD;
-    border: 1px solid #2C333C;
+    color: #A9B7C6;
+    border: 1px solid #2D3B4B;
 }
 
 #aboutButton:hover,
@@ -244,31 +244,31 @@ QProgressBar::chunk {
 #supportButton:hover,
 #releaseNotesButton:hover,
 #knownIssuesButton:hover {
-    background-color: #1F252E;
-    color: #ECE6DA;
+    background-color: #24303D;
+    color: #E6EBF1;
 }
 
 QToolButton {
     background-color: transparent;
-    color: #ECE6DA;
-    border: 1px solid #707A85;
+    color: #E6EBF1;
+    border: 1px solid #8393A6;
     border-radius: 3px;
     padding: 4px 8px;
 }
 
 QToolButton:hover {
-    background-color: #1F252E;
+    background-color: #24303D;
 }
 
 QToolButton:pressed,
 QToolButton:checked {
-    background-color: #3A2A12;
-    color: #FFD9A3;
-    border-color: #F2A33A;
+    background-color: #3D2B12;
+    color: #FFE0B0;
+    border-color: #F2AC52;
 }
 
 QToolButton:focus {
-    border: 2px solid #7EC1EA;
+    border: 2px solid #8BCEF0;
 }
 
 /* ---- Pages: scroll areas, frames, group boxes (partition, users,
@@ -279,25 +279,25 @@ QToolButton:focus {
 #scrollAreaWidgetContents,
 QScrollArea,
 QStackedWidget {
-    background-color: #13171D;
-    color: #ECE6DA;
+    background-color: #141B24;
+    color: #E6EBF1;
     border: none;
 }
 
 QAbstractScrollArea {
-    background-color: #101419;
-    color: #ECE6DA;
+    background-color: #10151C;
+    color: #E6EBF1;
 }
 
 QFrame[frameShape="4"],
 QFrame[frameShape="5"] {
-    color: #2C333C;
+    color: #2D3B4B;
 }
 
 QGroupBox {
     background-color: transparent;
-    color: #A8ABAD;
-    border: 1px solid #2C333C;
+    color: #A9B7C6;
+    border: 1px solid #2D3B4B;
     border-radius: 3px;
     margin-top: 14px;
     padding: 8px;
@@ -309,7 +309,7 @@ QGroupBox::title {
     subcontrol-position: top left;
     left: 8px;
     padding: 0 4px;
-    color: #A8ABAD;
+    color: #A9B7C6;
 }
 
 /* Partition page: device and boot info, the partition bar surround. */
@@ -320,34 +320,34 @@ QGroupBox::title {
 
 #bootInfoLable,
 #defineInfoLabel {
-    color: #A8ABAD;
+    color: #A9B7C6;
     font-family: "IBM Plex Mono";
 }
 
 #partitionBarView,
 #partitionLabelView {
-    background-color: #101419;
-    border: 1px solid #2C333C;
+    background-color: #10151C;
+    border: 1px solid #2D3B4B;
     border-radius: 3px;
 }
 
 /* License module items. */
 #licenseItem,
 #licenseItemFullText {
-    background-color: #181D24;
-    color: #ECE6DA;
-    border: 1px solid #2C333C;
+    background-color: #1B2430;
+    color: #E6EBF1;
+    border: 1px solid #2D3B4B;
     border-radius: 3px;
 }
 
 /* ---- Lists and tables: partition table, requirements, summary ---- */
 
 QHeaderView::section {
-    background-color: #181D24;
-    color: #A8ABAD;
+    background-color: #1B2430;
+    color: #A9B7C6;
     border: none;
-    border-bottom: 1px solid #707A85;
-    border-right: 1px solid #2C333C;
+    border-bottom: 1px solid #8393A6;
+    border-right: 1px solid #2D3B4B;
     padding: 4px 8px;
     font-family: "IBM Plex Mono";
 }
@@ -356,34 +356,34 @@ QTableView,
 QTableWidget,
 QTreeView,
 QListView {
-    alternate-background-color: #13171D;
-    gridline-color: #2C333C;
+    alternate-background-color: #141B24;
+    gridline-color: #2D3B4B;
 }
 
 QTableCornerButton::section {
-    background-color: #181D24;
+    background-color: #1B2430;
     border: none;
-    border-bottom: 1px solid #707A85;
+    border-bottom: 1px solid #8393A6;
 }
 
 QTableView::item:selected,
 QTableWidget::item:selected {
-    background-color: #3A2A12;
-    color: #FFD9A3;
+    background-color: #3D2B12;
+    color: #FFE0B0;
 }
 
 QTreeView::branch:selected {
-    background-color: #3A2A12;
+    background-color: #3D2B12;
 }
 
 QTabWidget::pane {
-    background-color: #181D24;
-    border: 1px solid #2C333C;
+    background-color: #1B2430;
+    border: 1px solid #2D3B4B;
 }
 
 QTabBar::tab {
     background-color: transparent;
-    color: #A8ABAD;
+    color: #A9B7C6;
     border: none;
     border-bottom: 2px solid transparent;
     padding: 6px 14px;
@@ -391,17 +391,17 @@ QTabBar::tab {
 }
 
 QTabBar::tab:hover {
-    color: #ECE6DA;
-    background-color: #1F252E;
+    color: #E6EBF1;
+    background-color: #24303D;
 }
 
 QTabBar::tab:selected {
-    color: #ECE6DA;
-    border-bottom: 2px solid #F2A33A;
+    color: #E6EBF1;
+    border-bottom: 2px solid #F2AC52;
 }
 
 QSplitter::handle {
-    background-color: #2C333C;
+    background-color: #2D3B4B;
 }
 
 /* ---- Inputs and choice controls ---- */
@@ -410,8 +410,8 @@ QCheckBox::indicator,
 QRadioButton::indicator {
     width: 14px;
     height: 14px;
-    background-color: #101419;
-    border: 1px solid #707A85;
+    background-color: #10151C;
+    border: 1px solid #8393A6;
 }
 
 QCheckBox::indicator {
@@ -423,46 +423,46 @@ QRadioButton::indicator {
 }
 
 QCheckBox::indicator:checked {
-    background-color: #F2A33A;
-    border-color: #F2A33A;
+    background-color: #F2AC52;
+    border-color: #F2AC52;
 }
 
 QRadioButton::indicator:checked {
-    background-color: #F2A33A;
-    border: 4px solid #101419;
+    background-color: #F2AC52;
+    border: 4px solid #10151C;
 }
 
 QCheckBox::indicator:focus,
 QRadioButton::indicator:focus {
-    border: 2px solid #7EC1EA;
+    border: 2px solid #8BCEF0;
 }
 
 QCheckBox::indicator:disabled,
 QRadioButton::indicator:disabled {
-    border-color: #2C333C;
-    background-color: #181D24;
+    border-color: #2D3B4B;
+    background-color: #1B2430;
 }
 
 QSlider::groove:horizontal {
-    background-color: #101419;
-    border: 1px solid #2C333C;
+    background-color: #10151C;
+    border: 1px solid #2D3B4B;
     height: 4px;
 }
 
 QSlider::sub-page:horizontal {
-    background-color: #F2A33A;
+    background-color: #F2AC52;
 }
 
 QSlider::handle:horizontal {
-    background-color: #ECE6DA;
-    border: 1px solid #707A85;
+    background-color: #E6EBF1;
+    border: 1px solid #8393A6;
     width: 10px;
     margin: -6px 0;
     border-radius: 3px;
 }
 
 QComboBox:on {
-    border: 1px solid #F2A33A;
+    border: 1px solid #F2AC52;
 }
 
 QComboBox QAbstractItemView {
@@ -476,38 +476,38 @@ QComboBox QAbstractItemView {
 }
 
 #exec-message {
-    color: #A8ABAD;
+    color: #A9B7C6;
     font-family: "IBM Plex Mono";
 }
 
 /* ---- Scrollbars ---- */
 
 QScrollBar:vertical {
-    background: #101419;
+    background: #10151C;
     width: 10px;
     margin: 0;
 }
 
 QScrollBar:horizontal {
-    background: #101419;
+    background: #10151C;
     height: 10px;
     margin: 0;
 }
 
 QScrollBar::handle:vertical {
-    background: #707A85;
+    background: #8393A6;
     border-radius: 3px;
     min-height: 24px;
 }
 
 QScrollBar::handle:horizontal {
-    background: #707A85;
+    background: #8393A6;
     border-radius: 3px;
     min-width: 24px;
 }
 
 QScrollBar::handle:hover {
-    background: #A8ABAD;
+    background: #A9B7C6;
 }
 
 QScrollBar::add-line,
@@ -520,19 +520,19 @@ QScrollBar::sub-line {
 
 QScrollBar::add-page,
 QScrollBar::sub-page {
-    background: #101419;
+    background: #10151C;
 }
 
 /* ---- Tooltips and status ---- */
 
 QToolTip {
-    background-color: #283039;
-    color: #ECE6DA;
-    border: 1px solid #707A85;
+    background-color: #2C3947;
+    color: #E6EBF1;
+    border: 1px solid #8393A6;
     padding: 4px 8px;
 }
 
 QStatusBar {
-    background-color: #0C0F13;
-    color: #A8ABAD;
+    background-color: #0C1016;
+    color: #A9B7C6;
 }
