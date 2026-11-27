@@ -60,6 +60,7 @@ HorneroSystemPage::HorneroSystemPage( HorneroSystemConfig* config, QWidget* pare
     m_note->setWordWrap( true );
     main->addWidget( m_note );
     m_error = new QLabel();
+    m_error->setObjectName( QStringLiteral( "errorLabel" ) );
     m_error->setWordWrap( true );
     main->addWidget( m_error );
     main->addStretch();

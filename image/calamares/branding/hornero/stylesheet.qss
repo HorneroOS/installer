@@ -16,6 +16,7 @@
 }
 
 #mainApp,
+QMainWindow,
 QWidget#mainApp {
     background-color: #13171D;
     color: #ECE6DA;
@@ -44,6 +45,63 @@ QMessageBox,
 QMenu {
     background-color: #181D24;
     color: #ECE6DA;
+}
+
+QDialog QLabel,
+QMessageBox QLabel {
+    background-color: transparent;
+    color: #ECE6DA;
+}
+
+QMenu::item:selected {
+    background-color: #3A2A12;
+    color: #FFD9A3;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #2C333C;
+}
+
+/* Welcome page text, requirements container, and error/warning blocks:
+ * replace Qt's stock pink error block and grey checker container with
+ * Signal Night roles (alert #F0705A / signalWell #3A2A12). */
+#mainText,
+#belowWelcomeText {
+    background-color: transparent;
+    color: #ECE6DA;
+}
+
+#CheckerContainer,
+#requirementsWidget,
+#checkerWidget {
+    background-color: #101419;
+    color: #ECE6DA;
+    border: 1px solid #2C333C;
+    border-radius: 3px;
+    padding: 6px;
+}
+
+#errorLabel,
+QLabel[severity="error"],
+.error {
+    background-color: #181D24;
+    color: #ECE6DA;
+    border: 1px solid #F0705A;
+    border-left: 3px solid #F0705A;
+    border-radius: 3px;
+    padding: 8px 12px;
+}
+
+#warningLabel,
+QLabel[severity="warning"],
+.warning {
+    background-color: #3A2A12;
+    color: #FFD9A3;
+    border: 1px solid #F2A33A;
+    border-left: 3px solid #F2A33A;
+    border-radius: 3px;
+    padding: 8px 12px;
 }
 
 QLabel:disabled {
@@ -92,7 +150,8 @@ QLineEdit,
 QComboBox,
 QSpinBox,
 QPlainTextEdit,
-QTextEdit {
+QTextEdit,
+QTextBrowser {
     background-color: #101419;
     color: #ECE6DA;
     border: 1px solid #707A85;

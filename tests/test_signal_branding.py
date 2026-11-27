@@ -140,9 +140,22 @@ def test_legacy_wallpaper_slides_removed():
 
 def test_live_medium_ships_plex_and_no_material_fonts():
     packages = {line.strip() for line in LIVE_PACKAGES.splitlines() if line.strip() and not line.startswith("#")}
-    assert "ttf-ibm-plex" in packages
+    assert {"fontconfig", "ttf-ibm-plex", "ttf-cascadia-code-nerd", "noto-fonts", "noto-fonts-emoji", "noto-fonts-cjk"} <= packages
     for legacy in ("ttf-material-symbols-variable", "python-materialyoucolor", "ttf-rubik-vf"):
         assert legacy not in packages
+
+
+def test_live_fontconfig_exposes_hornero_glyphs_and_signal_aliases():
+    import xml.etree.ElementTree as ET
+
+    dropin = ROOT / "image/archiso/airootfs/etc/fonts/conf.d/60-hornero-signal.conf"
+    assert dropin.is_file()
+    tree = ET.parse(dropin)
+    dirs = [el.text for el in tree.findall(".//dir") if el.text]
+    assert "/etc/xdg/quickshell/hornero/assets/fonts" in dirs
+    text = dropin.read_text(encoding="utf-8")
+    for family in ("IBM Plex Sans", "IBM Plex Mono", "Noto Sans CJK", "Noto Color Emoji"):
+        assert family in text, family
 
 
 def test_live_session_keeps_factory_theme_and_layout():
@@ -159,15 +172,23 @@ def test_stylesheet_covers_every_calamares_page_family():
     # family a Calamares page uses needs a Signal rule (partition, users,
     # summary, install progress, finished, dialogs, scroll areas).
     for selector in (
-        "#mainApp", "#sidebarApp", "#view-button-next", "#view-button-cancel",
+        "#mainApp", "QMainWindow", "#sidebarApp", "#view-button-next", "#view-button-cancel",
         "#exec-progress", "#exec-message", "#scrollAreaWidgetContents",
         "#partitionBarView", "#licenseItem", "QHeaderView::section",
         "QTableView", "QTabBar::tab:selected", "QGroupBox", "QCheckBox::indicator",
         "QRadioButton::indicator", "QSlider::handle:horizontal", "QToolButton",
         "QScrollBar:horizontal", "QScrollBar:vertical", "QToolTip", "QDialog",
-        "QMessageBox", "QMenu", "QComboBox", "QLineEdit", "QProgressBar::chunk",
+        "QMessageBox", "QMenu", "QComboBox", "QLineEdit", "QTextBrowser",
+        "QProgressBar::chunk", "#CheckerContainer", "#errorLabel", "#warningLabel",
     ):
         assert selector in QSS, selector
+
+
+def test_error_and_warning_blocks_use_signal_night_roles():
+    error_block = QSS.split("#errorLabel,", 1)[1].split("}", 1)[0]
+    assert "#F0705A" in error_block and "#181D24" in error_block and "#ECE6DA" in error_block
+    warning_block = QSS.split("#warningLabel,", 1)[1].split("}", 1)[0]
+    assert "#3A2A12" in warning_block and "#F2A33A" in warning_block and "#FFD9A3" in warning_block
 
 
 def test_stylesheet_never_encodes_state_by_colour_alone():

@@ -125,6 +125,8 @@ install -Dm755 "$ROOT/image/calamares/probe-gpu.py" \
   "$profile/airootfs/usr/lib/hornero-installer/probe-gpu.py"
 install -Dm755 "$ROOT/image/calamares/preselect-gpu.py" \
   "$profile/airootfs/usr/lib/hornero-installer/preselect-gpu.py"
+install -Dm755 "$ROOT/image/calamares/configure-boot-theme.py" \
+  "$profile/airootfs/usr/lib/hornero-installer/configure-boot-theme.py"
 install -Dm644 "$ROOT/image/calamares/hornero-installer-repo.conf" \
   "$profile/airootfs/etc/pacman.d/hornero-installer.conf"
 if [[ -n "$product_source" ]]; then

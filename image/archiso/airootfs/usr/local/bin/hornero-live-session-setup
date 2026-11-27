@@ -56,6 +56,19 @@ if command -v kitty >/dev/null 2>&1 && ! grep -q '^TerminalEmulator=' "$helpers_
   printf 'TerminalEmulator=kitty\n' >> "$helpers_rc"
 fi
 
+# Seed user fontconfig from the packaged hornero-config XDG file when
+# absent so IBM Plex, CJK/emoji fallbacks, and font hinting apply cleanly
+# in the ephemeral live home without overriding user edits.
+fontconfig_sys="/etc/xdg/fontconfig/fonts.conf"
+fontconfig_user="$config_home/fontconfig/fonts.conf"
+if [[ -f "$fontconfig_sys" && ! -e "$fontconfig_user" ]]; then
+  mkdir -p "$config_home/fontconfig"
+  cp -n "$fontconfig_sys" "$fontconfig_user"
+fi
+if command -v fc-cache >/dev/null 2>&1; then
+  fc-cache >/dev/null 2>&1 || true
+fi
+
 # Belt and braces: hold a logind idle/sleep inhibitor for the session.
 if command -v systemd-inhibit >/dev/null 2>&1; then
   nohup systemd-inhibit --what=idle:sleep --mode=block sleep infinity >/dev/null 2>&1 &

@@ -46,6 +46,7 @@ HorneroUsersPage::HorneroUsersPage( HorneroUsersConfig* config, QWidget* parent 
     main->addWidget( usersBox );
 
     m_error = new QLabel();
+    m_error->setObjectName( QStringLiteral( "errorLabel" ) );
     m_error->setWordWrap( true );
     main->addWidget( m_error );
     main->addStretch();
@@ -108,6 +109,7 @@ HorneroUsersPage::createRow()
     row.admin = new QCheckBox( tr( "Administrator (adds to wheel — sudo access)" ) );
     layout->addWidget( row.admin );
     auto* warn = new QLabel( tr( "Warning: administrator users can gain root via sudo." ) );
+    warn->setObjectName( QStringLiteral( "warningLabel" ) );
     warn->setWordWrap( true );
     layout->addWidget( warn );
 
