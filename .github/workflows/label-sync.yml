@@ -9,7 +9,7 @@
 
 name: label-sync
 
-on:
+"on":
   schedule:
     - cron: '17 3 * * 1'
   workflow_dispatch:
@@ -19,6 +19,13 @@ on:
         required: false
         default: false
         type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   sync:
