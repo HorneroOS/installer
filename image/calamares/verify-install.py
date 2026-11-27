@@ -215,6 +215,23 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
                 "etc/pacman.d/hooks/95-hornero-boot-trial.hook"
             )
 
+    active_bootloader = (
+        "grub"
+        if plan is None
+        else str((plan.get("selection") or {}).get("bootloader", "grub"))
+    )
+    default_grub = root / "etc/default/grub"
+    if active_bootloader == "grub" and default_grub.is_file() and not default_grub.is_symlink():
+        grub_default_text = default_grub.read_text(encoding="utf-8", errors="replace")
+        theme_match = re.search(
+            r'^\s*GRUB_THEME=["\']?([^"\'#\s]+)',
+            grub_default_text,
+            re.MULTILINE,
+        )
+        if theme_match:
+            theme_rel = theme_match.group(1).lstrip("/")
+            require_file(theme_rel, "GRUB theme")
+
     return problems
 
 

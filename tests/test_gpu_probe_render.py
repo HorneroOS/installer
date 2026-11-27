@@ -67,6 +67,66 @@ def test_probe_parses_display_vendors_only():
     assert probe_mod.probe("garbage\n")["vendors"] == []
 
 
+def test_probe_ignores_trailing_subsystem_pci_ids_and_handles_display_classes():
+    lspci_subsys = """\
+00:02.0 Display controller [0380]: Intel Corporation AlderLake-S GT1 [8086:4680] [1028:0b10] (rev 0c)
+01:00.0 VGA compatible controller [0300]: Advanced Micro Devices, Inc. [AMD/ATI] Navi 23 [1002:73ff] [1458:2400] (rev c7)
+02:00.0 VGA compatible controller [0300]: Red Hat, Inc. Virtio GPU [1af4:1050] (rev 01)
+03:00.0 3D controller [0302]: NVIDIA Corporation GA107M [10de:25a0] [1028:0b10] (rev a1)
+"""
+    assert probe_mod.parse_lspci(lspci_subsys) == ["intel", "amd", "nvidia"]
+
+
+def test_gpu_vendors_rejects_proprietary_in_open_group_and_unmarked_nvidia():
+    bad_open = _catalogue()
+    bad_open["gpuProvenance"]["mesa"]["licenseClass"] = "proprietary"
+    with pytest.raises(ValueError, match="proprietary inside an open-source GPU group"):
+        render_mod.build_gpu_groups(bad_open)
+
+    bad_nvidia = _catalogue()
+    bad_nvidia["gpuVendors"]["nvidia"]["explicitOptIn"] = False
+    with pytest.raises(ValueError, match="explicitOptIn: true"):
+        render_mod.build_gpu_groups(bad_nvidia)
+
+
+def test_preselect_re_run_clears_stale_and_fails_closed_on_bad_input(tmp_path):
+    doc = {"groups": [
+        {"name": "GPU drivers (open-source)", "selected": False, "subgroups": [
+            {"name": "GPU — AMD GPU (open Mesa/RADV)", "selected": True, "packages": ["mesa"]},
+            {"name": "GPU — Intel GPU (open Mesa/ANV)", "selected": False, "packages": ["mesa"]},
+        ]},
+        {"name": "NVIDIA GPU driver (proprietary)", "selected": False, "packages": ["nvidia-utils"]},
+    ]}
+    changed = preselect_mod.preselect(doc, ["intel", "nvidia"])
+    assert set(changed) == {"GPU — AMD GPU (open Mesa/RADV)", "GPU — Intel GPU (open Mesa/ANV)"}
+    assert doc["groups"][0]["subgroups"][0]["selected"] is False
+    assert doc["groups"][0]["subgroups"][1]["selected"] is True
+    assert doc["groups"][1]["selected"] is False
+
+    import subprocess
+    probe_file = tmp_path / "probe.json"
+    net_file = tmp_path / "netinstall.conf"
+    probe_file.write_text('["not-an-object"]\n', encoding="utf-8")
+    original = yaml.safe_dump(doc, sort_keys=False)
+    net_file.write_text(original, encoding="utf-8")
+    res = subprocess.run(
+        ["python3", str(ROOT / "image/calamares/preselect-gpu.py"),
+         "--probe", str(probe_file), "--netinstall", str(net_file)],
+        capture_output=True, text=True, check=False,
+    )
+    assert res.returncode == 1
+    assert net_file.read_text(encoding="utf-8") == original
+
+    probe_file.write_text('{"vendors": "amd"}\n', encoding="utf-8")
+    res2 = subprocess.run(
+        ["python3", str(ROOT / "image/calamares/preselect-gpu.py"),
+         "--probe", str(probe_file), "--netinstall", str(net_file)],
+        capture_output=True, text=True, check=False,
+    )
+    assert res2.returncode == 1
+    assert net_file.read_text(encoding="utf-8") == original
+
+
 def test_no_gpu_vendors_no_groups_pinned_catalogue():
     assert render_mod.build_gpu_groups({}) == []
     assert render_mod.build_gpu_groups({"capabilities": {}}) == []

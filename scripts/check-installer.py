@@ -64,7 +64,8 @@ def main() -> int:
     assert exec_modules.index("packages") < exec_modules.index("shellprocess@recovery")
     assert exec_modules.index("shellprocess@recovery") < exec_modules.index("services-systemd")
     assert exec_modules.index("initcpiocfg") < exec_modules.index("initcpio")
-    assert exec_modules.index("initcpio") < exec_modules.index("grubcfg")
+    assert exec_modules.index("initcpio") < exec_modules.index("shellprocess@boot-theme")
+    assert exec_modules.index("shellprocess@boot-theme") < exec_modules.index("grubcfg")
     assert exec_modules.index("grubcfg") < exec_modules.index("bootloader")
     assert "initcpio" in exec_modules
     assert "initramfs" not in exec_modules, (
@@ -244,6 +245,11 @@ def main() -> int:
     assert parsed["hornerosystem"]["selectionPath"] == "/run/hornero-installer/system-selection.json"
     assert (CALAMARES / "probe-gpu.py").is_file()
     assert (CALAMARES / "preselect-gpu.py").is_file()
+    assert (CALAMARES / "configure-boot-theme.py").is_file()
+    assert ("shellprocess", "boot-theme") in instances
+    assert instances[("shellprocess", "boot-theme")] == "shellprocess-boot-theme.conf"
+    assert parsed["shellprocess-boot-theme"]["dontChroot"] is True
+    assert "configure-boot-theme.py --root ${ROOT}" in parsed["shellprocess-boot-theme"]["script"][0]
     # LUKS/openswap invariants must survive any composable selection:
     # swap partition (`small`) only without LUKS (backend gate), and
     # hibernation (`suspend`) never offered (openswap not pinned).
@@ -296,6 +302,10 @@ def main() -> int:
     assert "/run/hornero-installer/offline-mode" in runner_text
     assert "/run/hornero-installer/system-selection.json" in runner_text
     assert runner_text.index("offline-mode") < runner_text.index("/usr/bin/calamares")
+    assert "probe-gpu.py" in runner_text and "preselect-gpu.py" in runner_text
+    assert runner_text.index("preselect-gpu.py") < runner_text.index("/usr/bin/calamares")
+    assert 'install -Dm755 "$ROOT/image/calamares/configure-boot-theme.py"' in _build_iso_text
+    assert '"$profile/airootfs/usr/lib/hornero-installer/configure-boot-theme.py"' in _build_iso_text
     assert (CALAMARES / "apply-system-plan.py").is_file()
     assert (CALAMARES / "apply-system-choices.py").is_file()
     assert (CALAMARES / "system-allowlist.yaml").is_file()
@@ -551,9 +561,22 @@ def main() -> int:
         "hornero-shell",
         "hornero-config",
         "horneroctl-bin",
+        "fontconfig",
+        "ttf-ibm-plex",
+        "ttf-cascadia-code-nerd",
+        "noto-fonts",
+        "noto-fonts-emoji",
+        "noto-fonts-cjk",
+        "papirus-icon-theme",
+        "qt6ct",
         "kitty",
         "xdg-desktop-portal-hyprland",
     } <= live_packages
+    fontconfig_dropin = archiso / "airootfs/etc/fonts/conf.d/60-hornero-signal.conf"
+    assert fontconfig_dropin.is_file()
+    fontconfig_text = fontconfig_dropin.read_text(encoding="utf-8")
+    assert "/etc/xdg/quickshell/hornero/assets/fonts" in fontconfig_text
+    assert "IBM Plex Sans" in fontconfig_text and "IBM Plex Mono" in fontconfig_text
     assert not any(name.startswith("xfce") or name == "xfconf" for name in live_packages), (
         "the live session is HorneroOS Desktop (Hyprland), not XFCE"
     )

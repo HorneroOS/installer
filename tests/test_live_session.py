@@ -54,6 +54,27 @@ def test_live_session_seeds_terminal_helper():
     assert "kitty" in _packages()
 
 
+def test_live_session_seeds_fontconfig_without_clobbering(tmp_path):
+    """Live setup seeds /etc/xdg/fontconfig/fonts.conf when absent."""
+    import os
+    import subprocess
+
+    setup = ARCHISO / "airootfs/usr/local/bin/hornero-live-session-setup"
+    text = setup.read_text(encoding="utf-8")
+    assert "/etc/xdg/fontconfig/fonts.conf" in text
+    assert "fontconfig/fonts.conf" in text
+
+    # Behavioral check with isolated XDG_CONFIG_HOME (fake PATH so no daemons spawn).
+    cfg_home = tmp_path / "cfg"
+    empty_bin = tmp_path / "bin"
+    empty_bin.mkdir()
+    env = {"PATH": f"{empty_bin}:/usr/bin:/bin", "HOME": str(tmp_path), "XDG_CONFIG_HOME": str(cfg_home)}
+    res = subprocess.run(["/usr/bin/bash", str(setup)], env=env, check=False)
+    assert res.returncode == 0
+    assert (cfg_home / "hornero/shell.json").is_file()
+    assert (cfg_home / "hypr/hypridle.conf").is_file()
+
+
 def test_live_sleep_targets_masked_and_logind_idle_ignored():
     system_dir = ARCHISO / "airootfs/etc/systemd/system"
     for target in ("sleep.target", "suspend.target", "hibernate.target",

@@ -37,7 +37,9 @@ VM_GUEST_PACKAGES = {
     "hyperv": ["hyperv"],
 }
 # lspci -nn line: "01:00.0 VGA compatible controller [0300]: Vendor [1002:67df] ..."
-_LINE = re.compile(r"\[03[0-9a-fA-F]{2}\]:.*\[([0-9a-fA-F]{4}):[0-9a-fA-F]{4}\]")
+# Non-greedy before the first [vendor:device] pair ensures a trailing
+# subsystem ID never shadows the primary PCI vendor ID.
+_LINE = re.compile(r"\[03[0-9a-fA-F]{2}\]:[^\n]*?\[([0-9a-fA-F]{4}):[0-9a-fA-F]{4}\]")
 _ANY_PCI_VENDOR = re.compile(r"\[([0-9a-fA-F]{4}):[0-9a-fA-F]{4}\]")
 
 

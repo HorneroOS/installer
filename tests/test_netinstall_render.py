@@ -132,6 +132,7 @@ def test_every_package_comes_from_the_pinned_catalogue():
         allowed.update(entry.get("packages", []))
     allowed.update(catalogue.get("studioPlatformPackages", []))
     allowed.update(catalogue.get("gamingPlatformPackages", []))
+    allowed.update((catalogue.get("gpuProvenance") or {}).keys())
     # Resolver platform sets (pipewire stack, vulkan loaders, ...) are
     # plain package lists somewhere in the catalogue document.
     def collect(node):

@@ -22,19 +22,29 @@ VENDOR_LEAF_PREFIX = {"amd": "GPU — AMD", "intel": "GPU — Intel"}
 
 
 def preselect(netinstall: dict, vendors: list[str]) -> list[str]:
+    normalized = {
+        v.strip().lower()
+        for v in vendors
+        if isinstance(v, str) and v.strip().lower() in VENDOR_LEAF_PREFIX
+    }
     changed: list[str] = []
 
     def walk(items):
-        for item in items or []:
+        if not isinstance(items, list):
+            return
+        for item in items:
+            if not isinstance(item, dict):
+                continue
             yield item
             yield from walk(item.get("subgroups"))
 
     for item in walk(netinstall.get("groups")):
         name = str(item.get("name", ""))
         for vendor, prefix in VENDOR_LEAF_PREFIX.items():
-            if vendor in vendors and name.startswith(prefix) and not item.get("subgroups"):
-                if item.get("selected") is not True:
-                    item["selected"] = True
+            if name.startswith(prefix) and not item.get("subgroups"):
+                want = vendor in normalized
+                if (item.get("selected") is True) != want:
+                    item["selected"] = want
                     changed.append(name)
     return changed
 
@@ -45,11 +55,20 @@ def main() -> int:
     parser.add_argument("--netinstall", type=Path, required=True)
     args = parser.parse_args()
     try:
-        vendors = list(json.loads(args.probe.read_text(encoding="utf-8")).get("vendors") or [])
+        probe_doc = json.loads(args.probe.read_text(encoding="utf-8"))
+        if not isinstance(probe_doc, dict):
+            raise ValueError("probe JSON must be an object")
+        raw_vendors = probe_doc.get("vendors")
+        if raw_vendors is None:
+            vendors = []
+        elif isinstance(raw_vendors, list):
+            vendors = raw_vendors
+        else:
+            raise ValueError("probe vendors must be a list")
         doc = yaml.safe_load(args.netinstall.read_text(encoding="utf-8"))
-        if not isinstance(doc, dict):
-            raise ValueError("netinstall config must be a mapping")
-    except (OSError, ValueError, json.JSONDecodeError) as error:
+        if not isinstance(doc, dict) or not isinstance(doc.get("groups"), list):
+            raise ValueError("netinstall config must be a mapping with a groups list")
+    except (OSError, ValueError, json.JSONDecodeError, yaml.YAMLError) as error:
         print(f"preselect-gpu: {error}", file=sys.stderr)
         return 1
     changed = preselect(doc, vendors)

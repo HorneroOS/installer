@@ -21,13 +21,12 @@ canonical scripts/resolve-edition.py. Nothing is hand-listed here:
   offering them would tick a box that cannot install anything.
 - GPU drivers are rendered only when the pinned catalogue ships
   both `gpuVendors` and complete `gpuProvenance` for every rendered
-  package (HorneroOS/hornero#466, installer#115). The catalogue
-  a catalogue without them renders no GPU group
-  from it; a catalogue with vendors but missing/incomplete
-  provenance fails closed (ValueError) instead of rendering a group
-  that installs something unprovenanced. AMD/Intel open-source
-  groups may be pre-selected from a PCI probe (probe-gpu.py JSON);
-  the NVIDIA proprietary item is never pre-selected.
+  package (HorneroOS/hornero#466, installer#115). A catalogue without
+  them renders no GPU group from it; a catalogue with vendors but
+  missing/incomplete provenance fails closed (ValueError) instead of
+  rendering a group that installs something unprovenanced. AMD/Intel
+  open-source groups may be pre-selected from a PCI probe (probe-gpu.py
+  JSON); the NVIDIA proprietary item is never pre-selected.
 
 All groups default to unticked: an untouched netinstall page installs
 exactly the edition chosen in packagechooser, nothing more.
@@ -114,15 +113,20 @@ def build_gpu_groups(catalogue: dict, probe_vendors: list[str] | tuple = ()) -> 
             "to render GPU groups without provenance (fail-closed)"
         )
 
-    def require_provenance(packages: list[str]) -> None:
+    def require_provenance(packages: list[str], *, allow_proprietary: bool) -> None:
         for package in packages:
             entry = provenance.get(package)
             if not isinstance(entry, dict) or not entry.get("source") \
                     or not str(entry.get("sourceUrl", "")).startswith("https://") \
-                    or not entry.get("licenses"):
+                    or not entry.get("licenses") \
+                    or not entry.get("licenseClass"):
                 raise ValueError(
                     f"GPU package {package!r} lacks complete gpuProvenance "
-                    "(source/sourceUrl/licenses); refusing to render it"
+                    "(source/sourceUrl/licenses/licenseClass); refusing to render it"
+                )
+            if not allow_proprietary and entry.get("licenseClass") == "proprietary":
+                raise ValueError(
+                    f"GPU package {package!r} is proprietary inside an open-source GPU group"
                 )
 
     groups: list[dict] = []
@@ -131,10 +135,14 @@ def build_gpu_groups(catalogue: dict, probe_vendors: list[str] | tuple = ()) -> 
         entry = vendors.get(vendor_id)
         if not entry:
             continue
+        if entry.get("proprietary") or entry.get("explicitOptIn"):
+            raise ValueError(
+                f"gpuVendors.{vendor_id} must remain open-source and non-proprietary"
+            )
         packages = list(entry.get("packages") or [])
         if not packages:
             raise ValueError(f"gpuVendors.{vendor_id} has no packages")
-        require_provenance(packages)
+        require_provenance(packages, allow_proprietary=False)
         licences = sorted({lic for pkg in packages for lic in provenance[pkg]["licenses"]})
         subgroups.append({
             "name": f"GPU — {entry.get('title', vendor_id)}",
@@ -158,12 +166,16 @@ def build_gpu_groups(catalogue: dict, probe_vendors: list[str] | tuple = ()) -> 
         })
     nvidia = vendors.get("nvidia")
     if nvidia:
+        if not nvidia.get("proprietary") or not nvidia.get("explicitOptIn"):
+            raise ValueError(
+                "gpuVendors.nvidia must declare proprietary: true and explicitOptIn: true"
+            )
         userspace = list(nvidia.get("packages") or [])
         dkms = nvidia.get("dkmsModule")
         packages = ([dkms] if dkms else []) + userspace
         if not packages:
             raise ValueError("gpuVendors.nvidia has no packages")
-        require_provenance(packages)
+        require_provenance(packages, allow_proprietary=True)
         groups.append({
             "name": "NVIDIA GPU driver (proprietary)",
             "description": (
