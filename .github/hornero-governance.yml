@@ -1,0 +1,30 @@
+# Repo policy for the HorneroOS deterministic PR-governance engine.
+# Merged over safe defaults; see HorneroOS/.github governance/danger.
+
+version: 1
+kind: installer
+visual_paths:
+  - "image/calamares/branding/**"
+  - "image/archiso/syslinux/splash.png"
+  - "**/*.qml"
+  - "**/*.qss"
+generated_paths: []
+policies:
+  large_threshold: 800
+  forbidden_paths:
+    - "**/.env"
+    - "**/.env.*"
+    - "**/*.pem"
+    - "**/*.key"
+    - "**/id_rsa*"
+    - "**/id_ed25519*"
+    - "**/credentials*"
+    - "**/*secret*"
+  risky_paths:
+    - ".github/workflows/**"
+    - "installer.lock.yaml"
+    - "image/archiso/airootfs/etc/sudoers.d/**"
+    - "image/archiso/airootfs/etc/polkit-1/**"
+    - "image/archiso/airootfs/usr/local/bin/hornero-installer-run"
+    - "packaging/**"
+    - "scripts/build-iso.sh"

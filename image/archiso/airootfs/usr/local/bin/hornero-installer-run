@@ -1,49 +1,103 @@
 #!/usr/bin/bash
 set -u
+umask 0027
 
 # Offline consent comes from the live launcher as a flag file; it is
-# never trusted on its own. Re-verify the on-media repository as root
-# and only then create the root-owned 0600 marker and system selection
-# the Calamares jobs consume, all before Calamares (pre-partition).
+# never trusted on its own. Reject symlinks or untrusted ownership,
+# re-verify the on-media repository as root, and only then create the
+# root-owned 0600 marker and system selection the Calamares jobs
+# consume, all before Calamares (pre-partition).
 offline_flag=/tmp/hornero-installer-offline-accepted
-if [[ -f "$offline_flag" ]] && grep -qx offline "$offline_flag"; then
-  if /usr/bin/python3 /usr/lib/hornero-installer/offline-repo.py --verify-only; then
-    /usr/bin/install -d -m 0755 /run/hornero-installer
-    printf 'offline\n' | /usr/bin/install -m 0600 /dev/stdin /run/hornero-installer/offline-mode
-    printf '{"offline": true}\n' | /usr/bin/install -m 0600 /dev/stdin /run/hornero-installer/system-selection.json
-  else
-    /usr/bin/logger -t hornero-installer "Offline mode requested but the on-media repository is incomplete; refusing to start."
-    rm -f "$offline_flag"
+if [[ -L "$offline_flag" ]]; then
+  /usr/bin/logger -t hornero-installer "Refusing symlinked offline consent flag: $offline_flag"
+  /usr/bin/rm -f "$offline_flag"
+  exit 1
+fi
+if [[ -f "$offline_flag" ]]; then
+  /usr/bin/python3 - "$offline_flag" <<'PY'
+import os
+import pwd
+import stat
+import sys
+
+path = sys.argv[1]
+allowed_uids = {0}
+try:
+    allowed_uids.add(pwd.getpwnam("hornero-live").pw_uid)
+except KeyError:
+    pass
+
+try:
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+except OSError:
+    sys.exit(2)
+
+try:
+    st = os.fstat(fd)
+    if not stat.S_ISREG(st.st_mode) or st.st_uid not in allowed_uids or st.st_size > 64:
+        sys.exit(2)
+    content = os.read(fd, 64)
+finally:
+    os.close(fd)
+
+sys.exit(0 if content == b"offline\n" else 1)
+PY
+  offline_flag_status=$?
+  if [[ "$offline_flag_status" -eq 2 ]]; then
+    /usr/bin/logger -t hornero-installer "Refusing unsafe offline consent flag: $offline_flag"
+    /usr/bin/rm -f "$offline_flag"
     exit 1
+  elif [[ "$offline_flag_status" -eq 0 ]]; then
+    if /usr/bin/python3 /usr/lib/hornero-installer/offline-repo.py --verify-only; then
+      /usr/bin/install -d -m 0755 /run/hornero-installer
+      printf 'offline\n' | /usr/bin/install -m 0600 /dev/stdin /run/hornero-installer/offline-mode
+      printf '{"offline": true}\n' | /usr/bin/install -m 0600 /dev/stdin /run/hornero-installer/system-selection.json
+    else
+      /usr/bin/logger -t hornero-installer "Offline mode requested but the on-media repository is incomplete; refusing to start."
+      /usr/bin/rm -f "$offline_flag"
+      exit 1
+    fi
   fi
-  rm -f "$offline_flag"
+  /usr/bin/rm -f "$offline_flag"
 fi
 
 # GPU probe + netinstall pre-selection (installer#115): open-source
 # AMD/Intel groups detected over PCI start ticked but editable; the
 # NVIDIA proprietary item is never pre-selected. Failure leaves the
 # committed netinstall config untouched (fail-closed, install goes on).
+gpu_probe_log=/var/log/hornero-installer-gpu-probe.log
+if [[ -L "$gpu_probe_log" ]]; then
+  /usr/bin/rm -f "$gpu_probe_log"
+fi
 if [[ -x /usr/lib/hornero-installer/probe-gpu.py && -f /etc/calamares/modules/netinstall.conf ]]; then
   /usr/bin/python3 /usr/lib/hornero-installer/probe-gpu.py \
     --output /run/hornero-installer/gpu-probe.json \
-    >/var/log/hornero-installer-gpu-probe.log 2>&1 || true
+    >"$gpu_probe_log" 2>&1 || true
   if [[ -f /run/hornero-installer/gpu-probe.json && -x /usr/lib/hornero-installer/preselect-gpu.py ]]; then
     /usr/bin/python3 /usr/lib/hornero-installer/preselect-gpu.py \
       --probe /run/hornero-installer/gpu-probe.json \
       --netinstall /etc/calamares/modules/netinstall.conf \
-      >>/var/log/hornero-installer-gpu-probe.log 2>&1 || true
+      >>"$gpu_probe_log" 2>&1 || true
   fi
 fi
 
-# Calamares runs as root and writes its session log below root's home. Keep a
-# readable local copy for the live user after the window closes. This wrapper
-# accepts no arguments; the live user's sudo rule permits only this fixed job.
+# Calamares runs as root and writes its debug log below root's home. Keep a
+# redacted local copy for the live user after the window closes so -D6
+# never exposes passphrases, passwords, or PSKs to the live account. This
+# wrapper accepts no arguments; the live user's sudo rule permits only this
+# fixed job.
 /usr/bin/calamares -D6
 installer_status=$?
+
+/usr/bin/install -d -m 0750 -o root -g hornero-live /var/log/hornero-installer || true
 
 # Calamares emergency modules do not run when a user cancels the wizard.
 # Clean only temporary targets carrying this installer's repository includes.
 cleanup_log=/var/log/hornero-installer/post-exit-cleanup.log
+if [[ -L "$cleanup_log" ]]; then
+  /usr/bin/rm -f "$cleanup_log" || true
+fi
+/usr/bin/install -m 0640 -o root -g hornero-live /dev/null "$cleanup_log" || true
 if ! /usr/bin/python3 /usr/local/lib/hornero-installer/cleanup-calamares-targets.py >"$cleanup_log" 2>&1; then
   /usr/bin/chmod 0640 "$cleanup_log" || true
   /usr/bin/chown root:hornero-live "$cleanup_log" || true
@@ -55,9 +109,24 @@ fi
 
 log_source=/root/.cache/calamares/session.log
 log_destination=/var/log/hornero-installer/session.log
-if [[ -r "$log_source" ]]; then
-  /usr/bin/install -d -m 0750 -o root -g hornero-live /var/log/hornero-installer || true
-  /usr/bin/install -D -m 0640 -o root -g hornero-live "$log_source" "$log_destination" || true
+if [[ -L "$log_destination" ]]; then
+  /usr/bin/rm -f "$log_destination" || true
+fi
+if [[ -L "$log_source" ]]; then
+  /usr/bin/logger -t hornero-installer "Refusing symlinked Calamares session log: $log_source"
+elif [[ -f "$log_source" && -r "$log_source" ]]; then
+  /usr/bin/chmod 0600 "$log_source" || true
+  tmp_redacted=""
+  if tmp_redacted=$(umask 0077 && /usr/bin/mktemp /var/log/hornero-installer/.session.log.XXXXXX); then
+    if /usr/bin/python3 /usr/local/lib/hornero-installer/redact-session-log.py \
+      --source "$log_source" >"$tmp_redacted"; then
+      /usr/bin/install -m 0640 -o root -g hornero-live "$tmp_redacted" "$log_destination" || true
+    else
+      /usr/bin/rm -f "$log_destination" || true
+      /usr/bin/logger -t hornero-installer "Failed to redact Calamares session log; omitted $log_destination"
+    fi
+    /usr/bin/rm -f "$tmp_redacted" || true
+  fi
 fi
 
 exit "$installer_status"
