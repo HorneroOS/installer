@@ -49,7 +49,7 @@ def _write_fake_tool(root: Path) -> Path:
     os.chmod(tool, 0o755)
     theme_src = root / "usr/share/grub/themes/hornero-signal/theme.txt"
     theme_src.parent.mkdir(parents=True, exist_ok=True)
-    theme_src.write_text('desktop-color: "#0C0F13"\n', encoding="utf-8")
+    theme_src.write_text('desktop-color: "#0C1016"\n', encoding="utf-8")
     grub_default = root / "etc/default/grub"
     grub_default.parent.mkdir(parents=True, exist_ok=True)
     grub_default.write_text('GRUB_TIMEOUT=5\nGRUB_DEFAULT="0"\n', encoding="utf-8")
@@ -132,5 +132,5 @@ def test_verify_install_validates_referenced_grub_theme(tmp_path):
 
     theme = tmp_path / "boot/grub/themes/hornero-signal/theme.txt"
     theme.parent.mkdir(parents=True)
-    theme.write_text('desktop-color: "#0C0F13"\n', encoding="utf-8")
+    theme.write_text('desktop-color: "#0C1016"\n', encoding="utf-8")
     assert verify_mod.verify_install(tmp_path) == []

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SYSLINUX = ROOT / "image/archiso/syslinux"
 
 # hornero-signal-night roles used by the menu (HorneroOS/config theme.json).
-ALLOWED = {"0C0F13", "ECE6DA", "A8ABAD", "1F252E", "F2A33A", "737980", "000000"}
+ALLOWED = {"0C1016", "E6EBF1", "A9B7C6", "24303D", "F2AC52", "8999AB", "000000"}
 
 
 def cfg() -> str:

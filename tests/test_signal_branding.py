@@ -21,15 +21,15 @@ LIVE_PACKAGES = (ROOT / "image/archiso/packages.x86_64").read_text(encoding="utf
 LIVE_SETUP = (ROOT / "image/archiso/airootfs/usr/local/bin/hornero-live-session-setup").read_text(encoding="utf-8")
 COMPOSITIONS = json.loads((ROOT / "image/calamares/modules/compositions.json").read_text(encoding="utf-8"))
 
-# RFC 0001 §3.2 Signal Night with amendment 2 (ruleStrong #707A85).
+# RFC 0001 §3.2 Signal Night with amendment 3 (cool blue-hour graphite).
 NIGHT = {
-    "ground": "#0C0F13", "sunken": "#101419", "base": "#13171D",
-    "panel": "#181D24", "raised": "#1F252E", "lifted": "#283039",
-    "ink": "#ECE6DA", "inkMuted": "#A8ABAD", "inkFaint": "#737980",
-    "rule": "#2C333C", "ruleStrong": "#707A85", "signal": "#F2A33A",
-    "onSignal": "#1A1205", "signalWell": "#3A2A12", "onSignalWell": "#FFD9A3",
-    "focus": "#7EC1EA", "cueWell": "#16303F", "onCueWell": "#CDE8F8",
-    "alert": "#F0705A",
+    "ground": "#0C1016", "sunken": "#10151C", "base": "#141B24",
+    "panel": "#1B2430", "raised": "#24303D", "lifted": "#2C3947",
+    "ink": "#E6EBF1", "inkMuted": "#A9B7C6", "inkFaint": "#8999AB",
+    "rule": "#2D3B4B", "ruleStrong": "#8393A6", "signal": "#F2AC52",
+    "onSignal": "#1E1304", "signalWell": "#3D2B12", "onSignalWell": "#FFE0B0",
+    "focus": "#8BCEF0", "cueWell": "#163345", "onCueWell": "#D6EFFC",
+    "alert": "#FF8494",
 }
 OLD_BRAND = ("#1D1410", "#F6E9DB", "#F2B749", "#E07856", "#241610", "#D9C6B2", "#B24827")
 UI_SURFACES = {"show.qml": SHOW, "stylesheet.qss": QSS, "installer-banner.svg": BANNER,
@@ -77,14 +77,14 @@ def test_plex_type_everywhere():
 
 def test_separate_windows_get_a_dark_surface():
     block = QSS.split("QDialog,", 1)[1].split("}", 1)[0]
-    assert "QMessageBox" in block and "background-color: #181D24" in block
-    assert "color: #ECE6DA" in block
+    assert "QMessageBox" in block and "background-color: #1B2430" in block
+    assert "color: #E6EBF1" in block
 
 
 def test_focus_and_primary_action_follow_signal():
-    assert "QPushButton:focus" in QSS and "2px solid #7EC1EA" in QSS
+    assert "QPushButton:focus" in QSS and "2px solid #8BCEF0" in QSS
     default = QSS.split("QPushButton:default {", 1)[1].split("}", 1)[0]
-    assert "#F2A33A" in default and "#1A1205" in default
+    assert "#F2AC52" in default and "#1E1304" in default
     assert "border-radius: 3px" in QSS
 
 
@@ -123,7 +123,7 @@ def test_slideshow_package_lists_match_installer_choices():
 
 
 def test_banner_keeps_registration_tick_and_diagonal():
-    assert '<rect x="0" y="0" width="2" height="10" fill="#F2A33A"/>' in BANNER
+    assert '<rect x="0" y="0" width="2" height="10" fill="#F2AC52"/>' in BANNER
     assert "La Plata 45° diagonal" in BANNER
     assert "PREVIEW" in BANNER
 
@@ -186,16 +186,16 @@ def test_stylesheet_covers_every_calamares_page_family():
 
 def test_error_and_warning_blocks_use_signal_night_roles():
     error_block = QSS.split("#errorLabel,", 1)[1].split("}", 1)[0]
-    assert "#F0705A" in error_block and "#181D24" in error_block and "#ECE6DA" in error_block
+    assert "#FF8494" in error_block and "#1B2430" in error_block and "#E6EBF1" in error_block
     warning_block = QSS.split("#warningLabel,", 1)[1].split("}", 1)[0]
-    assert "#3A2A12" in warning_block and "#F2A33A" in warning_block and "#FFD9A3" in warning_block
+    assert "#3D2B12" in warning_block and "#F2AC52" in warning_block and "#FFE0B0" in warning_block
 
 
 def test_stylesheet_never_encodes_state_by_colour_alone():
     # Checked controls change fill and boundary, the active tab gets an
     # underline, the selected row an on-air bar.
-    assert "border-bottom: 2px solid #F2A33A" in QSS
-    assert "border-left: 2px solid #F2A33A" in QSS
+    assert "border-bottom: 2px solid #F2AC52" in QSS
+    assert "border-left: 2px solid #F2AC52" in QSS
     assert "QCheckBox::indicator:checked" in QSS
 
 
@@ -204,7 +204,7 @@ def test_banner_fits_the_welcome_area_without_clipping():
     root = re.search(r'<svg[^>]*width="(\d+)" height="(\d+)" viewBox="0 0 (\d+) (\d+)"', BANNER)
     assert root and root.group(1) == root.group(3) and root.group(2) == root.group(4)
     assert int(root.group(1)) <= 640
-    chip = re.search(r'<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" rx="3" fill="#F2A33A"/>', BANNER)
+    chip = re.search(r'<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" rx="3" fill="#F2AC52"/>', BANNER)
     assert chip and int(chip.group(1)) + int(chip.group(3)) + 16 <= int(root.group(1))
     assert int(chip.group(2)) + int(chip.group(4)) + 16 <= int(root.group(2))
 

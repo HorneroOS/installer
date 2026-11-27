@@ -20,10 +20,10 @@ images:
 slideshow: "show.qml"
 slideshowAPI: 2
 style:
-  # Hornero Signal, Signal Night roles (RFC 0001 + amendment 2): ground
+  # Hornero Signal, Signal Night roles (RFC 0001 + amendment 3): ground
   # sidebar, ink text, current step as a selected row (signalWell fill with
   # onSignalWell text). Further styling lives in stylesheet.qss.
-  SidebarBackground: "#0C0F13"
-  SidebarText: "#ECE6DA"
-  SidebarTextCurrent: "#FFD9A3"
-  SidebarBackgroundCurrent: "#3A2A12"
+  SidebarBackground: "#0C1016"
+  SidebarText: "#E6EBF1"
+  SidebarTextCurrent: "#FFE0B0"
+  SidebarBackgroundCurrent: "#3D2B12"

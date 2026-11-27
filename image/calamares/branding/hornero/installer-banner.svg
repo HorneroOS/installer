@@ -1,26 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="180" viewBox="0 0 600 180" role="img" aria-label="HorneroOS installer banner">
-  <!-- Hornero Signal installer banner (RFC 0001 + amendment 2, Signal
+  <!-- Hornero Signal installer banner (RFC 0001 + amendment 3, Signal
        Bezel). 600 px wide so it fits the Calamares welcome area at the
        1024x768 minimum without clipping the PREVIEW chip (installer#101).
        Bird and branch geometry inlined from HorneroOS/config
        assets/brand/logo-dark.svg; the sun disc is a flat signal amber and
        the bird is knocked out in ground, so the mark reads as one instrument
-       plate. Signal Night roles: ground #0C0F13, base #13171D, ink #ECE6DA,
-       inkMuted #A8ABAD, rule #2C333C, signal #F2A33A, onSignal #1A1205.
+       plate. Signal Night roles: ground #0C1016, base #141B24, ink #E6EBF1,
+       inkMuted #A9B7C6, rule #2D3B4B, signal #F2AC52, onSignal #1E1304.
        Type: IBM Plex Sans Condensed / IBM Plex Mono (ttf-ibm-plex). -->
   <defs>
     <clipPath id="hatch-clip">
       <rect x="468" y="22" width="96" height="10"/>
     </clipPath>
   </defs>
-  <rect width="600" height="180" rx="5" fill="#0C0F13"/>
-  <rect x="0.5" y="0.5" width="599" height="179" rx="5" fill="none" stroke="#2C333C"/>
+  <rect width="600" height="180" rx="5" fill="#0C1016"/>
+  <rect x="0.5" y="0.5" width="599" height="179" rx="5" fill="none" stroke="#2D3B4B"/>
   <!-- Registration tick on the leading top corner. -->
-  <rect x="0" y="0" width="2" height="10" fill="#F2A33A"/>
-  <rect x="0" y="0" width="10" height="2" fill="#F2A33A"/>
+  <rect x="0" y="0" width="2" height="10" fill="#F2AC52"/>
+  <rect x="0" y="0" width="10" height="2" fill="#F2AC52"/>
   <g transform="translate(26 22) scale(0.5625)">
-    <circle cx="128" cy="124" r="86" fill="#F2A33A"/>
-    <g fill="#0C0F13">
+    <circle cx="128" cy="124" r="86" fill="#F2AC52"/>
+    <g fill="#0C1016">
       <path d="M100,168 L52,206 L70,212 L114,180 Z"/>
       <ellipse cx="124" cy="140" rx="34" ry="42" transform="rotate(-12 124 140)"/>
       <circle cx="140" cy="92" r="24"/>
@@ -28,18 +28,18 @@
       <rect x="111" y="176" width="7" height="22" rx="3.5"/>
       <rect x="129" y="174" width="7" height="23" rx="3.5"/>
     </g>
-    <path d="M36,200 C90,188 166,188 220,200" fill="none" stroke="#ECE6DA" stroke-width="13" stroke-linecap="round"/>
-    <circle cx="146" cy="88" r="5.5" fill="#F2A33A"/>
+    <path d="M36,200 C90,188 166,188 220,200" fill="none" stroke="#E6EBF1" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="146" cy="88" r="5.5" fill="#F2AC52"/>
   </g>
-  <text x="190" y="56" fill="#A8ABAD" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="1.2">00 · INSTALLER</text>
-  <line x1="190" y1="68" x2="452" y2="68" stroke="#2C333C" stroke-width="1"/>
-  <text x="188" y="112" fill="#ECE6DA" font-family="IBM Plex Sans Condensed, IBM Plex Sans, sans-serif" font-size="44" font-weight="500">HorneroOS</text>
-  <text x="190" y="144" fill="#A8ABAD" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="0.6">DESKTOP · STUDIO · GAMING</text>
+  <text x="190" y="56" fill="#A9B7C6" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="1.2">00 · INSTALLER</text>
+  <line x1="190" y1="68" x2="452" y2="68" stroke="#2D3B4B" stroke-width="1"/>
+  <text x="188" y="112" fill="#E6EBF1" font-family="IBM Plex Sans Condensed, IBM Plex Sans, sans-serif" font-size="44" font-weight="500">HorneroOS</text>
+  <text x="190" y="144" fill="#A9B7C6" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="0.6">DESKTOP · STUDIO · GAMING</text>
   <!-- On-air chip: the real maturity of every edition. -->
-  <rect x="448" y="132" width="116" height="30" rx="3" fill="#F2A33A"/>
-  <text x="506" y="152" text-anchor="middle" fill="#1A1205" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" letter-spacing="1.4">PREVIEW</text>
+  <rect x="448" y="132" width="116" height="30" rx="3" fill="#F2AC52"/>
+  <text x="506" y="152" text-anchor="middle" fill="#1E1304" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" letter-spacing="1.4">PREVIEW</text>
   <!-- La Plata 45° diagonal, brand surface only. -->
-  <g clip-path="url(#hatch-clip)" stroke="#F2A33A" stroke-width="1.5">
+  <g clip-path="url(#hatch-clip)" stroke="#F2AC52" stroke-width="1.5">
     <line x1="462" y1="32" x2="472" y2="22"/>
     <line x1="468" y1="32" x2="478" y2="22"/>
     <line x1="474" y1="32" x2="484" y2="22"/>
