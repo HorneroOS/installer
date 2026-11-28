@@ -479,6 +479,8 @@ def main() -> int:
     assert 'install -Dm644 "$ROOT/image/calamares/extra-users-allowlist.yaml"' in iso_builder
     assert 'install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py"' in iso_builder
     assert '"$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"' in iso_builder
+    assert 'install -Dm644 "$ROOT/image/calamares/modules/hornero-workstation-profiles.json"' in iso_builder
+    assert '"$profile/airootfs/usr/lib/hornero-installer/hornero-workstation-profiles.json"' in iso_builder
     assert 'install -Dm755 "$ROOT/image/calamares/configure-recovery.py"' in iso_builder
     assert '"$profile/airootfs/usr/lib/hornero-installer/configure-recovery.py"' in iso_builder
     assert 'python3 "$product/scripts/resolve-edition.py"' not in iso_builder, (
@@ -570,7 +572,12 @@ def main() -> int:
         "papirus-icon-theme",
         "qt6ct",
         "kitty",
+        "xdg-desktop-portal",
         "xdg-desktop-portal-hyprland",
+        "xdg-desktop-portal-gtk",
+        "flatpak",
+        "appstream",
+        "fuse2",
     } <= live_packages
     fontconfig_dropin = archiso / "airootfs/etc/fonts/conf.d/60-hornero-signal.conf"
     assert fontconfig_dropin.is_file()
@@ -853,6 +860,18 @@ def main() -> int:
             assert "unsafe path components" in str(error)
         else:
             raise AssertionError("user defaults accepted a passwd home with traversal components")
+
+    assert (CALAMARES / "modules/hornero-workstation-profiles.json").is_file()
+    workstation_profiles = json.loads(
+        (CALAMARES / "modules/hornero-workstation-profiles.json").read_text(encoding="utf-8")
+    )
+    assert workstation_profiles.get("defaultSelected") is False
+    assert workstation_profiles.get("critical") is False
+    assert len(workstation_profiles.get("profiles") or []) == 9
+    for _wp in workstation_profiles["profiles"]:
+        assert _wp.get("selected") is False
+        assert _wp.get("critical") is False
+        assert not (set(_wp.get("apps") or []) & set(_wp.get("proprietaryOptIn") or []))
 
     print(f"installer config checks passed ({len(configs)} module configs; {len(item_ids)} catalogue choices)")
     return 0

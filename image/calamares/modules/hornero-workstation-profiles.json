@@ -1,0 +1,399 @@
+{
+  "apiVersion": "hornero.os/v1",
+  "kind": "WorkstationProfiles",
+  "schemaVersion": 1,
+  "catalogSchemaVersion": 1,
+  "catalogVerifiedAt": "2026-11-28",
+  "defaultSelected": false,
+  "critical": false,
+  "profiles": [
+    {
+      "id": "minimal",
+      "name": "Minimal Desktop",
+      "name_es": "Escritorio mínimo",
+      "description": "Lean browser, editor, and Flatpak/AppImage runtime utilities.",
+      "description_es": "Navegador liviano, editor y utilidades base para Flatpak/AppImage.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "firefox",
+        "flatseal",
+        "gear-lever",
+        "localsend",
+        "vlc"
+      ],
+      "proprietaryOptIn": [],
+      "archOfficialPackages": [
+        "firefox",
+        "flatseal",
+        "vlc"
+      ],
+      "deferredApps": [
+        {
+          "id": "gear-lever",
+          "backend": "flatpak"
+        },
+        {
+          "id": "localsend",
+          "backend": "flatpak"
+        }
+      ]
+    },
+    {
+      "id": "everyday-desktop",
+      "name": "Everyday Desktop",
+      "name_es": "Escritorio diario",
+      "description": "Complete everyday desktop with browser, office, media, and security.",
+      "description_es": "Escritorio completo para uso diario: navegador, oficina, multimedia y seguridad.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "firefox",
+        "zen-browser",
+        "brave",
+        "libreoffice",
+        "signal",
+        "telegram-desktop",
+        "vlc",
+        "keepassxc",
+        "flatseal",
+        "gear-lever",
+        "localsend"
+      ],
+      "proprietaryOptIn": [
+        "obsidian",
+        "bitwarden",
+        "discord",
+        "spotify"
+      ],
+      "archOfficialPackages": [
+        "firefox",
+        "libreoffice-fresh",
+        "signal-desktop",
+        "telegram-desktop",
+        "vlc",
+        "keepassxc",
+        "flatseal"
+      ],
+      "deferredApps": [
+        {
+          "id": "zen-browser",
+          "backend": "flatpak"
+        },
+        {
+          "id": "brave",
+          "backend": "flatpak"
+        },
+        {
+          "id": "gear-lever",
+          "backend": "flatpak"
+        },
+        {
+          "id": "localsend",
+          "backend": "flatpak"
+        }
+      ]
+    },
+    {
+      "id": "work-productivity",
+      "name": "Work & Productivity",
+      "name_es": "Trabajo y productividad",
+      "description": "Office suites, collaboration tools, email, and VPN connectivity.",
+      "description_es": "Suites ofimáticas, colaboración, correo y conectividad VPN.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "firefox",
+        "libreoffice",
+        "onlyoffice",
+        "signal",
+        "tailscale",
+        "proton-vpn",
+        "microsoft-teams"
+      ],
+      "proprietaryOptIn": [
+        "obsidian",
+        "bitwarden",
+        "slack",
+        "zoom-workplace"
+      ],
+      "archOfficialPackages": [
+        "firefox",
+        "libreoffice-fresh",
+        "signal-desktop",
+        "tailscale",
+        "proton-vpn-gtk-app"
+      ],
+      "deferredApps": [
+        {
+          "id": "onlyoffice",
+          "backend": "flatpak"
+        },
+        {
+          "id": "microsoft-teams",
+          "backend": "flatpak"
+        }
+      ]
+    },
+    {
+      "id": "software-development",
+      "name": "Software Development",
+      "name_es": "Desarrollo de software",
+      "description": "Modern editors, containers, git UI, API testing, and AI coding agents.",
+      "description_es": "Editores modernos, contenedores, git, pruebas API y agentes de código.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "zed",
+        "vscodium",
+        "neovim",
+        "lazygit",
+        "opencode",
+        "veasel-code",
+        "agent-toolkit",
+        "podman-desktop",
+        "dbeaver",
+        "bruno"
+      ],
+      "proprietaryOptIn": [
+        "vscode-official",
+        "cursor",
+        "postman"
+      ],
+      "archOfficialPackages": [
+        "zed",
+        "neovim",
+        "lazygit",
+        "opencode",
+        "podman-desktop",
+        "dbeaver"
+      ],
+      "deferredApps": [
+        {
+          "id": "vscodium",
+          "backend": "flatpak"
+        },
+        {
+          "id": "veasel-code",
+          "backend": "guided"
+        },
+        {
+          "id": "agent-toolkit",
+          "backend": "guided"
+        },
+        {
+          "id": "bruno",
+          "backend": "aur"
+        }
+      ]
+    },
+    {
+      "id": "ai-native-workstation",
+      "name": "AI-Native Workstation",
+      "name_es": "Estación AI-Native",
+      "description": "Local LLM inference, agentic coding tools, and AI assistants.",
+      "description_es": "Inferencia local de LLMs, herramientas agénticas y asistentes de IA.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "ollama",
+        "jan",
+        "open-webui",
+        "alpaca",
+        "opencode",
+        "hermes-agent",
+        "agent-toolkit",
+        "veasel-code",
+        "zed"
+      ],
+      "proprietaryOptIn": [
+        "chatgpt-desktop",
+        "claude-web",
+        "google-antigravity-ide",
+        "lm-studio",
+        "cursor"
+      ],
+      "archOfficialPackages": [
+        "ollama",
+        "opencode",
+        "zed"
+      ],
+      "deferredApps": [
+        {
+          "id": "jan",
+          "backend": "flatpak"
+        },
+        {
+          "id": "open-webui",
+          "backend": "guided"
+        },
+        {
+          "id": "alpaca",
+          "backend": "flatpak"
+        },
+        {
+          "id": "hermes-agent",
+          "backend": "guided"
+        },
+        {
+          "id": "agent-toolkit",
+          "backend": "guided"
+        },
+        {
+          "id": "veasel-code",
+          "backend": "guided"
+        }
+      ]
+    },
+    {
+      "id": "creative-studio",
+      "name": "Creative Studio",
+      "name_es": "Estudio creativo",
+      "description": "3D, illustration, photo editing, video editing, and streaming.",
+      "description_es": "3D, ilustración, fotografía, edición de video y streaming.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "blender",
+        "gimp",
+        "krita",
+        "inkscape",
+        "kdenlive",
+        "obs-studio",
+        "darktable",
+        "rawtherapee",
+        "artcraft-launcher"
+      ],
+      "proprietaryOptIn": [
+        "davinci-resolve",
+        "figma"
+      ],
+      "archOfficialPackages": [
+        "blender",
+        "gimp",
+        "krita",
+        "inkscape",
+        "kdenlive",
+        "obs-studio",
+        "darktable",
+        "rawtherapee"
+      ],
+      "deferredApps": [
+        {
+          "id": "artcraft-launcher",
+          "backend": "guided"
+        }
+      ]
+    },
+    {
+      "id": "music-audio-production",
+      "name": "Music & Audio Production",
+      "name_es": "Producción musical y audio",
+      "description": "DAWs, virtual amps, plugin hosts, and notation tools.",
+      "description_es": "DAWs, amplificadores virtuales, hosts de plugins y notación musical.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "ardour",
+        "guitarix",
+        "carla",
+        "audacity",
+        "musescore-studio",
+        "lmms"
+      ],
+      "proprietaryOptIn": [
+        "reaper",
+        "bitwig-studio"
+      ],
+      "archOfficialPackages": [
+        "ardour",
+        "guitarix",
+        "carla",
+        "audacity",
+        "musescore",
+        "lmms"
+      ],
+      "deferredApps": []
+    },
+    {
+      "id": "gaming",
+      "name": "Gaming Workstation",
+      "name_es": "Estación Gaming",
+      "description": "Game launchers, Proton managers, performance tools, and emulators.",
+      "description_es": "Lanzadores, gestión de Proton, utilidades de rendimiento y emuladores.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "heroic-games-launcher",
+        "lutris",
+        "bottles",
+        "prism-launcher",
+        "gamemode",
+        "mangohud",
+        "gamescope",
+        "protonup-qt",
+        "retroarch"
+      ],
+      "proprietaryOptIn": [
+        "steam"
+      ],
+      "archOfficialPackages": [
+        "lutris",
+        "prismlauncher",
+        "gamemode",
+        "mangohud",
+        "gamescope",
+        "retroarch"
+      ],
+      "deferredApps": [
+        {
+          "id": "heroic-games-launcher",
+          "backend": "flatpak"
+        },
+        {
+          "id": "bottles",
+          "backend": "flatpak"
+        },
+        {
+          "id": "protonup-qt",
+          "backend": "flatpak"
+        }
+      ]
+    },
+    {
+      "id": "education-research",
+      "name": "Education & Research",
+      "name_es": "Educación e investigación",
+      "description": "Spaced repetition, offline knowledge, astronomy, STEM, and writing.",
+      "description_es": "Repetición espaciada, conocimiento offline, astronomía, STEM y escritura.",
+      "selected": false,
+      "critical": false,
+      "apps": [
+        "anki",
+        "kiwix",
+        "stellarium",
+        "gnu-octave",
+        "qgis",
+        "r",
+        "zotero",
+        "calibre",
+        "libreoffice"
+      ],
+      "proprietaryOptIn": [
+        "obsidian"
+      ],
+      "archOfficialPackages": [
+        "anki",
+        "kiwix-desktop",
+        "stellarium",
+        "octave",
+        "qgis",
+        "r",
+        "zotero",
+        "calibre",
+        "libreoffice-fresh"
+      ],
+      "deferredApps": []
+    }
+  ]
+}
