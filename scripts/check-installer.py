@@ -425,18 +425,16 @@ def main() -> int:
         for path in screenshots.values()
     )
     assert all(item["edition"] not in {"agents", "server"} for item in compositions["options"])
-    # Studio is a published Supported edition: its base choices belong to
-    # the release render. Only specialization choices stay candidate-only,
-    # and those keep their candidate flag with the catalogue maturity.
+    # Studio and Gaming carry Preview maturity in the pinned catalogue
+    # (hornero#464); their base choices belong to the release render
+    # with preview maturity while specialization choices stay candidate-only.
     assert all(
-        item["maturity"] == "supported"
+        item["maturity"] == "preview"
         for item in compositions["options"]
         if item["edition"] == "studio" and not item.get("candidate")
     )
-    # Gaming is a published Supported edition: its base choices belong
-    # to the release render with supported maturity.
     assert all(
-        item["maturity"] == "supported"
+        item["maturity"] == "preview"
         for item in compositions["options"]
         if item["edition"] == "gaming"
     )

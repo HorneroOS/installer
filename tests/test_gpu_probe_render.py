@@ -173,10 +173,10 @@ def test_preselect_only_touches_detected_open_leaf():
     assert doc["groups"][1]["selected"] is False
 
 
-def test_committed_netinstall_has_gpu_after_pin_bump():
+def test_committed_netinstall_has_no_gpu_without_catalogue_provenance():
     conf = yaml.safe_load((ROOT / "image/calamares/modules/netinstall.conf").read_text(encoding="utf-8"))
     names = [g["name"] for g in conf["groups"]]
-    assert any("GPU" in name for name in names), (
-        "pinned catalogue 8c0d13c ships GPU provenance (hornero#466 merged); "
-        "GPU groups must be rendered"
+    assert not any("GPU" in name for name in names), (
+        "pinned catalogue 88723e5 has no gpuVendors/gpuProvenance "
+        "(removed in hornero#464); GPU groups remain absent fail-closed"
     )
