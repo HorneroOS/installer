@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Never leave root-owned __pycache__ directories inside the repository when
+# invoking Python validators, which would trip the clean-worktree guard.
+export PYTHONDONTWRITEBYTECODE=1
+
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 usage() { printf 'Usage: %s --work NEW_EMPTY_PATH --output NEW_EMPTY_PATH [--product-source HORNEROS_REPO] [--offline]\n' "$0" >&2; }
 work=""

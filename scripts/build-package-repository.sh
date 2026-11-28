@@ -21,13 +21,6 @@ product_source=${HORNEROS_PRODUCT_SOURCE:-}
   echo 'Set HORNEROS_PRODUCT_SOURCE to the locked HorneroOS product checkout.' >&2
   exit 1
 }
-# Signed AUR recipes (horneroctl-bin) verify against the HorneroOS release
-# key committed in the product repo; makepkg runs as builder, so import it
-# into builder's keyring first (fails closed in makepkg if absent).
-release_pubkey="$product_source/packaging/keys/hornero-release.pub.asc"
-if [[ -s "$release_pubkey" ]]; then
-  runuser -u builder -- gpg --batch --quiet --import "$release_pubkey"
-fi
 [[ "${HORNEROS_INSTALLER_DISPOSABLE:-}" == 1 ]] || { echo 'Set HORNEROS_INSTALLER_DISPOSABLE=1 only inside a disposable Arch VM or builder.' >&2; exit 1; }
 [[ $(systemd-detect-virt --vm 2>/dev/null) != none ]] || { echo 'Refusing to build AUR recipes on bare metal.' >&2; exit 1; }
 [[ $(id -u) -eq 0 ]] || { echo 'Run the isolated package builder as root inside the disposable VM.' >&2; exit 1; }
@@ -41,6 +34,14 @@ mkdir -p "$work"
 mkdir -p "$repository"
 getent passwd builder >/dev/null || useradd --create-home --shell /bin/bash builder
 chown builder:builder "$work"
+# Signed AUR recipes (horneroctl-bin) verify against the HorneroOS release
+# key committed in the product repo; makepkg runs as builder, so import it
+# into builder's keyring after the builder account exists (fails closed in
+# makepkg if absent).
+release_pubkey="$product_source/packaging/keys/hornero-release.pub.asc"
+if [[ -s "$release_pubkey" ]]; then
+  runuser -u builder -- gpg --batch --quiet --import "$release_pubkey"
+fi
 repo_db="$repository/hornero-installer.db.tar.gz"
 base_pacman_conf="$pacman_conf"
 dependency_pacman_conf="$pacman_conf"
@@ -48,6 +49,12 @@ dependency_pacman_conf="$pacman_conf"
 # snapshot. Reconcile the disposable build environment first so AUR and
 # Calamares binaries link against the same dependency versions that mkarchiso
 # will install into the live image.
+# Arch cloud images on OpenSSL 4.x carry openssl-3 for libcrypto.so.3 /
+# libssl.so.3 compatibility; remove it before downgrading openssl to a
+# pre-OpenSSL-4 snapshot so those shared libraries do not conflict.
+if pacman -Q openssl-3 >/dev/null 2>&1; then
+  pacman -Rdd --noconfirm openssl-3
+fi
 pacman --config "$pacman_conf" -Syyuu --noconfirm
 aur_repository=$(python3 - "$ROOT/installer.lock.yaml" <<'PY'
 import sys
