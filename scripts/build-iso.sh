@@ -99,6 +99,8 @@ cp -a "$ROOT/image/calamares/modules/." "$profile/calamares/modules/"
 cp -a "$ROOT/image/calamares/branding/." "$profile/calamares/branding/"
 install -Dm755 "$ROOT/image/calamares/configure-user-defaults.py" \
   "$profile/airootfs/usr/lib/hornero-installer/configure-user-defaults.py"
+install -Dm644 "$ROOT/image/calamares/modules/hornero-workstation-profiles.json" \
+  "$profile/airootfs/usr/lib/hornero-installer/hornero-workstation-profiles.json"
 install -Dm755 "$ROOT/image/calamares/create-extra-users.py" \
   "$profile/airootfs/usr/lib/hornero-installer/create-extra-users.py"
 install -Dm644 "$ROOT/image/calamares/extra-users-allowlist.yaml" \

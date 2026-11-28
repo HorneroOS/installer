@@ -31,8 +31,12 @@ sudo
 systemd-sysvcompat
 mesa
 hyprland
+xdg-desktop-portal
 xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
+flatpak
+appstream
+fuse2
 quickshell
 hornero-shell
 hornero-config

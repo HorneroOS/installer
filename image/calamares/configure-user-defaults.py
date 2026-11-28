@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """Seed the selected user's Exo helper from the installed Hornero defaults.
 
-Also seeds the recorded Studio selection (HorneroOS/installer#36): when the
-installed system profile carries a `studioSelection`, it is translated to
-`~/.config/hornero/studio-selection.json`, the exact file `horneroctl studio
-selection show` reads. This is a record-only handoff: nothing is downloaded
-or installed here, and manual opt-in applications (for example the
-experimental ArtCraft Launcher) stay uninstalled until the user acts.
+Also seeds:
+- Studio selection (HorneroOS/installer#36): `~/.config/hornero/studio-selection.json`
+- Appearance (HorneroOS/installer PR-B): `~/.config/hornero/appearance.json`
+- First-boot Hornero Apps onboarding queue (HorneroOS/installer#134):
+  when `installation-plan.json` or `system-profile.json` records selected
+  `workstationProfiles` or `deferredApps`, seeds
+  `~/.config/hornero/store-onboarding-queue.json` matching the exact
+  `horneroctl store queue` JSON schema (`{"items": [{"id": ..., "backend": ...}]}`).
+
+All handoffs are record-only and symlink-safe: nothing is downloaded or
+installed here, existing user files are never overwritten, and proprietary
+software is never silently queued or installed.
 """
 
 from __future__ import annotations
@@ -14,20 +20,70 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import stat
 from pathlib import Path
 
+APP_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
-def _studio_selection_from_profile(root: Path) -> dict | None:
-    profile_path = root / "usr/lib/hornero/system-profile.json"
-    if not profile_path.is_file():
+
+def _load_json_dict(path: Path) -> dict | None:
+    if not path.is_file():
         return None
     try:
-        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-    edition = profile.get("edition") if isinstance(profile, dict) else None
+    return data if isinstance(data, dict) else None
+
+
+def _seed_user_json(
+    root: Path,
+    home: Path,
+    uid: int,
+    gid: int,
+    filename: str,
+    payload: dict,
+    label: str,
+) -> None:
+    hornero_dir = home / ".config" / "hornero"
+    destination = hornero_dir / filename
+    current = root
+    for component in home.relative_to(root).parts + (".config", "hornero", filename):
+        current = current / component
+        try:
+            info = current.lstat()
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(info.st_mode):
+            raise ValueError(f"Refusing symlink in target {label} path: {current}")
+    try:
+        hornero_dir.mkdir(mode=0o755)
+    except FileExistsError:
+        if not hornero_dir.is_dir() or hornero_dir.is_symlink():
+            raise ValueError(f"Target {label} parent is not a directory: {hornero_dir}")
+    if os.geteuid() == 0:
+        os.chown(hornero_dir, uid, gid)
+    try:
+        info = destination.lstat()
+    except FileNotFoundError:
+        info = None
+    if info is not None:
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError(f"Target {label} file is not a regular file: {destination}")
+        return  # Never overwrite a file the user already recorded.
+    destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    destination.chmod(0o644)
+    if os.geteuid() == 0:
+        os.chown(destination, uid, gid)
+
+
+def _studio_selection_from_profile(root: Path) -> dict | None:
+    profile = _load_json_dict(root / "usr/lib/hornero/system-profile.json")
+    if profile is None:
+        return None
+    edition = profile.get("edition")
     selection = edition.get("studioSelection") if isinstance(edition, dict) else None
     if not isinstance(selection, dict):
         return None
@@ -46,37 +102,7 @@ def _studio_selection_from_profile(root: Path) -> dict | None:
 
 
 def _seed_studio_selection(root: Path, home: Path, uid: int, gid: int, selection: dict) -> None:
-    hornero_dir = home / ".config" / "hornero"
-    destination = hornero_dir / "studio-selection.json"
-    current = root
-    for component in home.relative_to(root).parts + (".config", "hornero", "studio-selection.json"):
-        current = current / component
-        try:
-            info = current.lstat()
-        except FileNotFoundError:
-            continue
-        if stat.S_ISLNK(info.st_mode):
-            raise ValueError(f"Refusing symlink in target Studio selection path: {current}")
-    for directory in (hornero_dir,):
-        try:
-            directory.mkdir(mode=0o755)
-        except FileExistsError:
-            if not directory.is_dir() or directory.is_symlink():
-                raise ValueError(f"Target Studio selection parent is not a directory: {directory}")
-        if os.geteuid() == 0:
-            os.chown(directory, uid, gid)
-    try:
-        info = destination.lstat()
-    except FileNotFoundError:
-        info = None
-    if info is not None:
-        if not stat.S_ISREG(info.st_mode):
-            raise ValueError(f"Target Studio selection is not a regular file: {destination}")
-        return  # Never overwrite a selection the user already recorded.
-    destination.write_text(json.dumps(selection, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    destination.chmod(0o644)
-    if os.geteuid() == 0:
-        os.chown(destination, uid, gid)
+    _seed_user_json(root, home, uid, gid, "studio-selection.json", selection, "Studio selection")
 
 
 def _appearance_from_plan(root: Path) -> dict | None:
@@ -88,14 +114,10 @@ def _appearance_from_plan(root: Path) -> dict | None:
     (hornero-signal-night) can reach a plan; other themes are
     rejected by apply-system-plan.py, never silently seeded.
     """
-    plan_path = root / "usr/lib/hornero/installation-plan.json"
-    if not plan_path.is_file():
+    plan = _load_json_dict(root / "usr/lib/hornero/installation-plan.json")
+    if plan is None:
         return None
-    try:
-        plan = json.loads(plan_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    appearance = (plan.get("selection") or {}).get("appearance") if isinstance(plan, dict) else None
+    appearance = (plan.get("selection") or {}).get("appearance")
     if not isinstance(appearance, dict) or not appearance.get("theme"):
         return None
     return {
@@ -106,39 +128,139 @@ def _appearance_from_plan(root: Path) -> dict | None:
 
 
 def _seed_appearance(root: Path, home: Path, uid: int, gid: int, appearance: dict) -> None:
-    hornero_dir = home / ".config" / "hornero"
-    destination = hornero_dir / "appearance.json"
-    current = root
-    for component in home.relative_to(root).parts + (".config", "hornero", "appearance.json"):
-        current = current / component
-        try:
-            info = current.lstat()
-        except FileNotFoundError:
-            continue
-        if stat.S_ISLNK(info.st_mode):
-            raise ValueError(f"Refusing symlink in target appearance path: {current}")
-    try:
-        hornero_dir.mkdir(mode=0o755)
-    except FileExistsError:
-        if not hornero_dir.is_dir() or hornero_dir.is_symlink():
-            raise ValueError(f"Target appearance parent is not a directory: {hornero_dir}")
-    if os.geteuid() == 0:
-        os.chown(hornero_dir, uid, gid)
-    try:
-        info = destination.lstat()
-    except FileNotFoundError:
-        info = None
-    if info is not None:
-        if not stat.S_ISREG(info.st_mode):
-            raise ValueError(f"Target appearance file is not a regular file: {destination}")
-        return  # Never overwrite an appearance the user already recorded.
-    destination.write_text(json.dumps(appearance, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    destination.chmod(0o644)
-    if os.geteuid() == 0:
-        os.chown(destination, uid, gid)
+    _seed_user_json(root, home, uid, gid, "appearance.json", appearance, "appearance")
 
 
-def configure_user_defaults(root: Path) -> None:
+def _load_workstation_profiles(root: Path, profiles_path: Path | None = None) -> dict[str, dict]:
+    candidates: list[Path] = []
+    if profiles_path is not None:
+        candidates.append(profiles_path)
+    else:
+        here = Path(__file__).resolve().parent
+        candidates.extend([
+            here / "hornero-workstation-profiles.json",
+            here / "modules" / "hornero-workstation-profiles.json",
+            root / "usr/lib/hornero/workstation-profiles.json",
+            root / "usr/share/hornero/workstation-profiles.json",
+        ])
+    for candidate in candidates:
+        if candidate.is_file():
+            data = json.loads(candidate.read_text(encoding="utf-8"))
+            profiles = data.get("profiles") if isinstance(data, dict) else None
+            if not isinstance(profiles, list):
+                raise ValueError(f"Invalid workstation profiles metadata: {candidate}")
+            return {
+                str(entry["id"]): entry
+                for entry in profiles
+                if isinstance(entry, dict) and isinstance(entry.get("id"), str) and entry["id"]
+            }
+    raise FileNotFoundError("Workstation profiles metadata (hornero-workstation-profiles.json) not found")
+
+
+def _validate_app_id(value: object, context: str) -> str:
+    if not isinstance(value, str) or not APP_ID_RE.fullmatch(value):
+        raise ValueError(f"Invalid app id in {context}: {value!r}")
+    return value
+
+
+def _normalize_deferred_entries(raw: object, context: str) -> list[dict[str, str]]:
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ValueError(f"{context} must be a list: {raw!r}")
+    entries: list[dict[str, str]] = []
+    for entry in raw:
+        if isinstance(entry, str):
+            entries.append({"id": _validate_app_id(entry, context), "backend": ""})
+        elif isinstance(entry, dict):
+            app_id = _validate_app_id(entry.get("id"), context)
+            backend = entry.get("backend", "")
+            if backend is None:
+                backend = ""
+            if not isinstance(backend, str):
+                raise ValueError(f"Invalid backend in {context} for {app_id!r}: {backend!r}")
+            entries.append({"id": app_id, "backend": backend})
+        else:
+            raise ValueError(f"Invalid deferred app entry in {context}: {entry!r}")
+    return entries
+
+
+def _store_queue_from_target(root: Path, profiles_path: Path | None = None) -> dict | None:
+    """Build horneroctl store queue document from installation plan / system profile."""
+    plan = _load_json_dict(root / "usr/lib/hornero/installation-plan.json")
+    profile = _load_json_dict(root / "usr/lib/hornero/system-profile.json")
+
+    selected_profiles: list[str] = []
+    deferred_entries: list[dict[str, str]] = []
+
+    sources: list[tuple[str, dict]] = []
+    if plan is not None:
+        sources.append(("installation-plan", plan))
+        if isinstance(plan.get("selection"), dict):
+            sources.append(("installation-plan.selection", plan["selection"]))
+    if profile is not None:
+        sources.append(("system-profile", profile))
+        if isinstance(profile.get("edition"), dict):
+            sources.append(("system-profile.edition", profile["edition"]))
+
+    for label, obj in sources:
+        raw_profiles = obj.get("workstationProfiles")
+        if raw_profiles is not None:
+            if not isinstance(raw_profiles, list):
+                raise ValueError(f"{label}.workstationProfiles must be a list: {raw_profiles!r}")
+            for pid in raw_profiles:
+                valid_pid = _validate_app_id(pid, f"{label}.workstationProfiles")
+                if valid_pid not in selected_profiles:
+                    selected_profiles.append(valid_pid)
+        deferred_entries.extend(
+            _normalize_deferred_entries(obj.get("deferredApps"), f"{label}.deferredApps")
+        )
+
+    queue_items: list[dict[str, str]] = []
+    by_id: dict[str, dict[str, str]] = {}
+
+    def _add_item(app_id: str, backend: str) -> None:
+        existing = by_id.get(app_id)
+        if existing is None:
+            item = {"id": app_id, "backend": backend}
+            by_id[app_id] = item
+            queue_items.append(item)
+        elif not existing["backend"] and backend:
+            existing["backend"] = backend
+
+    if selected_profiles:
+        profiles_by_id = _load_workstation_profiles(root, profiles_path=profiles_path)
+        for pid in selected_profiles:
+            entry = profiles_by_id.get(pid)
+            if entry is None:
+                raise ValueError(f"Unknown workstation profile in installation metadata: {pid!r}")
+            # Expand strictly open-source deferred apps; proprietaryOptIn is never auto-queued.
+            for app_entry in _normalize_deferred_entries(
+                entry.get("deferredApps"), f"workstationProfile[{pid}].deferredApps"
+            ):
+                _add_item(app_entry["id"], app_entry["backend"])
+
+    for entry in deferred_entries:
+        _add_item(entry["id"], entry["backend"])
+
+    if not queue_items:
+        return None
+    return {"items": queue_items}
+
+
+def _seed_store_queue(root: Path, home: Path, uid: int, gid: int, queue_doc: dict) -> None:
+    _seed_user_json(
+        root,
+        home,
+        uid,
+        gid,
+        "store-onboarding-queue.json",
+        queue_doc,
+        "store onboarding queue",
+    )
+
+
+def configure_user_defaults(root: Path, profiles_path: Path | None = None) -> None:
     root = root.resolve()
     source = root / "etc/xdg/xfce4/helpers.rc"
     if not source.is_file():
@@ -172,6 +294,10 @@ def configure_user_defaults(root: Path) -> None:
 
     if not users:
         raise ValueError("Calamares did not create a regular user under /home")
+
+    selection = _studio_selection_from_profile(root)
+    appearance = _appearance_from_plan(root)
+    store_queue = _store_queue_from_target(root, profiles_path=profiles_path)
 
     for home, uid, gid in users:
         config_home = home / ".config"
@@ -213,12 +339,12 @@ def configure_user_defaults(root: Path) -> None:
             destination.chmod(0o644)
             if os.geteuid() == 0:
                 os.chown(destination, uid, gid)
-        selection = _studio_selection_from_profile(root)
         if selection is not None:
             _seed_studio_selection(root, home, uid, gid, selection)
-        appearance = _appearance_from_plan(root)
         if appearance is not None:
             _seed_appearance(root, home, uid, gid, appearance)
+        if store_queue is not None:
+            _seed_store_queue(root, home, uid, gid, store_queue)
 
 
 def main() -> int:

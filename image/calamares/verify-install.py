@@ -42,6 +42,23 @@ def _service_enabled(root: Path, service: str) -> bool:
     return any(wants_root.glob(f"*.target.wants/{service}"))
 
 
+def _user_service_enabled(root: Path, service: str) -> bool:
+    """True when a systemd user unit has a `.target.wants` enablement symlink."""
+    for rel in ("etc/systemd/user", "usr/lib/systemd/user"):
+        wants_root = root / rel
+        if wants_root.is_dir() and any(wants_root.glob(f"*.target.wants/{service}")):
+            return True
+    return False
+
+
+def _user_unit_path(root: Path, service: str) -> Path | None:
+    for rel in (f"etc/systemd/user/{service}", f"usr/lib/systemd/user/{service}"):
+        candidate = root / rel
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def verify_install(root: Path, plan: dict | None = None) -> list[str]:
     problems: list[str] = []
     plan = _load_plan(root, plan)
@@ -140,6 +157,12 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
                         f"{service} installed but not enabled: "
                         f"etc/systemd/system/*.target.wants/{service}"
                     )
+            elif _user_unit_path(root, service) is not None:
+                if not _user_service_enabled(root, service):
+                    problems.append(
+                        f"{service} user unit installed but not enabled: "
+                        f"etc/systemd/user/*.target.wants/{service}"
+                    )
 
     os_release = root / "etc/os-release"
     if not os_release.is_file() or "ID=" not in os_release.read_text(
@@ -213,6 +236,19 @@ def verify_install(root: Path, plan: dict | None = None) -> list[str]:
             problems.append(
                 "invalid boot-trial ALPM hook (missing [Trigger] or [Action]): "
                 "etc/pacman.d/hooks/95-hornero-boot-trial.hook"
+            )
+
+    flathub_setup_unit = _user_unit_path(root, "hornero-flathub-setup.service")
+    if flathub_setup_unit is not None:
+        flathub_text = flathub_setup_unit.read_text(encoding="utf-8", errors="replace")
+        if "[Unit]" not in flathub_text or "[Service]" not in flathub_text:
+            problems.append(
+                f"invalid hornero-flathub-setup.service unit: {flathub_setup_unit.relative_to(root)}"
+            )
+        if not _user_service_enabled(root, "hornero-flathub-setup.service"):
+            problems.append(
+                "hornero-flathub-setup.service installed but not enabled: "
+                "etc/systemd/user/*.target.wants/hornero-flathub-setup.service"
             )
 
     active_bootloader = (
