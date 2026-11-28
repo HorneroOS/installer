@@ -69,6 +69,12 @@ if command -v fc-cache >/dev/null 2>&1; then
   fc-cache >/dev/null 2>&1 || true
 fi
 
+# Seed a clean demo Workspace folder in the ephemeral live home without
+# disturbing existing files or Calamares state.
+if [[ -x /usr/local/bin/hornero-live-demo-prep ]]; then
+  /usr/local/bin/hornero-live-demo-prep || true
+fi
+
 # Belt and braces: hold a logind idle/sleep inhibitor for the session.
 if command -v systemd-inhibit >/dev/null 2>&1; then
   nohup systemd-inhibit --what=idle:sleep --mode=block sleep infinity >/dev/null 2>&1 &

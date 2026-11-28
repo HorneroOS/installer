@@ -1,0 +1,171 @@
+#!/usr/bin/env python3
+"""Seed a clean, symlink-safe Workspace demo folder for the live session.
+
+Creates ``~/Workspace`` with an orientation README, sample notes, and a
+quick-reference cheat sheet covering Hornero Welcome, Hornero Apps, and
+the Calamares installer. Safe to run repeatedly (idempotent: existing
+regular files are never overwritten) and refuses symlinks in every
+created component via ``lstat`` and ``os.O_NOFOLLOW``.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import stat
+from pathlib import Path
+
+README_MD = """\
+# Welcome to HorneroOS (Live Session)
+
+You are running the HorneroOS live desktop environment directly from the
+installation medium. No changes have been made to your disks yet.
+
+## What You Can Try Right Now
+
+- **Explore the Desktop:** Open **Hornero Welcome** from the session or shell
+  to inspect available presets, themes, and system capabilities.
+- **Browse Hornero Apps:** Use the Hornero Apps launcher (`horneroctl apps`)
+  to preview curated open-source workstation profiles and applications.
+- **Open a Terminal:** Press `Super + Return` to launch Kitty, or check
+  `quick-reference.md` in this directory for keybindings and commands.
+
+## Installing HorneroOS
+
+When you are ready to install to disk, launch the **Install HorneroOS**
+(Calamares) icon or run `/usr/local/bin/hornero-installer-start`.
+
+> Note: The live session runs in memory and disables idle locking so an
+> installation is never interrupted. Installed systems apply your chosen
+> password and power/lock defaults.
+"""
+
+SAMPLE_NOTES_MD = """\
+# Sample Workspace Notes
+
+Use this folder as a scratchpad while testing the HorneroOS live desktop.
+
+## Session Checks
+
+- Inspect compositor & display state: `horneroctl doctor`
+- Check current theme & layout preset: `horneroctl appearance status`
+- Preview Hornero Apps catalog entries: `horneroctl store list`
+
+## Wayland Tools Included in the Live Medium
+
+- Terminal: `kitty` (`Super + Return`)
+- File manager: `thunar`
+- Screenshots: `grim` + `slurp`
+- Clipboard: `wl-clipboard` + `cliphist`
+"""
+
+QUICK_REFERENCE_MD = """\
+# HorneroOS Live Quick Reference
+
+## Desktop & Shell Shortcuts
+
+| Action | Shortcut / Command |
+|---|---|
+| Open Terminal (Kitty) | `Super + Return` |
+| App Launcher / Hornero Apps | `Super + D` |
+| Hornero Welcome | `horneroctl welcome` |
+| System Diagnostics | `horneroctl doctor` |
+
+## Key Components
+
+- **Hornero Welcome:** Guided tour of Signal themes, shell presets, and
+  first-boot options.
+- **Hornero Apps:** Curated application catalog (`horneroctl store list`).
+  In the live session, use it to explore profiles before installing.
+- **Calamares Installer:** Guided disk partitioning, edition selection
+  (Desktop, Studio, Gaming), and user setup. Launch via the desktop entry
+  or `/usr/local/bin/hornero-installer-start`.
+"""
+
+DEMO_FILES: dict[str, str] = {
+    "README.md": README_MD,
+    "sample-notes.md": SAMPLE_NOTES_MD,
+    "quick-reference.md": QUICK_REFERENCE_MD,
+}
+
+
+def _assert_safe_dir(path: Path, *, create: bool) -> None:
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        if not create:
+            raise ValueError(f"Home directory does not exist: {path}") from None
+        try:
+            os.mkdir(path, 0o755)
+        except FileExistsError:
+            info = path.lstat()
+        else:
+            return
+    if stat.S_ISLNK(info.st_mode):
+        raise ValueError(f"Refusing symlink in demo workspace path: {path}")
+    if not stat.S_ISDIR(info.st_mode):
+        raise ValueError(f"Demo workspace path is not a directory: {path}")
+
+
+def _write_if_absent_nofollow(path: Path, content: str) -> bool:
+    """Create ``path`` without following symlinks; return True if created."""
+    if os.path.islink(path):
+        raise ValueError(f"Refusing symlink in demo workspace file: {path}")
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        info = None
+
+    if info is not None:
+        if stat.S_ISLNK(info.st_mode):
+            raise ValueError(f"Refusing symlink in demo workspace file: {path}")
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError(f"Refusing non-regular file in demo workspace: {path}")
+        return False
+
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+    fd = os.open(path, flags, 0o644)
+    try:
+        data = content.encode("utf-8")
+        view = memoryview(data)
+        written = 0
+        while written < len(data):
+            written += os.write(fd, view[written:])
+    finally:
+        os.close(fd)
+    return True
+
+
+def seed_live_demo_workspace(home: Path) -> Path:
+    """Seed ``<home>/Workspace`` idempotently and safely."""
+    if os.path.islink(home):
+        raise ValueError(f"Refusing symlink home directory: {home}")
+    _assert_safe_dir(home, create=False)
+
+    workspace = home / "Workspace"
+    if os.path.islink(workspace):
+        raise ValueError(f"Refusing symlink workspace directory: {workspace}")
+    _assert_safe_dir(workspace, create=True)
+
+    for filename, content in DEMO_FILES.items():
+        _write_if_absent_nofollow(workspace / filename, content)
+
+    return workspace
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--home",
+        type=Path,
+        default=None,
+        help="target home directory (defaults to $HOME)",
+    )
+    args = parser.parse_args()
+    home = args.home if args.home is not None else Path(os.environ.get("HOME", "/home/hornero-live"))
+    seed_live_demo_workspace(home)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
